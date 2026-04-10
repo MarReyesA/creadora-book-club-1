@@ -553,8 +553,10 @@ onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{};    renderRanking(); renderBo
 onValue(ref(db,'votesRec'),s=>{ _votesRec=s.val()||{}; renderRecBooks(); });
 onValue(ref(db,'recs'),    s=>{
   _recs = s.val() ? Object.entries(s.val()).map(([k,v])=>({...v,_key:k})).sort((a,b)=>(b.ts||0)-(a.ts||0)) : [];
-  renderRecBooks(); renderCounter();
+  renderRecBooks(); 
+  renderCounter();
   if(ADMIN) renderAdminCommunityBooks();
+  console.log('Recs loaded:', _recs.length);
 });
 // admin overrides: current book, read status, custom covers
 onValue(ref(db,'overrides'), s=>{
