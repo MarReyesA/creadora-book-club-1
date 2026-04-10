@@ -345,6 +345,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
           <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder="María García"></div>
           <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder="maria@ejemplo.com"></div>
         </div>
+        <div style="font-size:.75rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>
       </div>
       <button onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
       <div style="text-align:center;font-size:.72rem;color:var(--light);margin-top:.6rem">Al enviar aceptas recibir novedades del Book Club.</div>
@@ -773,7 +774,7 @@ function showAddForm(){
     nameRow.style.display='block';
     document.getElementById('rn').value='';
     document.getElementById('re').value='';
-    if(greeting) greeting.innerHTML=`<div style="font-size:.78rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>`;
+    if(greeting) greeting.innerHTML='';
   }
 }
 
