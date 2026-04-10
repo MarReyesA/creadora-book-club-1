@@ -287,6 +287,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <button class="filt" onclick="setCat('Tecnologia',this)">💻 Tecnología</button>
     </div>
     <div class="grid" id="grid"></div>
+    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
 
     <!-- COUNTER -->
     <div class="counter-wrap">
@@ -495,7 +496,8 @@ const SVR = JSON.parse(sessionStorage.getItem('cbcVR')||'{}');
 
 // cached Firebase data
 let _votes={}, _votesRec={}, _recs=[], _overrides={};
-let curCat='all';
+let curCat='all', curPage=0;
+const PAGE_SIZE=12;
 const ADMIN = new URLSearchParams(location.search).get('admin')==='creadora2026';
 
 // ── FIREBASE LISTENERS ──
@@ -574,13 +576,22 @@ function bookMatches(b,terms){
 }
 
 // ── BOOKS GRID ──
-function renderBooks(){
+function renderBooks(votesData){
+  if(votesData!==undefined) _votes=votesData;
   const q=document.getElementById('srch')?.value.trim()||'';
   const g=document.getElementById('grid'); if(!g) return;
   const terms=q.length>0?expandSearch(q):null;
   const f=B.filter(b=>(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
-  if(!f.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';return;}
-  g.innerHTML=f.map(b=>{
+  if(!f.length){
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
+    document.getElementById('pagination').innerHTML='';
+    return;
+  }
+  const totalPages=Math.ceil(f.length/PAGE_SIZE);
+  if(curPage>=totalPages) curPage=0;
+  const pageBooks=f.slice(curPage*PAGE_SIZE, (curPage+1)*PAGE_SIZE);
+
+  g.innerHTML=pageBooks.map(b=>{
     const i=B.indexOf(b);
     const isV=!!SV[i], v=_votes[i]||0;
     const ov=_overrides; const isRead=ov[`read_${i}`]; const isCurrent=ov.currentBook==i;
@@ -603,9 +614,29 @@ function renderBooks(){
       +(vSect)
       +'</div></div>';
   }).join('');
+
+  // Pagination controls
+  const pg=document.getElementById('pagination');
+  if(totalPages<=1){pg.innerHTML='';return;}
+  let html='';
+  // prev button
+  html+=`<button onclick="goPage(${curPage-1})" ${curPage===0?'disabled':''} style="background:none;border:1px solid var(--bdr);border-radius:100px;padding:.4rem 1rem;font-family:var(--fb);font-size:.8rem;cursor:pointer;color:var(--muted);transition:all .15s" ${curPage===0?'':'onmouseover="this.style.borderColor=\'var(--lila-dk)\';this.style.color=\'var(--lila-dk)\'" onmouseout="this.style.borderColor=\'var(--bdr)\';this.style.color=\'var(--muted)\'"'}>← Anterior</button>`;
+  // page numbers
+  for(let p=0;p<totalPages;p++){
+    const active=p===curPage;
+    html+=`<button onclick="goPage(${p})" style="width:32px;height:32px;border-radius:50%;border:${active?'none':'1px solid var(--bdr)'};background:${active?'var(--lila-dk)':'none'};color:${active?'#fff':'var(--muted)'};font-family:var(--fb);font-size:.8rem;cursor:pointer">${p+1}</button>`;
+  }
+  // next button
+  html+=`<button onclick="goPage(${curPage+1})" ${curPage===totalPages-1?'disabled':''} style="background:none;border:1px solid var(--bdr);border-radius:100px;padding:.4rem 1rem;font-family:var(--fb);font-size:.8rem;cursor:pointer;color:var(--muted);transition:all .15s" ${curPage===totalPages-1?'':'onmouseover="this.style.borderColor=\'var(--lila-dk)\';this.style.color=\'var(--lila-dk)\'" onmouseout="this.style.borderColor=\'var(--bdr)\';this.style.color=\'var(--muted)\'"'}>Siguiente →</button>`;
+  // page info
+  html+=`<span style="font-size:.75rem;color:var(--light)">${f.length} libros · pág. ${curPage+1} de ${totalPages}</span>`;
+  pg.innerHTML=html;
 }
 
-function setCat(cat,btn){curCat=cat;document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderBooks();}
+function goPage(p){curPage=p;renderBooks();document.getElementById('grid').scrollIntoView({behavior:'smooth',block:'start'});}
+window.goPage=goPage;
+
+function setCat(cat,btn){curCat=cat;curPage=0;document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderBooks();}
 window.setCat=setCat;
 
 // ── VOTE ──
@@ -619,6 +650,7 @@ window.doVote=doVote;
 
 // ── SEARCH DROPDOWN ──
 function onSearch(){
+  curPage=0;
   renderBooks();
   const q=document.getElementById('srch').value.trim();
   const drop=document.getElementById('srch-drop');
