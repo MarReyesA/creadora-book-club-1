@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creadora Book Club · Mar Reyes</title>
+<meta name="description" content="Creadora Book Club — Para mujeres que buscan nutrir su crecimiento personal y profesional a través de la lectura. Vota, comenta y descubre los mejores libros.">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Cormorant+Garant:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'IvyJournal';src:local('IvyJournal'),local('Ivy Journal'),local('IvyMode');font-weight:400 700;font-style:normal italic}
+:root{
+  --ft:'IvyJournal','Cormorant Garant',Georgia,serif;
+  --fb:'Open Sans',system-ui,sans-serif;
+  --beige:transparent;--beige2:#f0e8e0;
+  --lila:#c9c0e0;--lila-lt:#f0ecf8;--lila-dk:#7a6fa0;
+  --sage:#7a9e8e;--sage-lt:#e8f2ee;--sage-dk:#4e7060;
+  --sal:#e8a090;--sal-lt:#fdf0ed;--sal-dk:#b05848;
+  --text:#2a2318;--muted:#7a6e5f;--light:#b0a896;
+  --white:#fff;--bdr:rgba(42,35,24,.1);
+  --r:12px;--rl:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fb);background:transparent;color:var(--text);line-height:1.6}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bdr);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:54px;gap:.5rem}
+.logo{font-family:var(--ft);font-size:1rem;color:var(--text);white-space:nowrap}
+.logo em{color:var(--sage-dk);font-style:italic}
+.nav-links{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+.nav-links a{color:var(--muted);font-size:.78rem;padding:5px 10px;border-radius:8px;text-decoration:none;transition:all .15s;cursor:pointer;white-space:nowrap}
+.nav-links a:hover{background:var(--beige2);color:var(--text)}
+.nav-links .jb{background:var(--lila-dk);color:#fff;border-radius:100px;padding:5px 14px}
+.nav-links .jb:hover{background:#6a5f90;color:#fff}
+
+/* SECTIONS */
+.sec{display:none}.sec.on{display:block}
+
+/* HERO */
+.hero{text-align:center;padding:2.5rem 1.25rem 1.5rem}
+.hero h1{font-family:var(--ft);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:400;color:var(--text);line-height:1.2;margin-bottom:1rem}
+.hero h1 em{color:var(--lila-dk);font-style:italic}
+.hero-reg{display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:500;padding:.75rem 2rem;border-radius:100px;text-decoration:none;transition:background .15s}
+.hero-reg:hover{background:#6a5f90}
+
+/* LIBRO DEL MES */
+.ldm{max-width:720px;margin:1.75rem auto;padding:0 1.25rem}
+.ldm-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-wrap:wrap}
+.ldm-img{flex:0 0 160px;min-height:220px;background:linear-gradient(135deg,var(--lila-lt),var(--sage-lt));display:flex;align-items:center;justify-content:center}
+.ldm-img img{width:160px;height:220px;object-fit:cover;display:block}
+.ldm-body{flex:1;min-width:220px;padding:1.5rem}
+.ldm-label{font-size:.68rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sage-dk);margin-bottom:.4rem}
+.ldm-title{font-family:var(--ft);font-size:1.25rem;line-height:1.3;margin-bottom:.3rem}
+.ldm-author{font-size:.82rem;color:var(--muted);margin-bottom:.75rem}
+.ldm-desc{font-size:.82rem;color:var(--muted);line-height:1.65;margin-bottom:1rem}
+.ldm-date{font-size:.8rem;color:var(--lila-dk);font-weight:500}
+
+/* VOTE SECTION */
+.vote-section{padding:0 1.25rem 1.5rem;max-width:1100px;margin:0 auto}
+.vote-hdr{text-align:center;margin-bottom:1rem}
+.vote-hdr h2{font-family:var(--ft);font-size:clamp(1.3rem,3vw,1.75rem);font-weight:400;color:var(--lila-dk);margin-bottom:.2rem;line-height:1.1}
+.vote-hdr p{font-size:1rem;color:var(--muted)}
+
+/* RANKING CAROUSEL */
+.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.rk-card{flex-shrink:0;width:110px;cursor:pointer;transition:transform .15s;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(42,35,24,.12)}
+.rk-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(42,35,24,.18)}
+.rk-card:nth-child(1){box-shadow:0 3px 12px rgba(201,168,76,.4)}
+.rk-thumb{width:110px;height:165px;object-fit:cover;display:block;background:var(--lila-lt)}
+.rk-thumb-ph{width:110px;height:165px;background:linear-gradient(160deg,var(--lila-lt),var(--sal-lt));display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.rk-count-badge{position:absolute;bottom:5px;right:5px;background:var(--lila-dk);color:#fff;font-size:.65rem;font-weight:600;padding:2px 6px;border-radius:100px}
+.rk-wrap{position:relative;display:inline-block}
+.rk-empty{color:var(--light);font-size:.85rem;text-align:center;padding:.75rem 0;width:100%}
+
+/* BOOKS */
+.bwrap{padding:0 1.25rem 2rem;max-width:1200px;margin:0 auto}
+.search-area{display:flex;flex-direction:column;align-items:center;gap:.6rem;margin-bottom:1.1rem}
+.search-wrap{position:relative;width:100%;max-width:540px}
+.search-wrap input{width:100%;padding:.6rem 1.1rem;border:1px solid var(--bdr);border-radius:100px;font-family:var(--fb);font-size:.82rem;color:var(--text);background:var(--white);outline:none}
+.search-wrap input:focus{border-color:var(--sage)}
+.srch-drop{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--white);border:1px solid var(--bdr);border-radius:14px;box-shadow:0 8px 24px rgba(42,35,24,.1);z-index:300;overflow:hidden;max-height:320px;overflow-y:auto}
+.btn-add{background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.25);padding:.65rem 1.75rem;border-radius:100px;font-family:var(--fb);font-size:.88rem;font-weight:500;cursor:pointer}
+.btn-add:hover{background:var(--sage);color:#fff}
+.filts{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem}
+.filt{background:var(--white);border:1px solid var(--bdr);color:var(--muted);padding:.3rem .8rem;border-radius:100px;font-size:.73rem;cursor:pointer;font-family:var(--fb);transition:all .15s}
+.filt:hover,.filt.on{background:var(--lila-dk);color:#fff;border-color:var(--lila-dk)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(42,35,24,.09)}
+.cimgw{position:relative;cursor:pointer;flex-shrink:0}
+.cimg{width:100%;aspect-ratio:11/16;object-fit:cover;display:block;background:var(--beige2)}
+.cph{width:100%;aspect-ratio:11/16;background:linear-gradient(160deg,var(--lila-lt),var(--sal-lt));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;text-align:center}
+.cph-t{font-family:var(--ft);font-size:1rem;color:var(--text);line-height:1.3;margin-bottom:.3rem}
+.cph-a{font-size:.82rem;color:var(--muted)}
+.cb-pick{position:absolute;top:7px;left:7px;background:var(--lila-lt);color:var(--lila-dk);font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;border:1px solid rgba(122,96,160,.25)}
+.cb-read{position:absolute;top:7px;left:7px;background:var(--sage-lt);color:var(--sage-dk);font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;border:1px solid rgba(78,112,96,.25)}
+.cb-lat{position:absolute;top:7px;right:7px;background:rgba(78,112,96,.85);color:#fff;font-size:.62rem;font-weight:500;padding:2px 5px;border-radius:100px}
+.cbody{padding:.875rem .9rem 1rem;flex:1;display:flex;flex-direction:column}
+.ctag{display:inline-block;font-size:.72rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:100px;margin-bottom:.35rem}
+.ctitle{font-family:var(--ft);font-size:1rem;line-height:1.3;margin-bottom:.15rem;color:var(--text);cursor:pointer}
+.ctitle:hover{color:var(--lila-dk)}
+.cauthor{font-size:.82rem;color:var(--muted);margin-bottom:.25rem}
+.csub{font-size:.8rem;color:var(--muted);line-height:1.45;margin-bottom:.4rem;font-style:italic}
+.crec{font-size:.74rem;color:var(--light);margin-bottom:.35rem}
+.cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);margin-bottom:.45rem;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3)}
+.cget:hover{color:var(--sal-dk)}
+.vrow{margin-top:auto;display:flex;align-items:center;gap:.4rem}
+.vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
+.vbtn:hover{border-color:var(--lila-dk);color:var(--lila-dk);background:var(--lila-lt)}
+.vbtn.voted{background:var(--lila-dk);color:#fff;border-color:var(--lila-dk)}
+.vbtn.voted:hover{background:#6a5f90;border-color:#6a5f90}
+.vcount{font-size:.76rem;color:var(--muted);white-space:nowrap}
+
+/* COUNTER */
+.counter-wrap{text-align:center;padding:2.5rem 0 1.5rem;border-top:1px solid var(--bdr);margin-top:2rem}
+
+/* READ CAROUSEL */
+.rc-card{flex-shrink:0;width:130px;background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:.875rem .75rem;cursor:pointer;text-align:center;transition:transform .15s}
+.rc-card:hover{transform:translateY(-2px)}
+
+/* ADD BOOK FORM */
+.fcard{background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:1.5rem;max-width:520px;margin:0 auto}
+.fg{margin-bottom:.875rem}
+.fg label{display:block;font-size:.8rem;font-weight:500;margin-bottom:3px}
+.fg input,.fg textarea{width:100%;padding:.6rem .9rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.84rem;color:var(--text);background:var(--beige);outline:none;resize:vertical}
+.fg input:focus,.fg textarea:focus{border-color:var(--lila-dk)}
+
+/* COMMUNITY BOOKS GRID */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem;margin-top:1.5rem}
+
+/* BUY POPUP */
+.overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(42,35,24,.5);align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+#buy-ov{z-index:600}
+.buy-box{background:var(--white);border-radius:var(--rl);max-width:520px;width:100%;padding:1.5rem;position:relative}
+.buy-close{position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem}
+.buy-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.buy-col h4{font-size:.68rem;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--bdr)}
+.buy-lnk{display:flex;align-items:center;gap:.5rem;padding:.48rem .65rem;border-radius:8px;text-decoration:none;margin-bottom:.35rem;font-size:.78rem;font-weight:500;border:1px solid var(--bdr);color:var(--text);background:var(--beige);transition:all .12s}
+.buy-lnk:hover{background:var(--beige2)}
+.buy-lnk .arr{font-size:.65rem;color:var(--light);margin-left:auto}
+
+/* BOOK MODAL */
+.mbox{background:var(--white);border-radius:var(--rl);max-width:480px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.mph{width:100%;height:150px;background:linear-gradient(135deg,var(--lila-lt),var(--sal-lt));border-radius:var(--rl) var(--rl) 0 0;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.mclose{position:absolute;top:.75rem;right:.75rem;background:rgba(255,255,255,.92);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;z-index:10}
+.mbody{padding:1.25rem 1.4rem 1.6rem}
+.mbadges{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.6rem}
+.mttl{font-family:var(--ft);font-size:1.4rem;margin-bottom:.2rem}
+.maut{font-size:.85rem;color:var(--muted);margin-bottom:.25rem}
+.msub{font-size:.8rem;color:var(--muted);font-style:italic;margin-bottom:.875rem}
+.mdesc{font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--bdr)}
+.mbtn-get{display:block;width:100%;padding:.65rem;border-radius:100px;font-family:var(--fb);font-size:.85rem;font-weight:500;background:var(--sage-lt);border:1.5px solid var(--sage);color:var(--sage-dk);cursor:pointer;margin-bottom:.5rem;transition:all .15s}
+.mbtn-get:hover{background:var(--sage);color:#fff}
+
+/* COMMENTS */
+.comments-box{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--bdr)}
+.cm-list{margin-bottom:.875rem;max-height:200px;overflow-y:auto}
+.cm-item{display:flex;gap:.6rem;padding:.6rem 0;border-bottom:1px solid var(--bdr)}
+.cm-av{width:28px;height:28px;border-radius:50%;background:var(--lila-lt);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:600;color:var(--lila-dk);flex-shrink:0}
+.cm-form input,.cm-form textarea{width:100%;padding:.5rem .75rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.8rem;outline:none;background:var(--beige);margin-bottom:.4rem}
+.cm-form button{background:var(--lila-dk);color:#fff;border:none;padding:.5rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;width:100%}
+
+/* FAQ */
+.fitem{border-bottom:1px solid var(--bdr)}
+.fq{width:100%;text-align:left;background:none;border:none;padding:1rem 0;font-family:var(--fb);font-size:.875rem;font-weight:500;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.fq .arr{color:var(--lila-dk);font-size:1rem;transition:transform .2s;flex-shrink:0}
+.fq.open .arr{transform:rotate(45deg)}
+.fa{display:none;padding-bottom:1rem;font-size:.85rem;color:var(--muted);line-height:1.7}
+.fa.open{display:block}
+
+/* JOIN SECTION */
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:1rem;margin-bottom:1.1rem}
+.plan{background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:1.4rem;text-align:center}
+.plan.feat{background:var(--lila-dk);border-color:var(--lila-dk);position:relative}
+.plan .plbl{font-size:.65rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.plan.feat .plbl{color:rgba(255,255,255,.7)}
+.plan .pnum{font-family:var(--ft);font-size:1.9rem;color:var(--text);line-height:1}
+.plan.feat .pnum{color:#fff}
+.plan .pdis{font-size:.72rem;color:var(--lila-dk);font-weight:500;margin:2px 0 3px}
+.plan.feat .pdis{color:rgba(255,255,255,.88)}
+.plan .pdesc{font-size:.73rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+.plan.feat .pdesc{color:rgba(255,255,255,.65)}
+.ptag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--sal);color:#fff;font-size:.58rem;font-weight:500;padding:2px 8px;border-radius:100px;white-space:nowrap}
+.plna{display:block;padding:7px;border-radius:100px;font-family:var(--fb);font-size:.78rem;font-weight:500;text-decoration:none;text-align:center;border:1.5px solid rgba(42,35,24,.15);color:var(--text);transition:background .15s}
+.plna:hover{background:var(--beige2)}
+.plan.feat .plna{background:#fff;color:var(--lila-dk);border:none}
+
+/* FOOTER CTA */
+.footer-cta{background:var(--sage-dk);padding:3rem 1.25rem;text-align:center}
+.footer-cta h2{font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:#fff;margin-bottom:.75rem}
+.footer-cta p{font-size:.9rem;color:rgba(255,255,255,.8);max-width:480px;margin:0 auto 1.5rem;line-height:1.7}
+.footer-cta a{display:inline-block;background:#fff;color:var(--sage-dk);font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none;transition:all .15s}
+.footer-cta a:hover{background:var(--beige)}
+
+/* FOOTER BANNER */
+footer{background:var(--sage-dk);border-top:1px solid rgba(255,255,255,.15);padding:1.5rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem}
+footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
+.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
+.footer-links a{color:rgba(255,255,255,.8);font-size:.78rem;font-weight:500;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;transition:color .15s}
+.footer-links a:hover{color:#fff}
+
+/* SHDR */
+.shdr{padding:1.5rem 1.25rem 1rem;max-width:700px;margin:0 auto}
+.shdr h2{font-family:var(--ft);font-size:1.6rem;font-weight:400;margin-bottom:.25rem}
+.shdr p{color:var(--muted);font-size:.875rem}
+.swrap{max-width:700px;margin:0 auto;padding:0 1.25rem 3rem}
+
+/* ADMIN PANEL */
+#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1rem 1.25rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:260px;max-height:80vh;overflow-y:auto}
+#admin-panel h3{font-family:var(--ft);font-size:1rem;color:var(--lila-dk);margin-bottom:.75rem}
+.admin-book-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bdr);font-size:.75rem}
+.admin-book-row input[type=text]{flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.72rem;background:var(--beige)}
+.admin-btn{padding:.3rem .6rem;border-radius:6px;font-size:.68rem;font-weight:500;cursor:pointer;border:none;font-family:var(--fb)}
+
+@media(max-width:600px){
+  .nav-links .hide-mob{display:none}
+  .grid{grid-template-columns:repeat(2,1fr);gap:.75rem}
+  .buy-cols{grid-template-columns:1fr}
+  .ldm-img{flex:0 0 100%;min-height:200px}
+  .card .cbody{padding:.65rem .7rem .75rem}
+  .ctitle{font-size:.82rem}
+  .cauthor{font-size:.68rem}
+  .csub{font-size:.68rem}
+  /* top5: no carousel on mobile, just wrap */
+  #ranking{flex-wrap:wrap !important;justify-content:center !important}
+  .rk-card{width:calc(50% - .375rem) !important;min-width:0 !important}
+  .rk-arrow{display:none !important}
+}
+</style>
+</head>
+<body>
+
+<!-- MAIN BOOKS SECTION -->
+<div class="sec on" id="s-books">
+
+  <!-- LIBRO DEL MES (filled by Firebase) -->
+  <div class="ldm" id="ldm-wrap">
+    <div class="ldm-card">
+      <div class="ldm-img" id="ldm-img-wrap">
+        <span style="font-size:2rem">📖</span>
+      </div>
+      <div class="ldm-body">
+        <div class="ldm-label" id="ldm-label">Estamos leyendo</div>
+        <div class="ldm-title" id="ldm-title">Cargando...</div>
+        <div class="ldm-author" id="ldm-author"></div>
+        <div class="ldm-desc" id="ldm-desc"></div>
+        <div class="ldm-date" id="ldm-date"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOTE + RANKING -->
+  <div class="vote-section">
+    <div class="vote-hdr">
+      <h2>Vota por los libros que quieres leer</h2>
+      <p>Estos son los top 5 del momento</p>
+    </div>
+    <div style="position:relative;display:flex;align-items:center;gap:.5rem">
+      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:-200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">‹</button>
+      <div class="carousel" id="ranking" style="flex:1;justify-content:center;flex-wrap:wrap">
+        <div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>
+      </div>
+      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">›</button>
+    </div>
+  </div>
+
+  <!-- SEARCH + FILTERS + GRID -->
+  <div class="bwrap">
+    <div class="search-area">
+      <div class="search-wrap">
+        <input id="srch" type="text" autocomplete="off"
+          placeholder="Escribe el título del libro y si no aparece, agrégalo"
+          oninput="onSearch()" onfocus="onSearch()" onblur="setTimeout(hideDropdown,200)">
+        <div class="srch-drop" id="srch-drop"></div>
+      </div>
+      <button class="btn-add" onclick="showAddForm()">+ Agregar un libro</button>
+    </div>
+    <div class="filts">
+      <button class="filt on" onclick="setCat('all',this)">Todos</button>
+      <button class="filt" onclick="setCat('Money Mindset',this)">💰 Dinero</button>
+      <button class="filt" onclick="setCat('Manifesting',this)">💫 Manifestación</button>
+      <button class="filt" onclick="setCat('Finding Purpose',this)">🔍 Propósito</button>
+      <button class="filt" onclick="setCat('Female Entrepreneurship',this)">🚀 Emprendimiento</button>
+      <button class="filt" onclick="setCat('Women Rising',this)">🌸 Poder femenino</button>
+      <button class="filt" onclick="setCat('Healing',this)">🧘🏽‍♀️ Espiritualidad</button>
+      <button class="filt" onclick="setCat('Health',this)">🌿 Salud</button>
+      <button class="filt" onclick="setCat('Spark Creativity',this)">🎨 Creatividad y Habilidades</button>
+      <button class="filt" onclick="setCat('Relationships',this)">💞 Relaciones</button>
+      <button class="filt" onclick="setCat('Poesia',this)">📝 Poesía</button>
+      <button class="filt" onclick="setCat('Liderazgo',this)">🏆 Liderazgo</button>
+      <button class="filt" onclick="setCat('Biografia',this)">👤 Biografía</button>
+      <button class="filt" onclick="setCat('Tecnologia',this)">💻 Tecnología</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
+
+    <!-- COUNTER -->
+    <!-- LIBROS AGREGADOS POR LA COMUNIDAD -->
+    <div id="rec-section" style="margin-top:2rem;display:none">
+      <div style="font-family:var(--ft);font-size:clamp(1.1rem,2.5vw,1.3rem);font-weight:400;color:var(--text);margin-bottom:1rem">Libros sugeridos por la comunidad</div>
+      <div id="rec-list" class="grid"></div>
+    </div>
+
+    <div class="counter-wrap">
+      <div style="font-family:var(--ft);font-size:clamp(2rem,5vw,3rem);font-weight:400;color:var(--lila-dk)" id="counter-num">42</div>
+      <div style="font-size:.875rem;color:var(--muted);margin-top:.25rem">Libros recomendados por nuestras Creadoras</div>
+    </div>
+
+    <!-- LEÍDOS JUNTAS -->
+    <div style="padding-bottom:3rem">
+      <div style="font-family:var(--ft);font-size:clamp(1.1rem,2.5vw,1.4rem);font-weight:400;color:var(--text);text-align:center;margin-bottom:1.1rem">Libros que hemos leído juntas</div>
+      <div class="carousel" id="read-carousel">
+        <div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER CTA — sin fondo, texto y botón solamente -->
+  <div style="text-align:center;padding:3rem 1.25rem 2rem;border-top:1px solid var(--bdr)">
+    <h2 style="font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:var(--text);margin-bottom:.75rem">Únete a Creadora <em style="color:var(--lila-dk);font-style:italic">Book Club</em></h2>
+    <p style="font-size:.9rem;color:var(--muted);max-width:480px;margin:0 auto 1.5rem;line-height:1.7">Cada libro es una oportunidad para abrir conversaciones profundas, sanar, cuestionar y crecer. No solo leerás, sino que transformarás tu manera de pensar para acercarte a vivir una vida libre y abundante.</p>
+    <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none">Regístrate aquí ✦</a>
+  </div>
+</div>
+
+<!-- ADD BOOK MODAL -->
+<div class="overlay" id="add-overlay" onclick="if(event.target===this)closeAddForm()">
+  <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
+    <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
+    <div id="add-form-inner">
+      <div id="form-greeting"></div>
+      <div class="fg"><label>Título del libro <span style="color:var(--sal-dk)">*</span></label><input id="rt" type="text" placeholder="En Español o Inglés"></div>
+      <div class="fg"><label>Autora / Autor <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label><input id="ra" type="text" placeholder="En Español o Inglés"></div>
+      <div class="fg">
+        <label>Categoría <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label>
+        <select id="rcat" style="width:100%;padding:.6rem .9rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.84rem;color:var(--text);background:var(--beige);outline:none;cursor:pointer">
+          <option value="">— Elige una categoría —</option>
+          <option value="Money Mindset">💰 Dinero</option>
+          <option value="Manifesting">💫 Manifestación</option>
+          <option value="Finding Purpose">🔍 Propósito</option>
+          <option value="Female Entrepreneurship">🚀 Emprendimiento</option>
+          <option value="Women Rising">🌸 Poder femenino</option>
+          <option value="Healing">🧘🏽‍♀️ Espiritualidad</option>
+          <option value="Health">🌿 Salud</option>
+          <option value="Spark Creativity">🎨 Creatividad y Habilidades</option>
+          <option value="Relationships">💞 Relaciones</option>
+          <option value="Poesia">📝 Poesía</option>
+          <option value="Liderazgo">🏆 Liderazgo</option>
+          <option value="Biografia">👤 Biografía</option>
+          <option value="Tecnologia">💻 Tecnología</option>
+        </select>
+      </div>
+      <div id="form-name-row">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+          <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder="María García"></div>
+          <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder="maria@ejemplo.com"></div>
+        </div>
+        <div style="font-size:.75rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>
+      </div>
+      <button onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
+      <div style="text-align:center;font-size:.72rem;color:var(--light);margin-top:.6rem">Al enviar aceptas recibir novedades del Book Club.</div>
+    </div>
+    <div id="add-form-ok" style="display:none;text-align:center;padding:1.5rem">
+      <div style="width:52px;height:52px;background:var(--sage-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;font-size:1.4rem">✓</div>
+      <div style="font-family:var(--ft);font-size:1.2rem;margin-bottom:.4rem">¡Gracias por agregar!</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem">Tu libro ya aparece en la lista de la comunidad.</div>
+      <button onclick="resetAddForm()" style="background:transparent;color:var(--text);border:1.5px solid var(--bdr);padding:.55rem 1.25rem;border-radius:100px;font-family:var(--fb);font-size:.85rem;cursor:pointer">Agregar otro libro</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUY POPUP -->
+<div class="overlay" id="buy-ov" onclick="if(event.target===this)closeBuy()">
+  <div class="buy-box" onclick="event.stopPropagation()">
+    <button class="buy-close" onclick="closeBuy()">✕</button>
+    <div style="font-family:var(--ft);font-size:1.1rem;margin-bottom:.2rem" id="buy-ttl"></div>
+    <div style="font-size:.78rem;color:var(--muted);font-style:italic" id="buy-sub"></div>
+    <div class="buy-cols">
+      <div class="buy-col"><h4>🎧 Audiolibro</h4><div id="buy-audio"></div></div>
+      <div class="buy-col"><h4>📖 Libro físico</h4><div id="buy-fisico"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK MODAL -->
+<div class="overlay" id="mov" onclick="if(event.target===this)closeModal()">
+  <div class="mbox" onclick="event.stopPropagation()">
+    <button class="mclose" onclick="closeModal()">✕</button>
+    <div id="mcontent"></div>
+  </div>
+</div>
+
+<!-- Firebase compat — works in Squarespace without ES modules -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAsqhl4BecBRmaV7BmTUQDrtC2QEHynFho",
+  authDomain:"creadora-book-club.firebaseapp.com",
+  databaseURL:"https://creadora-book-club-default-rtdb.firebaseio.com",
+  projectId:"creadora-book-club",
+  storageBucket:"creadora-book-club.firebasestorage.app",
+  messagingSenderId:"887095769147",
+  appId:"1:887095769147:web:1919a889d1dcfb6148c41e"
+});
+const db = firebase.database();
+// compat wrappers so rest of code works unchanged
+const ref = (d, path) => d.ref(path);
+const set = (r, v) => r.set(v);
+const remove = (r) => r.remove();
+const push = (r, v) => r.push(v);
+const onValue = (r, cb) => r.on('value', snap => cb(snap));
+const runTransaction = (r, fn) => r.transaction(fn);
+
+// ── AFFILIATE LINKS ──
+const CA='mariareyes09-20', US='creadoraclu09-20';
+const aCA = q=>`https://www.amazon.ca/s?k=${encodeURIComponent(q)}&tag=${CA}`;
+const aUS = q=>`https://www.amazon.com/s?k=${encodeURIComponent(q)}&tag=${US}`;
+const aMX = t=>`https://www.buscalibre.com.mx/libros/search?q=${encodeURIComponent(t)}`;
+const aAud = q=>`https://www.audible.com/search?keywords=${encodeURIComponent(q)}`;
+const aAudCA = q=>`https://www.audible.ca/search?keywords=${encodeURIComponent(q)}`;
+const aStory = t=>`https://www.storytel.com/mx/search#query=${encodeURIComponent(t)}`;
+
+// ── BOOKS DATA — ORIGINAL ORDER (Firebase keys depend on these indices) ──
+// Each book has a stable 'id' field used as Firebase key instead of array index
+const B=[
+  {id:'wealth-warrior',t:'Wealth Warrior',a:'Linda Garcia',c:'Money Mindset',lat:1,lang:'eng',sub:'8 pasos para que las comunidades de color conquisten el mercado de valores',d:'Una guía práctica para que comunidades de color construyan riqueza generacional. Autora latina.',isbn:'9780593135952',q:'Wealth Warrior Linda Garcia'},
+  {id:'get-rich-lucky-bitch',t:'Get Rich, Lucky Bitch',a:'Denise DT',c:'Money Mindset',lat:0,lang:'eng',sub:'Libera tus bloqueos de dinero y vive una vida de primera clase',d:'Cambia tu relación con el dinero y elimina las creencias que te impiden prosperar.',isbn:'9781452168340',q:'Get Rich Lucky Bitch Denise Duffield Thomas'},
+  {id:'rich-as-fuck',t:'Rich as F*ck',a:'Amanda Frances',c:'Money Mindset',lat:0,lang:'eng',sub:'Más dinero del que sabes qué hacer con él',d:'Principios espirituales y prácticos para reclamar tu derecho a la riqueza.',isbn:'9781401962647',q:'Rich as Fuck Amanda Frances'},
+  {id:'badass-making-money',t:'You Are a Badass at Making Money',a:'Jen Sincero',c:'Money Mindset',lat:0,lang:'eng',sub:'Domina la mentalidad de la riqueza',d:'Guía directa y con humor para superar creencias limitantes y crear la abundancia que mereces.',isbn:'9780735222977',q:'You Are a Badass at Making Money Jen Sincero'},
+  {id:'financial-feminist',t:'Financial Feminist',a:'Tori Dunlap',c:'Money Mindset',lat:0,lang:'eng',sub:'Supera la mierda del patriarcado para dominar tu dinero y construir una vida que amas',d:'Cómo superar las barreras del patriarcado en las finanzas personales.',isbn:'9780063241794',q:'Financial Feminist Tori Dunlap'},
+  {id:'exito-inevitable',t:'Tu éxito es inevitable',a:'Maite Issa',c:'Manifesting',lat:1,lang:'esp',sub:'Cómo programar tu mente para atraer lo que deseas',d:'Reprograma tu mente y alinea tu energía para manifestar el éxito de manera inevitable.',isbn:'9786075279657',q:'Tu exito es inevitable Maite Issa'},
+  {id:'creando-nueva-historia',t:'Creando una nueva historia',a:'Misael Díaz',c:'Manifesting',lat:1,lang:'esp',sub:'El poder de reescribir tu realidad desde adentro',d:'Guía espiritual para reescribir las historias que te cuentas y crear una nueva realidad.',isbn:null,q:'Creando una nueva historia Misael Diaz'},
+  {id:'breaking-habit',t:'Breaking the Habit of Being Yourself',a:'Joe Dispenza',c:'Manifesting',lat:0,lang:'both',sub:'Cómo perder tu mente y crear una nueva',d:'Neurociencia cuántica y espiritualidad para cambiar tu mente y tu vida desde adentro.',isbn:'9781401938093',q:'Breaking the Habit of Being Yourself Joe Dispenza'},
+  {id:'a-new-earth',t:'A New Earth',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Cómo despertar al propósito de tu vida',d:'Despertar más allá del ego para vivir con presencia, propósito y paz interior.',isbn:'9780452289963',q:'A New Earth Eckhart Tolle'},
+  {id:'poder-del-ahora',t:'El poder del Ahora',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Una guía para la iluminación espiritual',d:'Vivir plenamente en el momento presente como camino hacia la paz y la iluminación.',isbn:'9786070736469',q:'El Poder del Ahora Eckhart Tolle'},
+  {id:'you-are-a-badass',t:'You Are a Badass',a:'Jen Sincero',c:'Finding Purpose',lat:0,lang:'both',sub:'Cómo dejar de dudar de tu grandeza y empezar a vivir una vida increíble',d:'Bestseller #1 NYT: deja de dudar de tu grandeza y empieza a vivir una vida extraordinaria.',isbn:'9780762447695',q:'You Are a Badass Jen Sincero'},
+  {id:'plenitud',t:'Plenitud',a:'Carolina Lasso',c:'Finding Purpose',lat:1,lang:'esp',sub:'Siete principios para una vida moderna plena, abundante y con propósito',d:'Siete principios para una vida plena y abundante. Autora latina.',isbn:'9786287597006',q:'Plenitud Carolina Lasso'},
+  {id:'la-magia-si-existe',t:'La Magia sí existe',a:'Carolina Angarita',c:'Finding Purpose',lat:1,lang:'esp',sub:'Un viaje hacia el poder de creer en lo invisible',d:'La magia está en nosotras: en nuestra intuición, nuestra fe y nuestra capacidad de crear.',isbn:null,q:'La Magia si existe Carolina Angarita'},
+  {id:'second-mountain',t:'The Second Mountain',a:'David Brooks',c:'Finding Purpose',lat:0,lang:'both',sub:'La búsqueda de una vida moral',d:'Pasar de una vida centrada en el yo a una de compromiso con los demás y el propósito.',isbn:'9780812993264',q:'The Second Mountain David Brooks'},
+  {id:'awakened-woman',t:'The Awakened Woman',a:'Tererai Trent',c:'Finding Purpose',lat:0,lang:'eng',sub:'Recordando y reencendiendo nuestros sueños sagrados',d:'Favorita de Oprah. Guía a las mujeres a recordar y reavivar sus sueños sagrados.',isbn:'9781501130557',q:'The Awakened Woman Tererai Trent'},
+  {id:'be-ready-luck',t:'Be Ready When the Luck Happens',a:'Ina Garten',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una memoria',d:'Memorias de Ina Garten: cómo siguió su intuición y construyó la vida de sus sueños.',isbn:'9780593798010',q:'Be Ready When the Luck Happens Ina Garten'},
+  {id:'let-them-theory',t:'The Let Them Theory',a:'Mel Robbins',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una teoría que cambiará la forma en que te ves a ti misma y a los demás',d:'Deja de controlar a los demás y enfócate en lo que tú puedes transformar.',isbn:'9781401977276',q:'The Let Them Theory Mel Robbins'},
+  {id:'finding-me',t:'Finding Me',a:'Viola Davis',c:'Finding Purpose',lat:0,lang:'both',sub:'Una memoria',d:'Memorias de Viola Davis: supervivencia, sanación y encontrarse a sí misma.',isbn:'9780062937339',q:'Finding Me Viola Davis'},
+  {id:'self-made',t:'Self Made',a:'Nely Galán',c:'Female Entrepreneurship',lat:1,lang:'both',sub:'Empoderada, autosuficiente y rica en todos los sentidos',d:'La primera productora latina de Hollywood y su fórmula para la independencia financiera.',isbn:'9780812987799',q:'Self Made Nely Galan'},
+  {id:'leap-frog',t:'Leap Frog',a:'Nathalie Molina Niño',c:'Female Entrepreneurship',lat:1,lang:'eng',sub:'La nueva revolución para mujeres emprendedoras',d:'Estrategias para mujeres emprendedoras que quieren avanzar más rápido y crear impacto.',isbn:'9780593087602',q:'Leap Frog Nathalie Molina Nino'},
+  {id:'lean-in',t:'Lean In',a:'Sheryl Sandberg',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Las mujeres, el trabajo y la voluntad de liderar',d:'El libro que provocó conversaciones globales sobre liderazgo femenino.',isbn:'9780385349949',q:'Lean In Sheryl Sandberg'},
+  {id:'storybrand',t:'Building a StoryBrand',a:'Donald Miller',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Clarifica tu mensaje para que los clientes te escuchen',d:'Clarifica tu mensaje de marca para que tus clientes escuchen, conecten y compren.',isbn:'9780718033323',q:'Building a StoryBrand Donald Miller'},
+  {id:'rise-sister-rise',t:'Rise Sister Rise',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para entrar en la cadencia de tu vida',d:'Llamada al despertar del liderazgo femenino. Reconéctate con tu poder ancestral.',isbn:'9781401949877',q:'Rise Sister Rise Rebecca Campbell'},
+  {id:'light-new-black',t:'Light Is the New Black',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para responder al llamado de tu alma y trabajar tu luz',d:'Guía para mujeres con el llamado de ser una fuerza de luz en el mundo.',isbn:'9781401948818',q:'Light Is the New Black Rebecca Campbell'},
+  {id:'i-am-diosa',t:'I Am Diosa',a:'Christine Gutierrez',c:'Women Rising',lat:1,lang:'eng',sub:'Un viaje para sanar profundo, amarte y regresar a casa en tu alma',d:'Viaje de sanación y amor propio para mujeres latinas listas para reclamar su poder.',isbn:'9781401956424',q:'I Am Diosa Christine Gutierrez'},
+  {id:'red-tent',t:'The Red Tent',a:'Anita Diamant',c:'Women Rising',lat:0,lang:'both',sub:'Una novela',d:'Tributo a la hermandad femenina y la sabiduría de las mujeres a través del tiempo.',isbn:'9780312195519',q:'The Red Tent Anita Diamant'},
+  {id:'lighter',t:'Lighter',a:'Yung Pueblo',c:'Women Rising',lat:1,lang:'eng',sub:'Libérate del pasado, conecta con el presente y expande tu futuro',d:'Soltar el pasado y moverte hacia una versión más ligera y auténtica de ti.',isbn:'9780593421482',q:'Lighter Yung Pueblo'},
+  {id:'it-didnt-start-with-you',t:"It Didn't Start with You",a:'Mark Wolynn',c:'Healing',lat:0,lang:'both',sub:'Cómo el trauma familiar heredado da forma a quiénes somos y cómo romper el ciclo',d:'Comprende y sana el trauma heredado: miedos y patrones que vienen de tus ancestros.',isbn:'9780143128489',q:"It Didn't Start with You Mark Wolynn"},
+  {id:'break-the-cycle',t:'Break the Cycle',a:'Mariel Buqué',c:'Healing',lat:1,lang:'both',sub:'Una guía para sanar el trauma intergeneracional',d:'Guía para sanar el trauma intergeneracional escrita por una psicóloga latina.',isbn:'9780593473115',q:'Break the Cycle Mariel Buque'},
+  {id:'sacred-medicine',t:'Sacred Medicine',a:'Lissa Rankin',c:'Health',lat:0,lang:'eng',sub:'La búsqueda de una doctora para desentrañar los misterios de la sanación',d:'Explora los misterios de la sanación integrando medicina convencional con lo espiritual.',isbn:'9781401958756',q:'Sacred Medicine Lissa Rankin'},
+  {id:'big-magic',t:'Big Magic',a:'Elizabeth Gilbert',c:'Spark Creativity',lat:0,lang:'both',sub:'Vida creativa más allá del miedo',d:'Creatividad más allá del miedo. Date permiso de crear sin condiciones.',isbn:'9781594634710',q:'Big Magic Elizabeth Gilbert'},
+  {id:'camino-artista',t:'El Camino del Artista',a:'Julia Cameron',c:'Spark Creativity',lat:0,lang:'both',sub:'Un curso de descubrimiento y redescubrimiento de tu yo creativo',d:'12 semanas para recuperar y cultivar tu artista interior.',isbn:'9788425346279',q:'El Camino del Artista Julia Cameron'},
+  {id:'hello-fears',t:'Hello Fears',a:'Michelle Poler',c:'Spark Creativity',lat:1,lang:'both',sub:'Prospera del otro lado de tu zona de confort',d:'100 miedos en 100 días. El miedo puede ser tu mayor aliado.',isbn:'9781492693321',q:'Hello Fears Michelle Poler'},
+  {id:'atomic-habits',t:'Atomic Habits',a:'James Clear',c:'Lifestyle',lat:0,lang:'both',sub:'Cambios pequeños, resultados extraordinarios',d:'Sistema probado: pequeños cambios de comportamiento generan resultados extraordinarios.',isbn:'9780735211292',q:'Atomic Habits James Clear'},
+  {id:'bittersweet',t:'Bittersweet',a:'Susan Cain',c:'Lifestyle',lat:0,lang:'eng',sub:'Cómo la tristeza y el anhelo nos hacen completos',d:'La melancolía y el dolor como fuentes de creatividad y profundidad humana.',isbn:'9780451499783',q:'Bittersweet Susan Cain'},
+  {id:'heart-of-a-woman',t:'The Heart of a Woman',a:'Maya Angelou',c:'Lifestyle',lat:0,lang:'eng',sub:'Una autobiografía',d:'Memorias de Maya Angelou: arte, amor y la lucha por la libertad.',isbn:'9780375500466',q:'The Heart of a Woman Maya Angelou'},
+  {id:'braiding-sweetgrass',t:'Braiding Sweetgrass',a:'Robin Wall Kimmerer',c:'Nature Wisdom',lat:0,lang:'both',sub:'Sabiduría indígena, conocimiento científico y las enseñanzas de las plantas',d:'Ciencia botánica y sabiduría indígena: los humanos y las plantas como familia.',isbn:'9781571313560',q:'Braiding Sweetgrass Robin Wall Kimmerer'},
+  {id:'queens-code',t:"The Queen's Code",a:'Alison Armstrong',c:'Relationships',lat:0,lang:'eng',sub:'Cómo entender a los hombres y transformar tus relaciones',d:'Patrones que destruyen las relaciones y cómo transformarlos para conectar de verdad.',isbn:'9780978887315',q:"The Queen's Code Alison Armstrong"},
+  {id:'womens-circle',t:"The Women's Circle",a:'Anoushka Florence',c:'Relationships',lat:0,lang:'eng',sub:'Cómo crear espacios sagrados de conexión femenina',d:'Guía para crear círculos de mujeres: espacios sagrados de conexión y sanación.',isbn:'9781743797488',q:"The Women's Circle Anoushka Florence"},
+  {id:'libro-tibetano',t:'El libro Tibetano de la Vida y la Muerte',a:'Sogyal Rinpoche',c:'Spirituality',lat:0,lang:'both',sub:'Una nueva comprensión de la vida, la muerte y el más allá',d:'Sabiduría budista milenaria sobre la muerte y el universo. Obra maestra espiritual.',isbn:'9780062508348',q:'El libro Tibetano de la Vida y la Muerte Sogyal Rinpoche'},
+  {id:'rites-of-passage',t:'The Rites of Passage',a:'Arnold Van Gennep',c:'Spirituality',lat:0,lang:'eng',sub:'Estudio clásico de los rituales de transición en las culturas del mundo',d:'Estudio clásico sobre los rituales de transición en las culturas del mundo.',isbn:'9780226848518',q:'The Rites of Passage Arnold Van Gennep'},
+  {id:'map-of-consciousness',t:'The Map of Consciousness Explained',a:'David Hawkins',c:'Spirituality',lat:0,lang:'eng',sub:'Una guía práctica para que tu conciencia evolucione',d:'Guía al mapa de la consciencia: eleva tu vibración y comprende la experiencia humana.',isbn:'9781401959647',q:'The Map of Consciousness Explained David Hawkins'},
+];
+
+// Sort books alphabetically for display
+const B_SORTED=[...B].sort((a,b)=>a.t.localeCompare(b.t,'es'));
+
+// ── COVER FALLBACK HELPER ──
+function getCoverUrl(b, i, size){
+  const ov=_overrides;
+  if(ov[`cover_${b.id}`]) return ov[`cover_${b.id}`];
+  if(!b.isbn) return null;
+  const s=size||'L';
+  return `https://covers.openlibrary.org/b/isbn/${b.isbn}-${s}.jpg`;
+}
+function coverFallbacks(b, i, size){
+  const ov=_overrides;
+  if(ov[`cover_${b.id}`]) return [ov[`cover_${b.id}`]];
+  if(!b.isbn) return [];
+  const s=size||'L';
+  return [
+    `https://covers.openlibrary.org/b/isbn/${b.isbn}-${s}.jpg`,
+    `https://images.penguinrandomhouse.com/cover/${b.isbn}`,
+    `https://books.google.com/books/content?vid=ISBN${b.isbn}&printsec=frontcover&img=1&zoom=1`,
+  ];
+}
+function coverImgTag(b, i, cls, style, size){
+  const srcs=coverFallbacks(b,i,size);
+  if(!srcs.length) return '';
+  const rest=srcs.slice(1);
+  const nextSrc=rest.length?`var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`:``; 
+  const errHandler=rest.length
+    ? `var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`
+    : `this.style.display='none';`;
+  // onload: if Open Library returns a tiny placeholder image (w<10), skip to next source
+  const loadHandler=`if(this.naturalWidth<10){${nextSrc||"this.style.display='none';"}}`;
+  const dataAttr=rest.length?` data-srcs='${JSON.stringify(rest)}'`:'';
+  return `<img src="${srcs[0]}" alt="${b.t}"${cls?` class="${cls}"`:''}${style?` style="${style}"`:''}${dataAttr} onload="${loadHandler}" onerror="${errHandler}">`;
+}
+
+
+// category colors
+const CC={
+  'Money Mindset':    ['#e8f2ee','#4e7060'],
+  'Manifesting':      ['#f0ecf8','#7a6fa0'],
+  'Finding Purpose':  ['#e8f2ee','#4e7060'],
+  'Female Entrepreneurship':['#fdf0ed','#b05848'],
+  'Women Rising':     ['#fdf0f5','#a0507a'],
+  'Healing':          ['#edf5f0','#3a6e50'],
+  'Health':           ['#e8f5f0','#2e6e58'],
+  'Spark Creativity': ['#fff4e6','#8a5a20'],
+  'Relationships':    ['#f8ecf8','#8a4a8a'],
+  'Poesia':           ['#fdf0f8','#8a3a7a'],
+  'Liderazgo':        ['#edf0f8','#3a4a8a'],
+  'Biografia':        ['#f5f0e8','#6a5a3a'],
+  'Tecnologia':       ['#edf5f8','#2a6a7a'],
+};
+const CAT_ES={
+  'Money Mindset':'Dinero',
+  'Manifesting':'Manifestación',
+  'Finding Purpose':'Propósito',
+  'Female Entrepreneurship':'Emprendimiento',
+  'Women Rising':'Poder femenino',
+  'Healing':'Espiritualidad',
+  'Health':'Salud',
+  'Spark Creativity':'Creatividad y Habilidades',
+  'Relationships':'Relaciones',
+  'Poesia':'Poesía',
+  'Liderazgo':'Liderazgo',
+  'Biografia':'Biografía',
+  'Tecnologia':'Tecnología',
+};
+const CAT_KEYS=Object.keys(CAT_ES);
+function catTag(c){const col=CC[c]||['#f0ecf8','#7a6fa0'];return`<span class="ctag" style="background:${col[0]};color:${col[1]}">${CAT_ES[c]||c}</span>`;}
+
+// session votes (prevents double-vote per session)
+const SV  = JSON.parse(sessionStorage.getItem('cbcV')||'{}');
+const SVR = JSON.parse(sessionStorage.getItem('cbcVR')||'{}');
+
+// cached Firebase data
+let _votes={}, _votesRec={}, _recs=[], _overrides={};
+let curCat='all', curPage=0;
+const PAGE_SIZE=12;
+const ADMIN = new URLSearchParams(location.search).get('admin')==='creadora2026';
+
+// ── FIREBASE LISTENERS ──
+onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{};    renderRanking(); renderBooks(); });
+onValue(ref(db,'votesRec'),s=>{ _votesRec=s.val()||{}; renderRecBooks(); });
+onValue(ref(db,'recs'),    s=>{
+  _recs = s.val() ? Object.entries(s.val()).map(([k,v])=>({...v,_key:k})).sort((a,b)=>(b.ts||0)-(a.ts||0)) : [];
+  renderRecBooks(); 
+  renderCounter();
+  if(ADMIN) renderAdminCommunityBooks();
+  console.log('Recs loaded:', _recs.length);
+});
+// admin overrides: current book, read status, custom covers
+onValue(ref(db,'overrides'), s=>{
+  _overrides = s.val()||{};
+  renderBooks();
+  renderRanking(); // re-render top5 with updated covers
+  renderReadCarousel();
+  renderBookOfMonth();
+  if(ADMIN) renderAdminPanel();
+});
+
+// ── LIBRO DEL MES ──
+function renderBookOfMonth(){
+  const cur = _overrides.currentBook;
+  const ldmTitle  = document.getElementById('ldm-title');
+  const ldmAuthor = document.getElementById('ldm-author');
+  const ldmDesc   = document.getElementById('ldm-desc');
+  const ldmDate   = document.getElementById('ldm-date');
+  const ldmImg    = document.getElementById('ldm-img-wrap');
+  if(cur!==undefined && cur!==null && B[cur]){
+    const b=B[cur];
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
+    ldmTitle.textContent=b.t;
+    ldmAuthor.textContent=b.a;
+    ldmDesc.textContent=b.d;
+    ldmDate.textContent=_overrides.currentBookDate||'';
+    ldmImg.innerHTML=cv?`<img src="${cv}" alt="${b.t}" onerror="this.parentNode.innerHTML='<span style=font-size:2rem>📖</span>'">`:'<span style="font-size:2rem">📖</span>';
+  } else {
+    ldmTitle.textContent='Próximamente';
+    ldmAuthor.textContent='';
+    ldmDesc.textContent='El libro del mes será anunciado en nuestro grupo de WhatsApp.';
+    ldmDate.textContent='';
+    ldmImg.innerHTML='<span style="font-size:2rem">📖</span>';
+  }
+}
+
+// ── RANKING ──
+function renderRanking(){
+  const el=document.getElementById('ranking');
+  if(!el) return;
+  const ranked=Object.entries(_votes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
+  el.innerHTML=ranked.map(([idx,count])=>{
+    const b=B[parseInt(idx)]; if(!b) return '';
+        const imgTag=coverImgTag(b,b.id,'rk-thumb','','M');
+    const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
+    return'<div class="rk-card" onclick="openModal('+idx+')" title="'+b.t+'">'
+      +'<div class="rk-wrap" style="position:relative">'+imgTag+ph
+      +'<div class="rk-count-badge">'+count+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+// ── BILINGUAL SEARCH ──
+function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+const LM={'habits':'hábitos','magic':'magia','power':'poder','now':'ahora','earth':'tierra','woman':'mujer','women':'mujeres','money':'dinero','rich':'rico','light':'luz','artist':'artista','fear':'miedo','medicine':'medicina','circle':'círculo','cycle':'ciclo','mountain':'montaña','heart':'corazón','consciousness':'consciencia','lighter':'ligero','feminist':'feminista'};
+function expandSearch(q){
+  const terms=[norm(q)];
+  norm(q).split(' ').forEach(w=>{
+    if(LM[w]) terms.push(norm(LM[w]));
+    Object.entries(LM).forEach(([en,es])=>{ if(norm(es).includes(w)) terms.push(en); });
+  });
+  return terms;
+}
+function bookMatches(b,terms){
+  const h=norm(b.t)+' '+norm(b.a)+' '+norm(b.c)+' '+norm(b.sub||'');
+  return terms.some(t=>h.includes(t));
+}
+
+// ── BOOKS GRID ──
+function renderBooks(votesData){
+  if(votesData!==undefined) _votes=votesData;
+  const q=document.getElementById('srch')?.value.trim()||'';
+  const g=document.getElementById('grid'); if(!g) return;
+  const terms=q.length>0?expandSearch(q):null;
+  const f=B_SORTED.filter(b=>!_overrides['hidden_'+b.id]&&(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
+  if(!f.length){
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
+    document.getElementById('pagination').innerHTML='';
+    return;
+  }
+  const totalPages=Math.ceil(f.length/PAGE_SIZE);
+  if(curPage>=totalPages) curPage=0;
+  const pageBooks=f.slice(curPage*PAGE_SIZE, (curPage+1)*PAGE_SIZE);
+
+  g.innerHTML=pageBooks.map(b=>{
+    const i=B.indexOf(b);
+    const isV=!!SV[i], v=_votes[i]||0;
+    const ov=_overrides; const isRead=ov[`read_${b.id}`]; const isCurrent=ov.currentBook==i;
+    const bCat=ov[`cat_${b.id}`]||b.c; // apply category override if set
+    const adminCv=ov[`cover_${b.id}`];
+    const covers=adminCv?[adminCv]:b.isbn?[
+      `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`,
+      `https://books.google.com/books/content?vid=ISBN${b.isbn}&printsec=frontcover&img=1&zoom=1`,
+    ]:[];
+    const cv=covers[0]||null;
+    const imgSrcs=covers.length>1?`data-srcs='${JSON.stringify(covers.slice(1))}'`:'';
+    const img=cv?`<img class="cimg" src="${cv}" alt="${b.t}" loading="lazy" ${imgSrcs} onerror="var srcs=JSON.parse(this.dataset.srcs||'[]');if(srcs.length){this.src=srcs[0];this.dataset.srcs=JSON.stringify(srcs.slice(1));}else{this.style.display='none';var p=this.parentNode.querySelector('.cph');if(p)p.style.removeProperty('display');}">`:'';
+    const ph=`<div class="cph" ${cv?'style="display:none"':''}><div class="cph-t">${b.t}</div><div class="cph-a">${b.a}</div></div>`;
+    const badge=isCurrent?`<div class="cb-pick">📖 Leyendo</div>`:isRead?`<div class="cb-read">✓ ${isRead}</div>`:'';
+    const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
+    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
+    const langLabel=ov[`lang_${b.id}`]||b.lang||'';
+    const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
+    const vSect=isRead
+      ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
+      :'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>';
+    return '<div class="card">'
+      +'<div class="cimgw" onclick="openModal('+i+')">'+(img)+(ph)+(badge)+(divLabel?'<div class="cb-lat" style="background:var(--sal-dk)">'+divLabel+'</div>':'')+'</div>'
+      +'<div class="cbody">'+catTag(bCat)
+      +'<div class="ctitle" onclick="openModal('+i+')">'+(b.t)+'</div>'
+      +'<div class="cauthor">'+(b.a)+'</div>'
+      +(langBadge?'<div style="font-size:.65rem;font-weight:500;color:var(--muted);margin-bottom:.2rem">'+langBadge+'</div>':'')
+      +'<div class="csub">'+(b.sub)+'</div>'
+      +'<button class="cget" onclick="openBuy('+i+',event)">Consíguelo aquí →</button>'
+      +(vSect)
+      +'</div></div>';
+  }).join('');
+
+  // Pagination controls
+  const pg=document.getElementById('pagination');
+  if(totalPages<=1){pg.innerHTML='';return;}
+  let html='';
+  // prev button
+  html+=`<button onclick="goPage(${curPage-1})" ${curPage===0?'disabled':''} style="background:none;border:1px solid var(--bdr);border-radius:100px;padding:.4rem 1rem;font-family:var(--fb);font-size:.8rem;cursor:pointer;color:var(--muted);transition:all .15s" ${curPage===0?'':'onmouseover="this.style.borderColor=\'var(--lila-dk)\';this.style.color=\'var(--lila-dk)\'" onmouseout="this.style.borderColor=\'var(--bdr)\';this.style.color=\'var(--muted)\'"'}>← Anterior</button>`;
+  // page numbers
+  for(let p=0;p<totalPages;p++){
+    const active=p===curPage;
+    html+=`<button onclick="goPage(${p})" style="width:32px;height:32px;border-radius:50%;border:${active?'none':'1px solid var(--bdr)'};background:${active?'var(--lila-dk)':'none'};color:${active?'#fff':'var(--muted)'};font-family:var(--fb);font-size:.8rem;cursor:pointer">${p+1}</button>`;
+  }
+  // next button
+  html+=`<button onclick="goPage(${curPage+1})" ${curPage===totalPages-1?'disabled':''} style="background:none;border:1px solid var(--bdr);border-radius:100px;padding:.4rem 1rem;font-family:var(--fb);font-size:.8rem;cursor:pointer;color:var(--muted);transition:all .15s" ${curPage===totalPages-1?'':'onmouseover="this.style.borderColor=\'var(--lila-dk)\';this.style.color=\'var(--lila-dk)\'" onmouseout="this.style.borderColor=\'var(--bdr)\';this.style.color=\'var(--muted)\'"'}>Siguiente →</button>`;
+  // page info
+  html+=`<span style="font-size:.75rem;color:var(--light)">${f.length} libros · pág. ${curPage+1} de ${totalPages}</span>`;
+  pg.innerHTML=html;
+}
+
+function goPage(p){curPage=p;renderBooks();document.getElementById('grid').scrollIntoView({behavior:'smooth',block:'start'});}
+window.goPage=goPage;
+
+function setCat(cat,btn){curCat=cat;curPage=0;document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderBooks();}
+window.setCat=setCat;
+
+// ── VOTE ──
+function doVote(i,btn){
+  const vRef=ref(db,`votes/${b.id}`);
+  if(SV[i]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SV[i];}
+  else{runTransaction(vRef,c=>(c||0)+1);SV[i]=true;}
+  sessionStorage.setItem('cbcV',JSON.stringify(SV));
+}
+window.doVote=doVote;
+
+// ── SEARCH DROPDOWN ──
+function onSearch(){
+  curPage=0;
+  renderBooks();
+  const q=document.getElementById('srch').value.trim();
+  const drop=document.getElementById('srch-drop');
+  if(q.length<2){drop.style.display='none';return;}
+  const terms=expandSearch(q);
+  const matches=B_SORTED.filter(b=>bookMatches(b,terms)).slice(0,8);
+  if(!matches.length){drop.innerHTML='<div style="padding:.75rem 1rem;font-size:.8rem;color:var(--muted)">No encontramos ese libro — ¡agrégalo!</div>';drop.style.display='block';return;}
+  drop.innerHTML=matches.map(b=>{
+    const i=B.indexOf(b);
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
+    const thumb=cv?`<img src="${cv}" style="width:36px;height:54px;object-fit:cover;border-radius:5px;flex-shrink:0" onerror="this.style.display='none'">`:`<div style="width:36px;height:54px;background:var(--lila-lt);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📖</div>`;
+    return`<div onmousedown="selectBook(${i})" style="display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;cursor:pointer;border-bottom:1px solid var(--bdr)" onmouseover="this.style.background='var(--beige)'" onmouseout="this.style.background=''">${thumb}<div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.t}</div><div style="font-size:.72rem;color:var(--muted)">${b.a}</div></div></div>`;
+  }).join('');
+  drop.style.display='block';
+}
+function selectBook(i){openModal(i);document.getElementById('srch').value='';hideDropdown();renderBooks();}
+function hideDropdown(){const d=document.getElementById('srch-drop');if(d)d.style.display='none';}
+window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=selectBook;
+
+// ── BUY POPUP ──
+function openBuy(i,e){
+  if(e) e.stopPropagation();
+  const b=typeof i==='object'?i:B[i];
+  const q=b.q||b.t;
+  document.getElementById('buy-ttl').textContent=b.t;
+  document.getElementById('buy-sub').textContent=b.a||'';
+  const mk=arr=>arr.map(x=>`<a class="buy-lnk" href="${x.u}" target="_blank"><span>${x.f}</span><span style="flex:1">${x.l}</span><span class="arr">↗</span></a>`).join('');
+  document.getElementById('buy-audio').innerHTML=mk([{f:'🇺🇸',l:'Audible USA',u:aAud(q)},{f:'🍁',l:'Audible Canadá',u:aAudCA(q)},{f:'🇲🇽',l:'Storytel México',u:aStory(b.t)}]);
+  document.getElementById('buy-fisico').innerHTML=mk([{f:'🍁',l:'Amazon Canadá',u:aCA(q)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q)},{f:'🇲🇽',l:'Buscalibre México',u:aMX(b.t)}]);
+  document.getElementById('buy-ov').classList.add('open');
+}
+function closeBuy(){document.getElementById('buy-ov').classList.remove('open');}
+window.openBuy=openBuy; window.closeBuy=closeBuy;
+
+// ── BOOK MODAL ──
+function openModal(i){
+  const b=B[i], isV=!!SV[i], v=_votes[i]||0;
+  const ov=_overrides, isRead=ov[`read_${b.id}`], isCurrent=ov.currentBook==i;
+  const cv=ov[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
+  const imgH=coverImgTag(b,i,'','width:100%;max-height:260px;object-fit:cover;border-radius:var(--rl) var(--rl) 0 0;display:block','L')||'<div class="mph">📖</div>';
+  const voteBtn=isRead
+    ?'<div style="text-align:center;font-size:.78rem;color:var(--muted);font-style:italic;padding:.5rem 0">✓ Ya lo leímos juntas en '+isRead+'</div>'
+    :'<button id="mbv" class="vbtn'+(isV?' voted':'')+'" style="width:100%;padding:.6rem;font-size:.85rem;margin-bottom:.5rem" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar por este libro')+'</button>';
+  const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
+  const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Autora Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Autora Creadora ✦':'';
+  document.getElementById('mcontent').innerHTML=imgH
+    +'<div class="mbody">'
+    +'<div class="mbadges">'+catTag(b.c)+(divLabel?'<span style="font-size:.62rem;font-weight:500;color:var(--sage-dk);background:var(--sage-lt);padding:2px 7px;border-radius:100px">'+divLabel+'</span>':'')+(isCurrent?'<span style="font-size:.62rem;font-weight:500;color:var(--lila-dk);background:var(--lila-lt);padding:2px 7px;border-radius:100px">📖 Leyendo</span>':'')+'</div>'
+    +'<div class="mttl">'+b.t+'</div>'
+    +'<div class="maut">'+b.a+'</div>'
+    +'<div class="msub">'+b.sub+'</div>'
+    +'<div class="mdesc">'+b.d+'</div>'
+    +voteBtn
+    +'<button class="mbtn-get" onclick="closeModal();openBuy('+i+',event)">Consíguelo aquí →</button>'
+    +'<div class="comments-box">'
+    +'<div style="font-family:var(--ft);font-size:1rem;font-weight:400;margin-bottom:.75rem">💬 Comentarios</div>'
+    +'<div class="cm-list" id="cm-list-'+i+'"><div style="font-size:.78rem;color:var(--light)">Cargando...</div></div>'
+    +'<div class="cm-form">'
+    +'<input id="cm-n-'+i+'" type="text" placeholder="Tu nombre">'
+    +'<textarea id="cm-t-'+i+'" rows="2" placeholder="Escribe tu reseña o comentario..."></textarea>'
+    +'<button onclick="postComment(\'book-'+i+'\',document.getElementById(\'cm-n-'+i+'\'),document.getElementById(\'cm-t-'+i+'\'))">Publicar comentario</button>'
+    +'</div></div></div>';
+  document.getElementById('mov').classList.add('open');
+  document.body.style.overflow='hidden';
+  listenComments(`book-${i}`, document.getElementById(`cm-list-${i}`));
+}
+function closeModal(){document.getElementById('mov').classList.remove('open');document.body.style.overflow='';}
+window.openModal=openModal; window.closeModal=closeModal;
+
+// ── COMMENTS ──
+const _cmListeners={};
+function listenComments(key,container){
+  if(_cmListeners[key]) return; // already listening
+  _cmListeners[key]=true;
+  onValue(ref(db,`comments/${key}`),snap=>{
+    if(!container) return;
+    const data=snap.val()||{};
+    const entries=Object.entries(data).sort((a,b)=>a[1].ts-b[1].ts);
+    container.innerHTML=entries.length?entries.map(([k,c])=>
+      '<div class="cm-item">'
+      +'<div class="cm-av">'+(c.ini||'?')+'</div>'
+      +'<div style="flex:1">'
+      +'<span style="font-size:.78rem;font-weight:500">'+c.name+'</span>'
+      +'<span style="font-size:.7rem;color:var(--light);margin-left:.4rem">'+new Date(c.ts).toLocaleDateString('es-MX',{day:'numeric',month:'short'})+'</span>'
+      +'<div style="font-size:.82rem;color:var(--muted);margin-top:.15rem">'+c.text+'</div>'
+      +'</div>'
+      +(ADMIN?'<button onclick="delComment(\''+key+'\',\''+k+'\')" style="background:none;border:none;color:var(--sal-dk);cursor:pointer;font-size:.8rem" title="Eliminar">🗑</button>':'')
+      +'</div>').join('')
+    :'<div style="font-size:.78rem;color:var(--light);padding:.5rem 0">Sé la primera en comentar ✦</div>';
+  });
+}
+function postComment(key,nameEl,textEl){
+  const name=nameEl.value.trim(), text=textEl.value.trim();
+  if(!name||!text){alert('Por favor escribe tu nombre y comentario.');return;}
+  push(ref(db,`comments/${key}`),{name,text,ini:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),ts:Date.now()});
+  nameEl.value=''; textEl.value='';
+}
+function delComment(key,k){if(confirm('¿Eliminar este comentario?'))remove(ref(db,`comments/${key}/${k}`));}
+window.postComment=postComment; window.delComment=delComment;
+
+// ── ADD BOOK FORM ──
+function showAddForm(){
+  document.getElementById('add-overlay').classList.add('open');
+  document.getElementById('add-form-inner').style.display='block';
+  document.getElementById('add-form-ok').style.display='none';
+  ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
+
+  const saved=JSON.parse(localStorage.getItem('cbcUser')||'{}');
+  const greeting=document.getElementById('form-greeting');
+  const nameRow=document.getElementById('form-name-row');
+  if(saved.n && saved.e){
+    // returning user — hide name/email, show warm greeting
+    document.getElementById('rn').value=saved.n;
+    document.getElementById('re').value=saved.e;
+    nameRow.style.display='none';
+    const firstName=saved.n.split(' ')[0];
+    if(greeting) greeting.innerHTML=`<div style="font-family:var(--ft);font-size:1.15rem;font-weight:400;color:var(--text);margin-bottom:1rem">Hola <em style="color:var(--lila-dk)">${firstName}</em>, ¿qué libro quieres agregar?</div>`;
+  } else {
+    // first time — show full form with subtle hint
+    nameRow.style.display='block';
+    document.getElementById('rn').value='';
+    document.getElementById('re').value='';
+    if(greeting) greeting.innerHTML='';
+  }
+}
+
+function closeAddForm(){document.getElementById('add-overlay').classList.remove('open');}
+
+function resetAddForm(){
+  ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
+  document.getElementById('add-form-inner').style.display='block';
+  document.getElementById('add-form-ok').style.display='none';
+  showAddForm();
+}
+
+function submitRec(){
+  const t=document.getElementById('rt').value.trim();
+  const a=document.getElementById('ra').value.trim();
+  const n=document.getElementById('rn').value.trim();
+  const e=document.getElementById('re').value.trim();
+  if(!t){alert('Por favor ingresa el título del libro.');return;}
+  if(!n){alert('Por favor ingresa tu nombre y apellido.');return;}
+  if(!e||!e.includes('@')){alert('Por favor ingresa un email válido.');return;}
+  // save user to localStorage for next time
+  localStorage.setItem('cbcUser', JSON.stringify({n,e}));
+  push(ref(db,'recs'),{t,a,n,e,c:document.getElementById('rcat').value||'',ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),ts:Date.now()});
+  document.getElementById('add-form-inner').style.display='none';
+  document.getElementById('add-form-ok').style.display='block';
+}
+window.showAddForm=showAddForm; window.closeAddForm=closeAddForm;
+window.resetAddForm=resetAddForm; window.submitRec=submitRec;
+
+// ── COMMUNITY BOOKS ──
+function renderRecBooks(){
+  const section=document.getElementById('rec-section');
+  const list=document.getElementById('rec-list');
+  if(!list||!section) return;
+  if(!_recs.length){section.style.display='none';return;}
+  section.style.display='block';
+  list.innerHTML=_recs.map(r=>{
+    const isV=!!SVR[r._key], v=_votesRec[r._key]||0;
+    return '<div class="card">'
+      +'<div class="cimgw" style="cursor:default">'
+      +'<div class="cph"><div class="cph-t">'+r.t+'</div><div class="cph-a">'+(r.a||'')+'</div></div>'
+      +'</div>'
+      +'<div class="cbody">'
+      +'<div class="ctitle">'+r.t+'</div>'
+      +(r.a?'<div class="cauthor">'+r.a+'</div>':'')
+      +'<div class="csub" style="font-style:italic">Recomendado por la comunidad</div>'
+      +'<button class="cget" onclick="openBuyRec(\''+encodeURIComponent(r.t)+'\',\''+encodeURIComponent(r.a||'')+'\',event)">Consíguelo aquí →</button>'
+      +'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="voteRec(\''+r._key+'\',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function voteRec(key,btn){
+  const vRef=ref(db,`votesRec/${key}`);
+  if(SVR[key]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SVR[key];}
+  else{runTransaction(vRef,c=>(c||0)+1);SVR[key]=true;}
+  sessionStorage.setItem('cbcVR',JSON.stringify(SVR));
+}
+function openBuyRec(encT,encA,e){
+  if(e) e.stopPropagation();
+  const t=decodeURIComponent(encT), a=decodeURIComponent(encA);
+  document.getElementById('buy-ttl').textContent=t;
+  document.getElementById('buy-sub').textContent=a||'Recomendado por la comunidad';
+  const mk=arr=>arr.map(x=>`<a class="buy-lnk" href="${x.u}" target="_blank"><span>${x.f}</span><span style="flex:1">${x.l}</span><span class="arr">↗</span></a>`).join('');
+  document.getElementById('buy-audio').innerHTML=mk([{f:'🇺🇸',l:'Audible USA',u:aAud(t)},{f:'🍁',l:'Audible Canadá',u:aAudCA(t)},{f:'🇲🇽',l:'Storytel México',u:aStory(t)}]);
+  document.getElementById('buy-fisico').innerHTML=mk([{f:'🍁',l:'Amazon Canadá',u:aCA(t)},{f:'🇺🇸',l:'Amazon USA',u:aUS(t)},{f:'🇲🇽',l:'Buscalibre México',u:aMX(t)}]);
+  document.getElementById('buy-ov').classList.add('open');
+}
+window.voteRec=voteRec; window.openBuyRec=openBuyRec;
+function renderCounter(){
+  const el=document.getElementById('counter-num');
+  if(el) el.textContent=B.length+_recs.length;
+}
+
+// ── READ CAROUSEL ──
+function renderReadCarousel(){
+  const el=document.getElementById('read-carousel'); if(!el) return;
+  const read=B.map((b,i)=>({b,i})).filter(({i})=>_overrides[`read_${b.id}`]);
+  if(!read.length){el.innerHTML='<div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>';return;}
+  el.innerHTML=read.map(({b,i})=>{
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
+        const img=coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
+    return`<div class="rc-card" onclick="openModal(${i})">${img}
+      <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
+      <div style="font-size:.65rem;color:var(--muted)">${b.a}</div>
+      <div style="font-size:.62rem;color:var(--sage-dk);background:var(--sage-lt);padding:1px 6px;border-radius:100px;display:inline-block;margin-top:.35rem">✓ ${_overrides[`read_${b.id}`]}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── ADMIN PANEL ──
+function renderAdminPanel(){
+  if(!ADMIN) return;
+  let panel=document.getElementById('admin-panel');
+  if(!panel){
+    panel=document.createElement('div');
+    panel.id='admin-panel';
+    document.body.appendChild(panel);
+  }
+  panel.innerHTML=`
+    <h3>✦ Panel de Mar</h3>
+
+    <div style="margin-bottom:1rem">
+      <div style="font-size:.75rem;font-weight:500;margin-bottom:.4rem">📖 Libro del mes actual</div>
+      <select id="admin-current" style="width:100%;padding:.4rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+        <option value="">— Ninguno —</option>
+        ${B.map((b,i)=>`<option value="${i}" ${_overrides.currentBook==i?'selected':''}>${b.t}</option>`).join('')}
+      </select>
+      <input id="admin-cur-date" type="text" placeholder="Ej: Círculo: 8 de Abril 2026" value="${_overrides.currentBookDate||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+      <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.45rem;border-radius:8px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
+    </div>
+
+      <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
+      <div style="font-size:.82rem;font-weight:600;color:var(--lila-dk);margin-bottom:.4rem">📚 Editar libro de la biblioteca</div>
+      <input id="admin-search" type="text" placeholder="🔍 Escribe aquí para buscar un libro..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.5rem .75rem;border:2px solid var(--lila);border-radius:8px;font-family:var(--fb);font-size:.78rem;background:var(--white);margin-bottom:.5rem;outline:none;color:var(--text)">
+    </div>
+    <div id="admin-book-list" style="max-height:300px;overflow-y:auto"></div>
+
+    <div style="border-top:2px solid var(--sage);padding-top:.75rem;margin-top:.75rem;margin-bottom:.5rem">
+      <div style="font-size:.82rem;font-weight:600;color:var(--sage-dk);margin-bottom:.4rem">📋 Libros agregados por la comunidad</div>
+      <div id="admin-community-list" style="max-height:200px;overflow-y:auto">
+        <div style="font-size:.75rem;color:var(--muted)">Cargando...</div>
+      </div>
+    </div>
+
+    <div style="margin-top:.875rem;border-top:1px solid var(--bdr);padding-top:.875rem">
+      <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV (${_recs.length} libros)</button>
+    </div>
+    <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
+  `;
+  // populate book list and community books
+  filterAdminBooks('');
+  // Small delay to let Firebase data settle
+  setTimeout(renderAdminCommunityBooks, 300);
+}
+
+function filterAdminBooks(q){
+  q=(q||'').toLowerCase();
+  const list=document.getElementById('admin-book-list');
+  if(!list) return;
+  const scrollTop=list.scrollTop; // preserve scroll position
+  const filtered=B.map((b,i)=>({b,i})).filter(({b})=>!q||b.t.toLowerCase().includes(q)||b.a.toLowerCase().includes(q));
+  if(!filtered.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
+  const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
+  list.innerHTML=filtered.map(({b,i})=>`
+    <div style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem"><div style="flex:1;font-size:.72rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div><button onclick="toggleHide(${i},\'${b.id}\')" style="background:none;border:none;cursor:pointer;font-size:.75rem;color:${_overrides['hidden_'+b.id]?'var(--sal-dk)':'var(--light)'}" title="${_overrides['hidden_'+b.id]?'Mostrar libro':'Ocultar libro'}">${_overrides['hidden_'+b.id]?'👁 Oculto':'👁'}</button></div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="read-${b.id}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${_overrides[`read_${b.id}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
+        <button onclick="saveRead(${i},b.id)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="cover-${b.id}" type="text" placeholder="URL portada (imgbb.com)" value="${_overrides[`cover_${b.id}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
+        <button onclick="saveCover(${i},b.id)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
+        <select id="cat-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+          <option value="">— Categoría: ${CAT_ES[b.c]||b.c} —</option>
+          ${catOptions}
+        </select>
+        <button onclick="saveCat(${i},b.id)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <select id="div-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+          <option value="">— Autoría —</option>
+          <option value="Latinx" ${(_overrides[`div_${b.id}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
+          <option value="BIPOC" ${(_overrides[`div_${b.id}`])==='BIPOC'?'selected':''}>BIPOC</option>
+          <option value="Latinx,BIPOC" ${(_overrides[`div_${b.id}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+          <option value="Creadora" ${(_overrides[`div_${b.id}`])==='Creadora'?'selected':''}>Creadora ✦</option>
+        </select>
+        <button onclick="saveDiversity(${i},b.id)" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+    </div>`).join('');
+  list.scrollTop=scrollTop; // restore scroll position
+}
+window.filterAdminBooks=filterAdminBooks;
+
+function renderAdminCommunityBooks(){
+  const list=document.getElementById('admin-community-list');
+  if(!list) return;
+  if(!_recs.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Aún no hay libros agregados.</div>';return;}
+  list.innerHTML=_recs.map(r=>`
+    <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px solid var(--bdr)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.75rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t}</div>
+        <div style="font-size:.68rem;color:var(--muted)">${r.a||'—'} · ${r.n} · ${r.fecha||''}</div>
+      </div>
+      <button onclick="deleteRec('${r._key}')" style="background:none;border:none;color:var(--sal-dk);cursor:pointer;font-size:.8rem;flex-shrink:0;padding:.1rem .3rem" title="Eliminar">🗑</button>
+    </div>`).join('');
+}
+window.renderAdminCommunityBooks=renderAdminCommunityBooks;
+
+function deleteRec(key){
+  if(confirm('¿Eliminar este libro de la comunidad?')) remove(ref(db,`recs/${key}`));
+}
+window.deleteRec=deleteRec;
+
+function saveCurrentBook(){
+  const val=document.getElementById('admin-current').value;
+  const date=document.getElementById('admin-cur-date').value.trim();
+  set(ref(db,'overrides/currentBook'), val===''?null:parseInt(val));
+  if(date) set(ref(db,'overrides/currentBookDate'),date);
+  else remove(ref(db,'overrides/currentBookDate'));
+  showAdminFeedback('✓ Libro del mes guardado');
+}
+function saveRead(i){
+  const val=document.getElementById('read-'+b.id).value.trim();
+  if(val) set(ref(db,`overrides/read_${B[i].id}`),val);
+  else remove(ref(db,`overrides/read_${B[i].id}`));
+  showAdminFeedback('✓ Guardado');
+}
+function saveCover(i){
+  const val=document.getElementById('cover-'+b.id).value.trim();
+  if(val) set(ref(db,`overrides/cover_${B[i].id}`),val);
+  else remove(ref(db,`overrides/cover_${B[i].id}`));
+  showAdminFeedback('✓ Portada guardada');
+}
+function saveDiversity(i){
+  const val=document.getElementById('div-'+b.id).value;
+  if(val) set(ref(db,`overrides/div_${B[i].id}`),val);
+  else remove(ref(db,`overrides/div_${B[i].id}`));
+  showAdminFeedback('✓ Autoría guardada');
+}
+function saveCat(i){
+  const val=document.getElementById('cat-'+b.id).value;
+  if(val){
+    B[i].c=val;
+    set(ref(db,`overrides/cat_${id}`),val);
+    showAdminFeedback('✓ Categoría guardada');
+  }
+}
+window.saveDiversity=saveDiversity; window.saveCat=saveCat;
+
+function showAdminFeedback(msg){
+  const fb=document.createElement('div');
+  fb.textContent=msg;
+  fb.style.cssText='position:fixed;bottom:5rem;right:1.5rem;background:var(--sage-dk);color:#fff;padding:.5rem 1rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;z-index:9999;opacity:1;transition:opacity .5s';
+  document.body.appendChild(fb);
+  setTimeout(()=>{fb.style.opacity='0';setTimeout(()=>fb.remove(),500);},2000);
+}
+function setCurrentBook(val){set(ref(db,'overrides/currentBook'),val===''?null:parseInt(val));}
+function setRead(i,val){if(val.trim())set(ref(db,`overrides/read_${B[i].id}`),val.trim());else remove(ref(db,`overrides/read_${B[i].id}`));}
+function setCover(i,val){if(val.trim())set(ref(db,`overrides/cover_${B[i].id}`),val.trim());else remove(ref(db,`overrides/cover_${B[i].id}`));}
+window.saveCurrentBook=saveCurrentBook; window.saveRead=saveRead; window.saveCover=saveCover;
+window.setCurrentBook=setCurrentBook; window.setRead=setRead; window.setCover=setCover;
+window.set=set; window.ref=ref; window.db=db;
+
+// ── CSV ──
+function downloadCSV(){
+  if(!_recs.length){alert('No hay libros agregados todavía.');return;}
+  const rows=[['Fecha','Título','Autor','Nombre','Email']];
+  _recs.forEach(r=>rows.push([r.fecha||'',r.t||'',r.a||'',r.n||'',r.e||'']));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='libros-creadoras.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+window.downloadCSV=downloadCSV;
+
+// ── INIT ──
+renderCounter();
+renderBookOfMonth();
+renderBooks();
+renderReadCarousel();
+
+// Admin panel
+if(ADMIN) {
+  // slight delay so overrides load first
+  setTimeout(renderAdminPanel, 800);
+}
+
+// FAQS
+const FAQS=[
+  {q:'¿Cómo se eligen los libros? ¿Puedo proponer?',a:'¡Claro que sí! Realizamos una encuesta en nuestro grupo de WhatsApp para elegir el libro del mes. Podrás proponer y votar.'},
+  {q:'¿Qué tipo de libros leeremos?',a:'Non-fiction e inspiradores: inteligencia emocional, dinero, manifestación, sanación, liderazgo, emprendimiento y más.'},
+  {q:'¿Por qué no leen novelas?',a:'Este book club se enfoca en libros que motiven a tomar acciones para manifestar la vida de nuestros sueños.'},
+  {q:'¿Cuánto tiempo hay para leer cada libro?',a:'Aproximadamente mes y medio, dependiendo del libro.'},
+  {q:'¿Qué pasa si no termino el libro?',a:'Puedes asistir hayas leído o no. Siempre saldrás llena de inspiración.'},
+  {q:'¿Los libros son en inglés o español?',a:'Los círculos son siempre en español. Cada quien elige el idioma para leer.'},
+  {q:'¿Las sesiones quedan grabadas?',a:'Sí. Puedes ver la grabación si no puedes asistir en vivo.'},
+];
+const fl=document.getElementById('faq-list');
+if(fl) fl.innerHTML=FAQS.map((f,i)=>`
+  <div class="fitem">
+    <button class="fq" onclick="const a=document.getElementById('fa${i}'),o=a.classList.contains('open');document.querySelectorAll('.fa').forEach(x=>x.classList.remove('open'));document.querySelectorAll('.fq').forEach(x=>x.classList.remove('open'));if(!o){a.classList.add('open');this.classList.add('open')}">${f.q}<span class="arr">+</span></button>
+    <div class="fa" id="fa${i}">${f.a}</div>
+  </div>`).join('');
+
+</script>
+</body>
+</html>
