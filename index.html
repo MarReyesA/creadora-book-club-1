@@ -425,65 +425,67 @@ const aAud = q=>`https://www.audible.com/search?keywords=${encodeURIComponent(q)
 const aAudCA = q=>`https://www.audible.ca/search?keywords=${encodeURIComponent(q)}`;
 const aStory = t=>`https://www.storytel.com/mx/search#query=${encodeURIComponent(t)}`;
 
-// ── BOOKS DATA (sorted alphabetically, lang: 'both'|'eng'|'esp') ──
-const B_RAW=[
-  {t:'A New Earth',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Cómo despertar al propósito de tu vida',d:'Despertar más allá del ego para vivir con presencia, propósito y paz interior.',isbn:'9780452289963',q:'A New Earth Eckhart Tolle'},
-  {t:'Atomic Habits',a:'James Clear',c:'Lifestyle',lat:0,lang:'both',sub:'Cambios pequeños, resultados extraordinarios',d:'Sistema probado: pequeños cambios de comportamiento generan resultados extraordinarios.',isbn:'9780735211292',q:'Atomic Habits James Clear'},
-  {t:'Be Ready When the Luck Happens',a:'Ina Garten',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una memoria',d:'Memorias de Ina Garten: cómo siguió su intuición y construyó la vida de sus sueños.',isbn:'9780593798010',q:'Be Ready When the Luck Happens Ina Garten'},
-  {t:'Big Magic',a:'Elizabeth Gilbert',c:'Spark Creativity',lat:0,lang:'both',sub:'Vida creativa más allá del miedo',d:'Creatividad más allá del miedo. Date permiso de crear sin condiciones.',isbn:'9781594634710',q:'Big Magic Elizabeth Gilbert'},
-  {t:'Bittersweet',a:'Susan Cain',c:'Lifestyle',lat:0,lang:'eng',sub:'Cómo la tristeza y el anhelo nos hacen completos',d:'La melancolía y el dolor como fuentes de creatividad y profundidad humana.',isbn:'9780451499783',q:'Bittersweet Susan Cain'},
-  {t:'Braiding Sweetgrass',a:'Robin Wall Kimmerer',c:'Nature Wisdom',lat:0,lang:'both',sub:'Sabiduría indígena, conocimiento científico y las enseñanzas de las plantas',d:'Ciencia botánica y sabiduría indígena: los humanos y las plantas como familia.',isbn:'9781571313560',q:'Braiding Sweetgrass Robin Wall Kimmerer'},
-  {t:'Break the Cycle',a:'Mariel Buqué',c:'Healing',lat:1,lang:'both',sub:'Una guía para sanar el trauma intergeneracional',d:'Guía para sanar el trauma intergeneracional escrita por una psicóloga latina.',isbn:'9780593473115',q:'Break the Cycle Mariel Buque'},
-  {t:'Breaking the Habit of Being Yourself',a:'Joe Dispenza',c:'Manifesting',lat:0,lang:'both',sub:'Cómo perder tu mente y crear una nueva',d:'Neurociencia cuántica y espiritualidad para cambiar tu mente y tu vida desde adentro.',isbn:'9781401938093',q:'Breaking the Habit of Being Yourself Joe Dispenza'},
-  {t:'Building a StoryBrand',a:'Donald Miller',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Clarifica tu mensaje para que los clientes te escuchen',d:'Clarifica tu mensaje de marca para que tus clientes escuchen, conecten y compren.',isbn:'9780718033323',q:'Building a StoryBrand Donald Miller'},
-  {t:'Creando una nueva historia',a:'Misael Díaz',c:'Manifesting',lat:1,lang:'esp',sub:'El poder de reescribir tu realidad desde adentro',d:'Guía espiritual para reescribir las historias que te cuentas y crear una nueva realidad.',isbn:null,q:'Creando una nueva historia Misael Diaz'},
-  {t:'El Camino del Artista',a:'Julia Cameron',c:'Spark Creativity',lat:0,lang:'both',sub:'Un curso de descubrimiento y redescubrimiento de tu yo creativo',d:'12 semanas para recuperar y cultivar tu artista interior.',isbn:'9788425346279',q:'El Camino del Artista Julia Cameron'},
-  {t:'El libro Tibetano de la Vida y la Muerte',a:'Sogyal Rinpoche',c:'Spirituality',lat:0,lang:'both',sub:'Una nueva comprensión de la vida, la muerte y el más allá',d:'Sabiduría budista milenaria sobre la muerte y el universo. Obra maestra espiritual.',isbn:'9780062508348',q:'El libro Tibetano de la Vida y la Muerte Sogyal Rinpoche'},
-  {t:'El poder del Ahora',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Una guía para la iluminación espiritual',d:'Vivir plenamente en el momento presente como camino hacia la paz y la iluminación.',isbn:'9786070736469',q:'El Poder del Ahora Eckhart Tolle'},
-  {t:'Financial Feminist',a:'Tori Dunlap',c:'Money Mindset',lat:0,lang:'eng',sub:'Supera la mierda del patriarcado para dominar tu dinero y construir una vida que amas',d:'Cómo superar las barreras del patriarcado en las finanzas personales.',isbn:'9780063241794',q:'Financial Feminist Tori Dunlap'},
-  {t:'Finding Me',a:'Viola Davis',c:'Finding Purpose',lat:0,lang:'both',sub:'Una memoria',d:'Memorias de Viola Davis: supervivencia, sanación y encontrarse a sí misma.',isbn:'9780062937339',q:'Finding Me Viola Davis'},
-  {t:'Get Rich, Lucky Bitch',a:'Denise DT',c:'Money Mindset',lat:0,lang:'eng',sub:'Libera tus bloqueos de dinero y vive una vida de primera clase',d:'Cambia tu relación con el dinero y elimina las creencias que te impiden prosperar.',isbn:'9781452168340',q:'Get Rich Lucky Bitch Denise Duffield Thomas'},
-  {t:'Hello Fears',a:'Michelle Poler',c:'Spark Creativity',lat:1,lang:'both',sub:'Prospera del otro lado de tu zona de confort',d:'100 miedos en 100 días. El miedo puede ser tu mayor aliado.',isbn:'9781492693321',q:'Hello Fears Michelle Poler'},
-  {t:'I Am Diosa',a:'Christine Gutierrez',c:'Women Rising',lat:1,lang:'eng',sub:'Un viaje para sanar profundo, amarte y regresar a casa en tu alma',d:'Viaje de sanación y amor propio para mujeres latinas listas para reclamar su poder.',isbn:'9781401956424',q:'I Am Diosa Christine Gutierrez'},
-  {t:"It Didn't Start with You",a:'Mark Wolynn',c:'Healing',lat:0,lang:'both',sub:'Cómo el trauma familiar heredado da forma a quiénes somos y cómo romper el ciclo',d:'Comprende y sana el trauma heredado: miedos y patrones que vienen de tus ancestros.',isbn:'9780143128489',q:"It Didn't Start with You Mark Wolynn"},
-  {t:'La Magia sí existe',a:'Carolina Angarita',c:'Finding Purpose',lat:1,lang:'esp',sub:'Un viaje hacia el poder de creer en lo invisible',d:'La magia está en nosotras: en nuestra intuición, nuestra fe y nuestra capacidad de crear.',isbn:null,q:'La Magia si existe Carolina Angarita'},
-  {t:'Lean In',a:'Sheryl Sandberg',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Las mujeres, el trabajo y la voluntad de liderar',d:'El libro que provocó conversaciones globales sobre liderazgo femenino.',isbn:'9780385349949',q:'Lean In Sheryl Sandberg'},
-  {t:'Leap Frog',a:'Nathalie Molina Niño',c:'Female Entrepreneurship',lat:1,lang:'eng',sub:'La nueva revolución para mujeres emprendedoras',d:'Estrategias para mujeres emprendedoras que quieren avanzar más rápido y crear impacto.',isbn:'9780593087602',q:'Leap Frog Nathalie Molina Nino'},
-  {t:'Light Is the New Black',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para responder al llamado de tu alma y trabajar tu luz',d:'Guía para mujeres con el llamado de ser una fuerza de luz en el mundo.',isbn:'9781401948818',q:'Light Is the New Black Rebecca Campbell'},
-  {t:'Lighter',a:'Yung Pueblo',c:'Women Rising',lat:1,lang:'eng',sub:'Libérate del pasado, conecta con el presente y expande tu futuro',d:'Soltar el pasado y moverte hacia una versión más ligera y auténtica de ti.',isbn:'9780593421482',q:'Lighter Yung Pueblo'},
-  {t:'Plenitud',a:'Carolina Lasso',c:'Finding Purpose',lat:1,lang:'esp',sub:'Siete principios para una vida moderna plena, abundante y con propósito',d:'Siete principios para una vida plena y abundante. Autora latina.',isbn:'9786287597006',q:'Plenitud Carolina Lasso'},
-  {t:'Rich as F*ck',a:'Amanda Frances',c:'Money Mindset',lat:0,lang:'eng',sub:'Más dinero del que sabes qué hacer con él',d:'Principios espirituales y prácticos para reclamar tu derecho a la riqueza.',isbn:'9781401962647',q:'Rich as Fuck Amanda Frances'},
-  {t:'Rise Sister Rise',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para entrar en la cadencia de tu vida',d:'Llamada al despertar del liderazgo femenino. Reconéctate con tu poder ancestral.',isbn:'9781401949877',q:'Rise Sister Rise Rebecca Campbell'},
-  {t:'Sacred Medicine',a:'Lissa Rankin',c:'Health',lat:0,lang:'eng',sub:'La búsqueda de una doctora para desentrañar los misterios de la sanación',d:'Explora los misterios de la sanación integrando medicina convencional con lo espiritual.',isbn:'9781401958756',q:'Sacred Medicine Lissa Rankin'},
-  {t:'Self Made',a:'Nely Galán',c:'Female Entrepreneurship',lat:1,lang:'both',sub:'Empoderada, autosuficiente y rica en todos los sentidos',d:'La primera productora latina de Hollywood y su fórmula para la independencia financiera.',isbn:'9780812987799',q:'Self Made Nely Galan'},
-  {t:'The Awakened Woman',a:'Tererai Trent',c:'Finding Purpose',lat:0,lang:'eng',sub:'Recordando y reencendiendo nuestros sueños sagrados',d:'Favorita de Oprah. Guía a las mujeres a recordar y reavivar sus sueños sagrados.',isbn:'9781501130557',q:'The Awakened Woman Tererai Trent'},
-  {t:'The Heart of a Woman',a:'Maya Angelou',c:'Lifestyle',lat:0,lang:'eng',sub:'Una autobiografía',d:'Memorias de Maya Angelou: arte, amor y la lucha por la libertad.',isbn:'9780375500466',q:'The Heart of a Woman Maya Angelou'},
-  {t:'The Let Them Theory',a:'Mel Robbins',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una teoría que cambiará la forma en que te ves a ti misma y a los demás',d:'Deja de controlar a los demás y enfócate en lo que tú puedes transformar.',isbn:'9781401977276',q:'The Let Them Theory Mel Robbins'},
-  {t:'The Map of Consciousness Explained',a:'David Hawkins',c:'Spirituality',lat:0,lang:'eng',sub:'Una guía práctica para que tu conciencia evolucione',d:'Guía al mapa de la consciencia: eleva tu vibración y comprende la experiencia humana.',isbn:'9781401959647',q:'The Map of Consciousness Explained David Hawkins'},
-  {t:"The Queen's Code",a:'Alison Armstrong',c:'Relationships',lat:0,lang:'eng',sub:'Cómo entender a los hombres y transformar tus relaciones',d:'Patrones que destruyen las relaciones y cómo transformarlos para conectar de verdad.',isbn:'9780978887315',q:"The Queen's Code Alison Armstrong"},
-  {t:'The Red Tent',a:'Anita Diamant',c:'Women Rising',lat:0,lang:'both',sub:'Una novela',d:'Tributo a la hermandad femenina y la sabiduría de las mujeres a través del tiempo.',isbn:'9780312195519',q:'The Red Tent Anita Diamant'},
-  {t:'The Rites of Passage',a:'Arnold Van Gennep',c:'Spirituality',lat:0,lang:'eng',sub:'Estudio clásico de los rituales de transición en las culturas del mundo',d:'Estudio clásico sobre los rituales de transición en las culturas del mundo.',isbn:'9780226848518',q:'The Rites of Passage Arnold Van Gennep'},
-  {t:'The Second Mountain',a:'David Brooks',c:'Finding Purpose',lat:0,lang:'both',sub:'La búsqueda de una vida moral',d:'Pasar de una vida centrada en el yo a una de compromiso con los demás y el propósito.',isbn:'9780812993264',q:'The Second Mountain David Brooks'},
-  {t:"The Women's Circle",a:'Anoushka Florence',c:'Relationships',lat:0,lang:'eng',sub:'Cómo crear espacios sagrados de conexión femenina',d:'Guía para crear círculos de mujeres: espacios sagrados de conexión y sanación.',isbn:'9781743797488',q:"The Women's Circle Anoushka Florence"},
-  {t:'Tu éxito es inevitable',a:'Maite Issa',c:'Manifesting',lat:1,lang:'esp',sub:'Cómo programar tu mente para atraer lo que deseas',d:'Reprograma tu mente y alinea tu energía para manifestar el éxito de manera inevitable.',isbn:'9786075279657',q:'Tu exito es inevitable Maite Issa'},
-  {t:'Wealth Warrior',a:'Linda Garcia',c:'Money Mindset',lat:1,lang:'eng',sub:'8 pasos para que las comunidades de color conquisten el mercado de valores',d:'Una guía práctica para que comunidades de color construyan riqueza generacional. Autora latina.',isbn:'9780593135952',q:'Wealth Warrior Linda Garcia'},
-  {t:'You Are a Badass',a:'Jen Sincero',c:'Finding Purpose',lat:0,lang:'both',sub:'Cómo dejar de dudar de tu grandeza y empezar a vivir una vida increíble',d:'Bestseller #1 NYT: deja de dudar de tu grandeza y empieza a vivir una vida extraordinaria.',isbn:'9780762447695',q:'You Are a Badass Jen Sincero'},
-  {t:'You Are a Badass at Making Money',a:'Jen Sincero',c:'Money Mindset',lat:0,lang:'eng',sub:'Domina la mentalidad de la riqueza',d:'Guía directa y con humor para superar creencias limitantes y crear la abundancia que mereces.',isbn:'9780735222977',q:'You Are a Badass at Making Money Jen Sincero'},
+// ── BOOKS DATA — ORIGINAL ORDER (Firebase keys depend on these indices) ──
+// Each book has a stable 'id' field used as Firebase key instead of array index
+const B=[
+  {id:'wealth-warrior',t:'Wealth Warrior',a:'Linda Garcia',c:'Money Mindset',lat:1,lang:'eng',sub:'8 pasos para que las comunidades de color conquisten el mercado de valores',d:'Una guía práctica para que comunidades de color construyan riqueza generacional. Autora latina.',isbn:'9780593135952',q:'Wealth Warrior Linda Garcia'},
+  {id:'get-rich-lucky-bitch',t:'Get Rich, Lucky Bitch',a:'Denise DT',c:'Money Mindset',lat:0,lang:'eng',sub:'Libera tus bloqueos de dinero y vive una vida de primera clase',d:'Cambia tu relación con el dinero y elimina las creencias que te impiden prosperar.',isbn:'9781452168340',q:'Get Rich Lucky Bitch Denise Duffield Thomas'},
+  {id:'rich-as-fuck',t:'Rich as F*ck',a:'Amanda Frances',c:'Money Mindset',lat:0,lang:'eng',sub:'Más dinero del que sabes qué hacer con él',d:'Principios espirituales y prácticos para reclamar tu derecho a la riqueza.',isbn:'9781401962647',q:'Rich as Fuck Amanda Frances'},
+  {id:'badass-making-money',t:'You Are a Badass at Making Money',a:'Jen Sincero',c:'Money Mindset',lat:0,lang:'eng',sub:'Domina la mentalidad de la riqueza',d:'Guía directa y con humor para superar creencias limitantes y crear la abundancia que mereces.',isbn:'9780735222977',q:'You Are a Badass at Making Money Jen Sincero'},
+  {id:'financial-feminist',t:'Financial Feminist',a:'Tori Dunlap',c:'Money Mindset',lat:0,lang:'eng',sub:'Supera la mierda del patriarcado para dominar tu dinero y construir una vida que amas',d:'Cómo superar las barreras del patriarcado en las finanzas personales.',isbn:'9780063241794',q:'Financial Feminist Tori Dunlap'},
+  {id:'exito-inevitable',t:'Tu éxito es inevitable',a:'Maite Issa',c:'Manifesting',lat:1,lang:'esp',sub:'Cómo programar tu mente para atraer lo que deseas',d:'Reprograma tu mente y alinea tu energía para manifestar el éxito de manera inevitable.',isbn:'9786075279657',q:'Tu exito es inevitable Maite Issa'},
+  {id:'creando-nueva-historia',t:'Creando una nueva historia',a:'Misael Díaz',c:'Manifesting',lat:1,lang:'esp',sub:'El poder de reescribir tu realidad desde adentro',d:'Guía espiritual para reescribir las historias que te cuentas y crear una nueva realidad.',isbn:null,q:'Creando una nueva historia Misael Diaz'},
+  {id:'breaking-habit',t:'Breaking the Habit of Being Yourself',a:'Joe Dispenza',c:'Manifesting',lat:0,lang:'both',sub:'Cómo perder tu mente y crear una nueva',d:'Neurociencia cuántica y espiritualidad para cambiar tu mente y tu vida desde adentro.',isbn:'9781401938093',q:'Breaking the Habit of Being Yourself Joe Dispenza'},
+  {id:'a-new-earth',t:'A New Earth',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Cómo despertar al propósito de tu vida',d:'Despertar más allá del ego para vivir con presencia, propósito y paz interior.',isbn:'9780452289963',q:'A New Earth Eckhart Tolle'},
+  {id:'poder-del-ahora',t:'El poder del Ahora',a:'Eckhart Tolle',c:'Manifesting',lat:0,lang:'both',sub:'Una guía para la iluminación espiritual',d:'Vivir plenamente en el momento presente como camino hacia la paz y la iluminación.',isbn:'9786070736469',q:'El Poder del Ahora Eckhart Tolle'},
+  {id:'you-are-a-badass',t:'You Are a Badass',a:'Jen Sincero',c:'Finding Purpose',lat:0,lang:'both',sub:'Cómo dejar de dudar de tu grandeza y empezar a vivir una vida increíble',d:'Bestseller #1 NYT: deja de dudar de tu grandeza y empieza a vivir una vida extraordinaria.',isbn:'9780762447695',q:'You Are a Badass Jen Sincero'},
+  {id:'plenitud',t:'Plenitud',a:'Carolina Lasso',c:'Finding Purpose',lat:1,lang:'esp',sub:'Siete principios para una vida moderna plena, abundante y con propósito',d:'Siete principios para una vida plena y abundante. Autora latina.',isbn:'9786287597006',q:'Plenitud Carolina Lasso'},
+  {id:'la-magia-si-existe',t:'La Magia sí existe',a:'Carolina Angarita',c:'Finding Purpose',lat:1,lang:'esp',sub:'Un viaje hacia el poder de creer en lo invisible',d:'La magia está en nosotras: en nuestra intuición, nuestra fe y nuestra capacidad de crear.',isbn:null,q:'La Magia si existe Carolina Angarita'},
+  {id:'second-mountain',t:'The Second Mountain',a:'David Brooks',c:'Finding Purpose',lat:0,lang:'both',sub:'La búsqueda de una vida moral',d:'Pasar de una vida centrada en el yo a una de compromiso con los demás y el propósito.',isbn:'9780812993264',q:'The Second Mountain David Brooks'},
+  {id:'awakened-woman',t:'The Awakened Woman',a:'Tererai Trent',c:'Finding Purpose',lat:0,lang:'eng',sub:'Recordando y reencendiendo nuestros sueños sagrados',d:'Favorita de Oprah. Guía a las mujeres a recordar y reavivar sus sueños sagrados.',isbn:'9781501130557',q:'The Awakened Woman Tererai Trent'},
+  {id:'be-ready-luck',t:'Be Ready When the Luck Happens',a:'Ina Garten',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una memoria',d:'Memorias de Ina Garten: cómo siguió su intuición y construyó la vida de sus sueños.',isbn:'9780593798010',q:'Be Ready When the Luck Happens Ina Garten'},
+  {id:'let-them-theory',t:'The Let Them Theory',a:'Mel Robbins',c:'Finding Purpose',lat:0,lang:'eng',sub:'Una teoría que cambiará la forma en que te ves a ti misma y a los demás',d:'Deja de controlar a los demás y enfócate en lo que tú puedes transformar.',isbn:'9781401977276',q:'The Let Them Theory Mel Robbins'},
+  {id:'finding-me',t:'Finding Me',a:'Viola Davis',c:'Finding Purpose',lat:0,lang:'both',sub:'Una memoria',d:'Memorias de Viola Davis: supervivencia, sanación y encontrarse a sí misma.',isbn:'9780062937339',q:'Finding Me Viola Davis'},
+  {id:'self-made',t:'Self Made',a:'Nely Galán',c:'Female Entrepreneurship',lat:1,lang:'both',sub:'Empoderada, autosuficiente y rica en todos los sentidos',d:'La primera productora latina de Hollywood y su fórmula para la independencia financiera.',isbn:'9780812987799',q:'Self Made Nely Galan'},
+  {id:'leap-frog',t:'Leap Frog',a:'Nathalie Molina Niño',c:'Female Entrepreneurship',lat:1,lang:'eng',sub:'La nueva revolución para mujeres emprendedoras',d:'Estrategias para mujeres emprendedoras que quieren avanzar más rápido y crear impacto.',isbn:'9780593087602',q:'Leap Frog Nathalie Molina Nino'},
+  {id:'lean-in',t:'Lean In',a:'Sheryl Sandberg',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Las mujeres, el trabajo y la voluntad de liderar',d:'El libro que provocó conversaciones globales sobre liderazgo femenino.',isbn:'9780385349949',q:'Lean In Sheryl Sandberg'},
+  {id:'storybrand',t:'Building a StoryBrand',a:'Donald Miller',c:'Female Entrepreneurship',lat:0,lang:'both',sub:'Clarifica tu mensaje para que los clientes te escuchen',d:'Clarifica tu mensaje de marca para que tus clientes escuchen, conecten y compren.',isbn:'9780718033323',q:'Building a StoryBrand Donald Miller'},
+  {id:'rise-sister-rise',t:'Rise Sister Rise',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para entrar en la cadencia de tu vida',d:'Llamada al despertar del liderazgo femenino. Reconéctate con tu poder ancestral.',isbn:'9781401949877',q:'Rise Sister Rise Rebecca Campbell'},
+  {id:'light-new-black',t:'Light Is the New Black',a:'Rebecca Campbell',c:'Women Rising',lat:0,lang:'eng',sub:'Una guía para responder al llamado de tu alma y trabajar tu luz',d:'Guía para mujeres con el llamado de ser una fuerza de luz en el mundo.',isbn:'9781401948818',q:'Light Is the New Black Rebecca Campbell'},
+  {id:'i-am-diosa',t:'I Am Diosa',a:'Christine Gutierrez',c:'Women Rising',lat:1,lang:'eng',sub:'Un viaje para sanar profundo, amarte y regresar a casa en tu alma',d:'Viaje de sanación y amor propio para mujeres latinas listas para reclamar su poder.',isbn:'9781401956424',q:'I Am Diosa Christine Gutierrez'},
+  {id:'red-tent',t:'The Red Tent',a:'Anita Diamant',c:'Women Rising',lat:0,lang:'both',sub:'Una novela',d:'Tributo a la hermandad femenina y la sabiduría de las mujeres a través del tiempo.',isbn:'9780312195519',q:'The Red Tent Anita Diamant'},
+  {id:'lighter',t:'Lighter',a:'Yung Pueblo',c:'Women Rising',lat:1,lang:'eng',sub:'Libérate del pasado, conecta con el presente y expande tu futuro',d:'Soltar el pasado y moverte hacia una versión más ligera y auténtica de ti.',isbn:'9780593421482',q:'Lighter Yung Pueblo'},
+  {id:'it-didnt-start-with-you',t:"It Didn't Start with You",a:'Mark Wolynn',c:'Healing',lat:0,lang:'both',sub:'Cómo el trauma familiar heredado da forma a quiénes somos y cómo romper el ciclo',d:'Comprende y sana el trauma heredado: miedos y patrones que vienen de tus ancestros.',isbn:'9780143128489',q:"It Didn't Start with You Mark Wolynn"},
+  {id:'break-the-cycle',t:'Break the Cycle',a:'Mariel Buqué',c:'Healing',lat:1,lang:'both',sub:'Una guía para sanar el trauma intergeneracional',d:'Guía para sanar el trauma intergeneracional escrita por una psicóloga latina.',isbn:'9780593473115',q:'Break the Cycle Mariel Buque'},
+  {id:'sacred-medicine',t:'Sacred Medicine',a:'Lissa Rankin',c:'Health',lat:0,lang:'eng',sub:'La búsqueda de una doctora para desentrañar los misterios de la sanación',d:'Explora los misterios de la sanación integrando medicina convencional con lo espiritual.',isbn:'9781401958756',q:'Sacred Medicine Lissa Rankin'},
+  {id:'big-magic',t:'Big Magic',a:'Elizabeth Gilbert',c:'Spark Creativity',lat:0,lang:'both',sub:'Vida creativa más allá del miedo',d:'Creatividad más allá del miedo. Date permiso de crear sin condiciones.',isbn:'9781594634710',q:'Big Magic Elizabeth Gilbert'},
+  {id:'camino-artista',t:'El Camino del Artista',a:'Julia Cameron',c:'Spark Creativity',lat:0,lang:'both',sub:'Un curso de descubrimiento y redescubrimiento de tu yo creativo',d:'12 semanas para recuperar y cultivar tu artista interior.',isbn:'9788425346279',q:'El Camino del Artista Julia Cameron'},
+  {id:'hello-fears',t:'Hello Fears',a:'Michelle Poler',c:'Spark Creativity',lat:1,lang:'both',sub:'Prospera del otro lado de tu zona de confort',d:'100 miedos en 100 días. El miedo puede ser tu mayor aliado.',isbn:'9781492693321',q:'Hello Fears Michelle Poler'},
+  {id:'atomic-habits',t:'Atomic Habits',a:'James Clear',c:'Lifestyle',lat:0,lang:'both',sub:'Cambios pequeños, resultados extraordinarios',d:'Sistema probado: pequeños cambios de comportamiento generan resultados extraordinarios.',isbn:'9780735211292',q:'Atomic Habits James Clear'},
+  {id:'bittersweet',t:'Bittersweet',a:'Susan Cain',c:'Lifestyle',lat:0,lang:'eng',sub:'Cómo la tristeza y el anhelo nos hacen completos',d:'La melancolía y el dolor como fuentes de creatividad y profundidad humana.',isbn:'9780451499783',q:'Bittersweet Susan Cain'},
+  {id:'heart-of-a-woman',t:'The Heart of a Woman',a:'Maya Angelou',c:'Lifestyle',lat:0,lang:'eng',sub:'Una autobiografía',d:'Memorias de Maya Angelou: arte, amor y la lucha por la libertad.',isbn:'9780375500466',q:'The Heart of a Woman Maya Angelou'},
+  {id:'braiding-sweetgrass',t:'Braiding Sweetgrass',a:'Robin Wall Kimmerer',c:'Nature Wisdom',lat:0,lang:'both',sub:'Sabiduría indígena, conocimiento científico y las enseñanzas de las plantas',d:'Ciencia botánica y sabiduría indígena: los humanos y las plantas como familia.',isbn:'9781571313560',q:'Braiding Sweetgrass Robin Wall Kimmerer'},
+  {id:'queens-code',t:"The Queen's Code",a:'Alison Armstrong',c:'Relationships',lat:0,lang:'eng',sub:'Cómo entender a los hombres y transformar tus relaciones',d:'Patrones que destruyen las relaciones y cómo transformarlos para conectar de verdad.',isbn:'9780978887315',q:"The Queen's Code Alison Armstrong"},
+  {id:'womens-circle',t:"The Women's Circle",a:'Anoushka Florence',c:'Relationships',lat:0,lang:'eng',sub:'Cómo crear espacios sagrados de conexión femenina',d:'Guía para crear círculos de mujeres: espacios sagrados de conexión y sanación.',isbn:'9781743797488',q:"The Women's Circle Anoushka Florence"},
+  {id:'libro-tibetano',t:'El libro Tibetano de la Vida y la Muerte',a:'Sogyal Rinpoche',c:'Spirituality',lat:0,lang:'both',sub:'Una nueva comprensión de la vida, la muerte y el más allá',d:'Sabiduría budista milenaria sobre la muerte y el universo. Obra maestra espiritual.',isbn:'9780062508348',q:'El libro Tibetano de la Vida y la Muerte Sogyal Rinpoche'},
+  {id:'rites-of-passage',t:'The Rites of Passage',a:'Arnold Van Gennep',c:'Spirituality',lat:0,lang:'eng',sub:'Estudio clásico de los rituales de transición en las culturas del mundo',d:'Estudio clásico sobre los rituales de transición en las culturas del mundo.',isbn:'9780226848518',q:'The Rites of Passage Arnold Van Gennep'},
+  {id:'map-of-consciousness',t:'The Map of Consciousness Explained',a:'David Hawkins',c:'Spirituality',lat:0,lang:'eng',sub:'Una guía práctica para que tu conciencia evolucione',d:'Guía al mapa de la consciencia: eleva tu vibración y comprende la experiencia humana.',isbn:'9781401959647',q:'The Map of Consciousness Explained David Hawkins'},
 ];
-// Keep original indices stable for Firebase keys — B_RAW is already sorted
-const B=B_RAW;
+
+// Sort books alphabetically for display
+const B_SORTED=[...B].sort((a,b)=>a.t.localeCompare(b.t,'es'));
 
 // ── COVER FALLBACK HELPER ──
 function getCoverUrl(b, i, size){
   const ov=_overrides;
-  if(ov[`cover_${i}`]) return ov[`cover_${i}`];
+  if(ov[`cover_${b.id}`]) return ov[`cover_${b.id}`];
   if(!b.isbn) return null;
   const s=size||'L';
   return `https://covers.openlibrary.org/b/isbn/${b.isbn}-${s}.jpg`;
 }
 function coverFallbacks(b, i, size){
   const ov=_overrides;
-  if(ov[`cover_${i}`]) return [ov[`cover_${i}`]];
+  if(ov[`cover_${b.id}`]) return [ov[`cover_${b.id}`]];
   if(!b.isbn) return [];
   const s=size||'L';
   return [
@@ -496,11 +498,14 @@ function coverImgTag(b, i, cls, style, size){
   const srcs=coverFallbacks(b,i,size);
   if(!srcs.length) return '';
   const rest=srcs.slice(1);
+  const nextSrc=rest.length?`var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`:``; 
   const errHandler=rest.length
     ? `var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`
     : `this.style.display='none';`;
+  // onload: if Open Library returns a tiny placeholder image (w<10), skip to next source
+  const loadHandler=`if(this.naturalWidth<10){${nextSrc||"this.style.display='none';"}}`;
   const dataAttr=rest.length?` data-srcs='${JSON.stringify(rest)}'`:'';
-  return `<img src="${srcs[0]}" alt="${b.t}"${cls?` class="${cls}"`:''}${style?` style="${style}"`:''}${dataAttr} onerror="${errHandler}">`;
+  return `<img src="${srcs[0]}" alt="${b.t}"${cls?` class="${cls}"`:''}${style?` style="${style}"`:''}${dataAttr} onload="${loadHandler}" onerror="${errHandler}">`;
 }
 
 
@@ -578,7 +583,7 @@ function renderBookOfMonth(){
   const ldmImg    = document.getElementById('ldm-img-wrap');
   if(cur!==undefined && cur!==null && B[cur]){
     const b=B[cur];
-    const cv=_overrides[`cover_${cur}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
     ldmTitle.textContent=b.t;
     ldmAuthor.textContent=b.a;
     ldmDesc.textContent=b.d;
@@ -601,7 +606,7 @@ function renderRanking(){
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
   el.innerHTML=ranked.map(([idx,count])=>{
     const b=B[parseInt(idx)]; if(!b) return '';
-        const imgTag=coverImgTag(b,parseInt(idx),'rk-thumb','','M');
+        const imgTag=coverImgTag(b,b.id,'rk-thumb','','M');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
     return'<div class="rk-card" onclick="openModal('+idx+')" title="'+b.t+'">'
       +'<div class="rk-wrap" style="position:relative">'+imgTag+ph
@@ -632,7 +637,7 @@ function renderBooks(votesData){
   const q=document.getElementById('srch')?.value.trim()||'';
   const g=document.getElementById('grid'); if(!g) return;
   const terms=q.length>0?expandSearch(q):null;
-  const f=B.filter(b=>(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
+  const f=B_SORTED.filter(b=>!_overrides['hidden_'+b.id]&&(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
   if(!f.length){
     g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
     document.getElementById('pagination').innerHTML='';
@@ -645,9 +650,9 @@ function renderBooks(votesData){
   g.innerHTML=pageBooks.map(b=>{
     const i=B.indexOf(b);
     const isV=!!SV[i], v=_votes[i]||0;
-    const ov=_overrides; const isRead=ov[`read_${i}`]; const isCurrent=ov.currentBook==i;
-    const bCat=ov[`cat_${i}`]||b.c; // apply category override if set
-    const adminCv=ov[`cover_${i}`];
+    const ov=_overrides; const isRead=ov[`read_${b.id}`]; const isCurrent=ov.currentBook==i;
+    const bCat=ov[`cat_${b.id}`]||b.c; // apply category override if set
+    const adminCv=ov[`cover_${b.id}`];
     const covers=adminCv?[adminCv]:b.isbn?[
       `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`,
       `https://books.google.com/books/content?vid=ISBN${b.isbn}&printsec=frontcover&img=1&zoom=1`,
@@ -657,9 +662,9 @@ function renderBooks(votesData){
     const img=cv?`<img class="cimg" src="${cv}" alt="${b.t}" loading="lazy" ${imgSrcs} onerror="var srcs=JSON.parse(this.dataset.srcs||'[]');if(srcs.length){this.src=srcs[0];this.dataset.srcs=JSON.stringify(srcs.slice(1));}else{this.style.display='none';var p=this.parentNode.querySelector('.cph');if(p)p.style.removeProperty('display');}">`:'';
     const ph=`<div class="cph" ${cv?'style="display:none"':''}><div class="cph-t">${b.t}</div><div class="cph-a">${b.a}</div></div>`;
     const badge=isCurrent?`<div class="cb-pick">📖 Leyendo</div>`:isRead?`<div class="cb-read">✓ ${isRead}</div>`:'';
-    const div=ov[`div_${i}`]||(b.lat?'Latinx':'');
+    const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
     const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
-    const langLabel=ov[`lang_${i}`]||b.lang||'';
+    const langLabel=ov[`lang_${b.id}`]||b.lang||'';
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
@@ -702,7 +707,7 @@ window.setCat=setCat;
 
 // ── VOTE ──
 function doVote(i,btn){
-  const vRef=ref(db,`votes/${i}`);
+  const vRef=ref(db,`votes/${b.id}`);
   if(SV[i]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SV[i];}
   else{runTransaction(vRef,c=>(c||0)+1);SV[i]=true;}
   sessionStorage.setItem('cbcV',JSON.stringify(SV));
@@ -717,11 +722,11 @@ function onSearch(){
   const drop=document.getElementById('srch-drop');
   if(q.length<2){drop.style.display='none';return;}
   const terms=expandSearch(q);
-  const matches=B.filter(b=>bookMatches(b,terms)).slice(0,8);
+  const matches=B_SORTED.filter(b=>bookMatches(b,terms)).slice(0,8);
   if(!matches.length){drop.innerHTML='<div style="padding:.75rem 1rem;font-size:.8rem;color:var(--muted)">No encontramos ese libro — ¡agrégalo!</div>';drop.style.display='block';return;}
   drop.innerHTML=matches.map(b=>{
     const i=B.indexOf(b);
-    const cv=_overrides[`cover_${i}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
     const thumb=cv?`<img src="${cv}" style="width:36px;height:54px;object-fit:cover;border-radius:5px;flex-shrink:0" onerror="this.style.display='none'">`:`<div style="width:36px;height:54px;background:var(--lila-lt);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📖</div>`;
     return`<div onmousedown="selectBook(${i})" style="display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;cursor:pointer;border-bottom:1px solid var(--bdr)" onmouseover="this.style.background='var(--beige)'" onmouseout="this.style.background=''">${thumb}<div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.t}</div><div style="font-size:.72rem;color:var(--muted)">${b.a}</div></div></div>`;
   }).join('');
@@ -749,13 +754,13 @@ window.openBuy=openBuy; window.closeBuy=closeBuy;
 // ── BOOK MODAL ──
 function openModal(i){
   const b=B[i], isV=!!SV[i], v=_votes[i]||0;
-  const ov=_overrides, isRead=ov[`read_${i}`], isCurrent=ov.currentBook==i;
-  const cv=ov[`cover_${i}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
+  const ov=_overrides, isRead=ov[`read_${b.id}`], isCurrent=ov.currentBook==i;
+  const cv=ov[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
   const imgH=coverImgTag(b,i,'','width:100%;max-height:260px;object-fit:cover;border-radius:var(--rl) var(--rl) 0 0;display:block','L')||'<div class="mph">📖</div>';
   const voteBtn=isRead
     ?'<div style="text-align:center;font-size:.78rem;color:var(--muted);font-style:italic;padding:.5rem 0">✓ Ya lo leímos juntas en '+isRead+'</div>'
     :'<button id="mbv" class="vbtn'+(isV?' voted':'')+'" style="width:100%;padding:.6rem;font-size:.85rem;margin-bottom:.5rem" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar por este libro')+'</button>';
-  const div=ov[`div_${i}`]||(b.lat?'Latinx':'');
+  const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
   const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Autora Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Autora Creadora ✦':'';
   document.getElementById('mcontent').innerHTML=imgH
     +'<div class="mbody">'
@@ -876,6 +881,7 @@ function renderRecBooks(){
     return '<div class="card">'
       +'<div class="cimgw" style="cursor:default">'
       +'<div class="cph"><div class="cph-t">'+r.t+'</div><div class="cph-a">'+(r.a||'')+'</div></div>'
+      +(ADMIN?'<button onclick="deleteRec(\''+r._key+'\')" style="position:absolute;top:7px;right:7px;background:rgba(176,88,72,.85);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center" title="Eliminar">🗑</button>':'')
       +'</div>'
       +'<div class="cbody">'
       +'<div class="ctitle">'+r.t+'</div>'
@@ -912,15 +918,15 @@ function renderCounter(){
 // ── READ CAROUSEL ──
 function renderReadCarousel(){
   const el=document.getElementById('read-carousel'); if(!el) return;
-  const read=B.map((b,i)=>({b,i})).filter(({i})=>_overrides[`read_${i}`]);
+  const read=B.map((b,i)=>({b,i})).filter(({i})=>_overrides[`read_${b.id}`]);
   if(!read.length){el.innerHTML='<div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>';return;}
   el.innerHTML=read.map(({b,i})=>{
-    const cv=_overrides[`cover_${i}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
+    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
         const img=coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
     return`<div class="rc-card" onclick="openModal(${i})">${img}
       <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
       <div style="font-size:.65rem;color:var(--muted)">${b.a}</div>
-      <div style="font-size:.62rem;color:var(--sage-dk);background:var(--sage-lt);padding:1px 6px;border-radius:100px;display:inline-block;margin-top:.35rem">✓ ${_overrides[`read_${i}`]}</div>
+      <div style="font-size:.62rem;color:var(--sage-dk);background:var(--sage-lt);padding:1px 6px;border-radius:100px;display:inline-block;margin-top:.35rem">✓ ${_overrides[`read_${b.id}`]}</div>
     </div>`;
   }).join('');
 }
@@ -965,9 +971,10 @@ function renderAdminPanel(){
     </div>
     <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
   `;
-  // populate book list
+  // populate book list and community books
   filterAdminBooks('');
-  renderAdminCommunityBooks();
+  // Small delay to let Firebase data settle
+  setTimeout(renderAdminCommunityBooks, 300);
 }
 
 function filterAdminBooks(q){
@@ -979,32 +986,35 @@ function filterAdminBooks(q){
   if(!filtered.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
   const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
   list.innerHTML=filtered.map(({b,i})=>`
-    <div style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
-      <div style="font-size:.72rem;font-weight:500;margin-bottom:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <input id="read-${i}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${_overrides[`read_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
-        <button onclick="saveRead(${i})" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+    <div id="admin-row-${b.id}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
+        <div style="flex:1;font-size:.72rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div>
+        <button onclick="deleteMainBook(${i},'${b.id}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑 Eliminar</button>
       </div>
       <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <input id="cover-${i}" type="text" placeholder="URL portada (imgbb.com)" value="${_overrides[`cover_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
-        <button onclick="saveCover(${i})" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+        <input id="read-${b.id}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${_overrides[`read_${b.id}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
+        <button onclick="saveRead(${i},'${b.id}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="cover-${b.id}" type="text" placeholder="URL portada" value="${_overrides[`cover_${b.id}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
+        <button onclick="saveCover(${i},'${b.id}')" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
-        <select id="cat-${i}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+        <select id="cat-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
           <option value="">— Categoría: ${CAT_ES[b.c]||b.c} —</option>
           ${catOptions}
         </select>
-        <button onclick="saveCat(${i})" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+        <button onclick="saveCat(${i},'${b.id}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;align-items:center">
-        <select id="div-${i}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+        <select id="div-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
           <option value="">— Autoría —</option>
-          <option value="Latinx" ${(_overrides[`div_${i}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
-          <option value="BIPOC" ${(_overrides[`div_${i}`])==='BIPOC'?'selected':''}>BIPOC</option>
-          <option value="Latinx,BIPOC" ${(_overrides[`div_${i}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
-          <option value="Creadora" ${(_overrides[`div_${i}`])==='Creadora'?'selected':''}>Creadora ✦</option>
+          <option value="Latinx" ${(_overrides[`div_${b.id}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
+          <option value="BIPOC" ${(_overrides[`div_${b.id}`])==='BIPOC'?'selected':''}>BIPOC</option>
+          <option value="Latinx,BIPOC" ${(_overrides[`div_${b.id}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+          <option value="Creadora" ${(_overrides[`div_${b.id}`])==='Creadora'?'selected':''}>Creadora ✦</option>
         </select>
-        <button onclick="saveDiversity(${i})" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+        <button onclick="saveDiversity(${i},'${b.id}')" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
     </div>`).join('');
   list.scrollTop=scrollTop; // restore scroll position
@@ -1031,6 +1041,15 @@ function deleteRec(key){
 }
 window.deleteRec=deleteRec;
 
+function deleteMainBook(i,id){
+  if(!confirm('¿Eliminar "'+B[i].t+'" de la biblioteca?')) return;
+  set(ref(db,'overrides/hidden_'+id),true);
+  const row=document.getElementById('admin-row-'+id);
+  if(row) row.style.display='none';
+  showAdminFeedback('✓ Libro eliminado de la vista');
+}
+window.deleteMainBook=deleteMainBook;
+
 function saveCurrentBook(){
   const val=document.getElementById('admin-current').value;
   const date=document.getElementById('admin-cur-date').value.trim();
@@ -1040,28 +1059,28 @@ function saveCurrentBook(){
   showAdminFeedback('✓ Libro del mes guardado');
 }
 function saveRead(i){
-  const val=document.getElementById('read-'+i).value.trim();
-  if(val) set(ref(db,`overrides/read_${i}`),val);
-  else remove(ref(db,`overrides/read_${i}`));
+  const val=document.getElementById('read-'+b.id).value.trim();
+  if(val) set(ref(db,`overrides/read_${B[i].id}`),val);
+  else remove(ref(db,`overrides/read_${B[i].id}`));
   showAdminFeedback('✓ Guardado');
 }
 function saveCover(i){
-  const val=document.getElementById('cover-'+i).value.trim();
-  if(val) set(ref(db,`overrides/cover_${i}`),val);
-  else remove(ref(db,`overrides/cover_${i}`));
+  const val=document.getElementById('cover-'+b.id).value.trim();
+  if(val) set(ref(db,`overrides/cover_${B[i].id}`),val);
+  else remove(ref(db,`overrides/cover_${B[i].id}`));
   showAdminFeedback('✓ Portada guardada');
 }
 function saveDiversity(i){
-  const val=document.getElementById('div-'+i).value;
-  if(val) set(ref(db,`overrides/div_${i}`),val);
-  else remove(ref(db,`overrides/div_${i}`));
+  const val=document.getElementById('div-'+b.id).value;
+  if(val) set(ref(db,`overrides/div_${B[i].id}`),val);
+  else remove(ref(db,`overrides/div_${B[i].id}`));
   showAdminFeedback('✓ Autoría guardada');
 }
 function saveCat(i){
-  const val=document.getElementById('cat-'+i).value;
+  const val=document.getElementById('cat-'+b.id).value;
   if(val){
-    B[i].c=val; // update in memory
-    set(ref(db,`overrides/cat_${i}`),val);
+    B[i].c=val;
+    set(ref(db,`overrides/cat_${id}`),val);
     showAdminFeedback('✓ Categoría guardada');
   }
 }
@@ -1075,8 +1094,8 @@ function showAdminFeedback(msg){
   setTimeout(()=>{fb.style.opacity='0';setTimeout(()=>fb.remove(),500);},2000);
 }
 function setCurrentBook(val){set(ref(db,'overrides/currentBook'),val===''?null:parseInt(val));}
-function setRead(i,val){if(val.trim())set(ref(db,`overrides/read_${i}`),val.trim());else remove(ref(db,`overrides/read_${i}`));}
-function setCover(i,val){if(val.trim())set(ref(db,`overrides/cover_${i}`),val.trim());else remove(ref(db,`overrides/cover_${i}`));}
+function setRead(i,val){if(val.trim())set(ref(db,`overrides/read_${B[i].id}`),val.trim());else remove(ref(db,`overrides/read_${B[i].id}`));}
+function setCover(i,val){if(val.trim())set(ref(db,`overrides/cover_${B[i].id}`),val.trim());else remove(ref(db,`overrides/cover_${B[i].id}`));}
 window.saveCurrentBook=saveCurrentBook; window.saveRead=saveRead; window.saveCover=saveCover;
 window.setCurrentBook=setCurrentBook; window.setRead=setRead; window.setCover=setCover;
 window.set=set; window.ref=ref; window.db=db;
