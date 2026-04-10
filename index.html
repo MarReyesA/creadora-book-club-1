@@ -600,7 +600,7 @@ function renderBooks(votesData){
     const ph=`<div class="cph" ${cv?'style="display:none"':''}><div class="cph-t">${b.t}</div><div class="cph-a">${b.a}</div></div>`;
     const badge=isCurrent?`<div class="cb-pick">📖 Leyendo</div>`:isRead?`<div class="cb-read">✓ ${isRead}</div>`:'';
     const div=ov[`div_${i}`]||(b.lat?'Latinx':'');
-    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'🌎✊🏽':div==='Latinx'?'🌎 Latina':div==='BIPOC'?'✊🏽 BIPOC':div==='Creadora'?'✦ Creadora':'';
+    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>';
@@ -695,7 +695,7 @@ function openModal(i){
     ?'<div style="text-align:center;font-size:.78rem;color:var(--muted);font-style:italic;padding:.5rem 0">✓ Ya lo leímos juntas en '+isRead+'</div>'
     :'<button id="mbv" class="vbtn'+(isV?' voted':'')+'" style="width:100%;padding:.6rem;font-size:.85rem;margin-bottom:.5rem" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar por este libro')+'</button>';
   const div=ov[`div_${i}`]||(b.lat?'Latinx':'');
-  const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'🌎✊🏽 Latinx + BIPOC':div==='Latinx'?'🌎 Autora Latina':div==='BIPOC'?'✊🏽 BIPOC':div==='Creadora'?'✦ Autora Creadora':'';
+  const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Autora Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Autora Creadora ✦':'';
   document.getElementById('mcontent').innerHTML=imgH
     +'<div class="mbody">'
     +'<div class="mbadges">'+catTag(b.c)+(divLabel?'<span style="font-size:.62rem;font-weight:500;color:var(--sage-dk);background:var(--sage-lt);padding:2px 7px;border-radius:100px">'+divLabel+'</span>':'')+(isCurrent?'<span style="font-size:.62rem;font-weight:500;color:var(--lila-dk);background:var(--lila-lt);padding:2px 7px;border-radius:100px">📖 Leyendo</span>':'')+'</div>'
@@ -873,10 +873,10 @@ function renderAdminPanel(){
           <div style="display:flex;gap:.4rem;align-items:center">
             <select id="div-${i}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
               <option value="">— Autoría —</option>
-              <option value="Latinx" ${(_overrides[`div_${i}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>🌎 Latinx</option>
-              <option value="BIPOC" ${(_overrides[`div_${i}`])==='BIPOC'?'selected':''}>✊🏽 BIPOC</option>
-              <option value="Latinx,BIPOC" ${(_overrides[`div_${i}`])==='Latinx,BIPOC'?'selected':''}>🌎✊🏽 Latinx + BIPOC</option>
-              <option value="Creadora" ${(_overrides[`div_${i}`])==='Creadora'?'selected':''}>✦ Creadora</option>
+              <option value="Latinx" ${(_overrides[`div_${i}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
+              <option value="BIPOC" ${(_overrides[`div_${i}`])==='BIPOC'?'selected':''}>BIPOC</option>
+              <option value="Latinx,BIPOC" ${(_overrides[`div_${i}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+              <option value="Creadora" ${(_overrides[`div_${i}`])==='Creadora'?'selected':''}>Creadora ✦</option>
             </select>
             <button onclick="saveDiversity(${i})" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
           </div>
