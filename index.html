@@ -131,7 +131,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem;margin-top:1.5rem}
 
 /* BUY POPUP */
-.overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(42,35,24,.5);align-items:center;justify-content:center;padding:1rem}
+.overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(42,35,24,.5);align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto}
 .overlay.open{display:flex}
 #buy-ov{z-index:600}
 .buy-box{background:var(--white);border-radius:var(--rl);max-width:520px;width:100%;padding:1.5rem;position:relative}
@@ -513,7 +513,7 @@ function coverImgTag(b, i, cls, style, size){
 const CC={
   'Money Mindset':    ['#e8f2ee','#4e7060'],
   'Manifesting':      ['#f0ecf8','#7a6fa0'],
-  'Finding Purpose':  ['#e8f2ee','#4e7060'],
+  'Finding Purpose':  ['#e8edf5','#4a5c7a'],
   'Female Entrepreneurship':['#fdf0ed','#b05848'],
   'Women Rising':     ['#fdf0f5','#a0507a'],
   'Healing':          ['#edf5f0','#3a6e50'],
@@ -663,14 +663,14 @@ function renderBooks(votesData){
     const ph=`<div class="cph" ${cv?'style="display:none"':''}><div class="cph-t">${b.t}</div><div class="cph-a">${b.a}</div></div>`;
     const badge=isCurrent?`<div class="cb-pick">📖 Leyendo</div>`:isRead?`<div class="cb-read">✓ ${isRead}</div>`:'';
     const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
-    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
+    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
     const langLabel=ov[`lang_${b.id}`]||b.lang||'';
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>';
     return '<div class="card">'
-      +'<div class="cimgw" onclick="openModal('+i+')">'+(img)+(ph)+(badge)+(divLabel?'<div class="cb-lat" style="background:var(--sal-dk)">'+divLabel+'</div>':'')+'</div>'
+      +'<div class="cimgw" onclick="openModal('+i+')">'+(img)+(ph)+(badge)+(divLabel?'<div class="cb-lat" style="background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+'">'+divLabel+'</div>':'')+'</div>'
       +'<div class="cbody">'+catTag(bCat)
       +'<div class="ctitle" onclick="openModal('+i+')">'+(b.t)+'</div>'
       +'<div class="cauthor">'+(b.a)+'</div>'
@@ -761,7 +761,7 @@ function openModal(i){
     ?'<div style="text-align:center;font-size:.78rem;color:var(--muted);font-style:italic;padding:.5rem 0">✓ Ya lo leímos juntas en '+isRead+'</div>'
     :'<button id="mbv" class="vbtn'+(isV?' voted':'')+'" style="width:100%;padding:.6rem;font-size:.85rem;margin-bottom:.5rem" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar por este libro')+'</button>';
   const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
-  const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Autora Latina ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Autora Creadora ✦':'';
+  const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Autora Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Autora Creadora ✦':'';
   document.getElementById('mcontent').innerHTML=imgH
     +'<div class="mbody">'
     +'<div class="mbadges">'+catTag(b.c)+(divLabel?'<span style="font-size:.62rem;font-weight:500;color:var(--sage-dk);background:var(--sage-lt);padding:2px 7px;border-radius:100px">'+divLabel+'</span>':'')+(isCurrent?'<span style="font-size:.62rem;font-weight:500;color:var(--lila-dk);background:var(--lila-lt);padding:2px 7px;border-radius:100px">📖 Leyendo</span>':'')+'</div>'
@@ -779,7 +779,7 @@ function openModal(i){
     +'<textarea id="cm-t-'+i+'" rows="2" placeholder="Escribe tu reseña o comentario..."></textarea>'
     +'<button onclick="postComment(\'book-'+i+'\',document.getElementById(\'cm-n-'+i+'\'),document.getElementById(\'cm-t-'+i+'\'))">Publicar comentario</button>'
     +'</div></div></div>';
-  document.getElementById('mov').classList.add('open');
+  const mov=document.getElementById('mov');mov.classList.add('open');mov.scrollTop=0;
   document.body.style.overflow='hidden';
   listenComments(`book-${i}`, document.getElementById(`cm-list-${i}`));
 }
@@ -1121,8 +1121,20 @@ renderReadCarousel();
 
 // Admin panel
 if(ADMIN) {
-  // slight delay so overrides load first
-  setTimeout(renderAdminPanel, 800);
+  setTimeout(()=>{
+    renderAdminPanel();
+    // Add floating button to reopen if closed
+    const btn=document.createElement('button');
+    btn.id='admin-fab';
+    btn.textContent='⚙ Admin';
+    btn.onclick=()=>{
+      const p=document.getElementById('admin-panel');
+      if(p) p.style.display=p.style.display==='none'?'block':'none';
+      else renderAdminPanel();
+    };
+    btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:var(--lila-dk);color:#fff;border:none;padding:.4rem .9rem;border-radius:100px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)';
+    document.body.appendChild(btn);
+  }, 800);
 }
 
 // FAQS
