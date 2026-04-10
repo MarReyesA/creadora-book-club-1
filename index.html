@@ -856,40 +856,48 @@ function renderAdminPanel(){
     <div style="font-size:.68rem;color:var(--muted);margin-bottom:.5rem;line-height:1.4;background:var(--lila-lt);padding:.5rem .6rem;border-radius:8px">
       ⚠️ Links de Amazon no funcionan. Usa links de <strong>Open Library</strong> (ya incluidos) o sube tu imagen a <a href="https://imgbb.com" target="_blank" style="color:var(--lila-dk)">imgbb.com</a> y pega el link directo.
     </div>
-    <div style="max-height:340px;overflow-y:auto">
-      ${B.map((b,i)=>{
-        const div=_overrides[`div_${i}`]||b.lat?'Latinx':'';
-        return`
-        <div style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
-          <div style="font-size:.72rem;font-weight:500;margin-bottom:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div>
-          <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-            <input id="read-${i}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${_overrides[`read_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
-            <button onclick="saveRead(${i})" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-          </div>
-          <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-            <input id="cover-${i}" type="text" placeholder="URL portada (imgbb.com)" value="${_overrides[`cover_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
-            <button onclick="saveCover(${i})" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-          </div>
-          <div style="display:flex;gap:.4rem;align-items:center">
-            <select id="div-${i}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
-              <option value="">— Autoría —</option>
-              <option value="Latinx" ${(_overrides[`div_${i}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
-              <option value="BIPOC" ${(_overrides[`div_${i}`])==='BIPOC'?'selected':''}>BIPOC</option>
-              <option value="Latinx,BIPOC" ${(_overrides[`div_${i}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
-              <option value="Creadora" ${(_overrides[`div_${i}`])==='Creadora'?'selected':''}>Creadora ✦</option>
-            </select>
-            <button onclick="saveDiversity(${i})" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
+    <input id="admin-search" type="text" placeholder="🔍 Buscar libro por título o autor..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.45rem .7rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--white);margin-bottom:.5rem;outline:none">
+    <div id="admin-book-list" style="max-height:340px;overflow-y:auto"></div>
 
     <div style="margin-top:.875rem;border-top:1px solid var(--bdr);padding-top:.875rem">
       <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV (${_recs.length} libros)</button>
     </div>
     <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
   `;
+  // populate book list
+  filterAdminBooks('');
 }
+
+function filterAdminBooks(q){
+  q=(q||'').toLowerCase();
+  const list=document.getElementById('admin-book-list');
+  if(!list) return;
+  const filtered=B.map((b,i)=>({b,i})).filter(({b})=>!q||b.t.toLowerCase().includes(q)||b.a.toLowerCase().includes(q));
+  if(!filtered.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
+  list.innerHTML=filtered.map(({b,i})=>`
+    <div style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
+      <div style="font-size:.72rem;font-weight:500;margin-bottom:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="read-${i}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${_overrides[`read_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
+        <button onclick="saveRead(${i})" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="cover-${i}" type="text" placeholder="URL portada (imgbb.com)" value="${_overrides[`cover_${i}`]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
+        <button onclick="saveCover(${i})" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <select id="div-${i}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+          <option value="">— Autoría —</option>
+          <option value="Latinx" ${(_overrides[`div_${i}`]||(b.lat?'Latinx':''))==='Latinx'?'selected':''}>Latinx ✦</option>
+          <option value="BIPOC" ${(_overrides[`div_${i}`])==='BIPOC'?'selected':''}>BIPOC</option>
+          <option value="Latinx,BIPOC" ${(_overrides[`div_${i}`])==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+          <option value="Creadora" ${(_overrides[`div_${i}`])==='Creadora'?'selected':''}>Creadora ✦</option>
+        </select>
+        <button onclick="saveDiversity(${i})" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+    </div>`).join('');
+}
+window.filterAdminBooks=filterAdminBooks;
 
 function saveCurrentBook(){
   const val=document.getElementById('admin-current').value;
