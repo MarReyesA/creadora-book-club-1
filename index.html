@@ -61,7 +61,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .vote-hdr p{font-size:1rem;color:var(--muted)}
 
 /* RANKING CAROUSEL */
-.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none;flex-wrap:wrap}
+.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none}
 .carousel::-webkit-scrollbar{display:none}
 .rk-card{flex-shrink:0;width:110px;cursor:pointer;transition:transform .15s;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(42,35,24,.12)}
 .rk-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(42,35,24,.18)}
@@ -106,9 +106,10 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .crec{font-size:.74rem;color:var(--light);margin-bottom:.35rem}
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);margin-bottom:.45rem;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3)}
 .cget:hover{color:var(--sal-dk)}
-.share-row{display:flex;gap:.35rem;margin-bottom:.35rem}
-.share-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--bdr);background:var(--white);cursor:pointer;font-size:.75rem;text-decoration:none;transition:all .15s;flex-shrink:0}
-.share-btn:hover{transform:scale(1.12);border-color:var(--lila)}
+.share-row{margin-bottom:.35rem}
+.share-btn{display:inline-flex;align-items:center;gap:.3rem;background:none;border:none;color:var(--muted);font-family:var(--fb);font-size:.75rem;cursor:pointer;padding:0;transition:color .15s}
+.share-btn:hover{color:var(--lila-dk)}
+.share-btn svg{flex-shrink:0}
 .vrow{margin-top:auto;display:flex;align-items:center;gap:.4rem}
 .vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
 .vbtn:hover{border-color:var(--lila-dk);color:var(--lila-dk);background:var(--lila-lt)}
@@ -310,7 +311,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
     <!-- LEÍDOS JUNTAS -->
     <div style="padding-bottom:3rem">
       <div style="font-family:var(--ft);font-size:clamp(1.1rem,2.5vw,1.4rem);font-weight:400;color:var(--text);text-align:center;margin-bottom:1.1rem">Libros que hemos leído juntas</div>
-      <div class="carousel" id="read-carousel">
+      <div class="carousel" id="read-carousel" style="padding:.5rem 0 1rem">
         <div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>
       </div>
     </div>
@@ -565,8 +566,8 @@ function detectAdmin(){
 const ADMIN = detectAdmin();
 
 // ── FIREBASE LISTENERS ──
-onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{};    renderRanking(); renderBooks(); });
-onValue(ref(db,'votesRec'),s=>{ _votesRec=s.val()||{}; renderRecBooks(); });
+onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{}; renderRanking(); renderBooks(); });
+onValue(ref(db,'votesRec'),s=>{ _votesRec=s.val()||{}; renderRanking(); renderRecBooks(); });
 onValue(ref(db,'recs'),    s=>{
   _recs = s.val() ? Object.entries(s.val()).map(([k,v])=>({...v,_key:k})).sort((a,b)=>(b.ts||0)-(a.ts||0)) : [];
   renderRecBooks(); 
@@ -613,16 +614,24 @@ function renderBookOfMonth(){
 function renderRanking(){
   const el=document.getElementById('ranking');
   if(!el) return;
-  const ranked=Object.entries(_votes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  // Combine main votes and rec votes
+  const allVotes={..._votes};
+  Object.entries(_votesRec).forEach(([k,v])=>{ if(v>0) allVotes[k]=(allVotes[k]||0)+v; });
+  const ranked=Object.entries(allVotes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
   el.innerHTML=ranked.map(([key,count])=>{
-    // key can be either a book id (string) or legacy numeric index
     const b=B.find(x=>x.id===key)||B[parseInt(key)];
-    const i=B.indexOf(b);
-    if(!b) return '';
-    const imgTag=coverImgTag(b,b.id,'rk-thumb','','M');
+    const rec=!b?_recs.find(r=>r._key===key):null;
+    if(!b&&!rec) return '';
+    const i=b?B.indexOf(b):-1;
+    const title=b?b.t:rec.t;
+    const cover=b?null:(rec.cover||'');
+    const imgTag=b
+      ? coverImgTag(b,b.id,'rk-thumb','','M')
+      : (cover?`<img class="rk-thumb" src="${cover}" onerror="this.style.display='none'">`:'');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
-    return'<div class="rk-card" onclick="openModal('+i+')" title="'+b.t+'">'
+    const onclick=b?`openModal(${i})`:`openBuyRec('${encodeURIComponent(title)}','${encodeURIComponent(rec?.a||'')}',event)`;
+    return'<div class="rk-card" onclick="'+onclick+'" title="'+title+'">'
       +'<div class="rk-wrap" style="position:relative">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
       +'</div></div>';
@@ -674,10 +683,11 @@ function renderBooks(votesData){
   const g=document.getElementById('grid'); if(!g) return;
   const terms=q.length>0?expandSearch(q):null;
 
-  // All books — main books get ts=0, recs have real timestamps
-  const mainBooks=B
+  // Main books sorted A-Z
+  const mainBooks=[...B]
     .filter(b=>!_overrides['hidden_'+b.id])
-    .map((b,idx)=>({...b,_isRec:false,_ts:idx}));
+    .sort((a,b)=>a.t.localeCompare(b.t,'es'))
+    .map(b=>({...b,_isRec:false}));
   const recBooks=_recs.map(r=>({_read:r.read||'',
     t:r.t, a:r.a||'', c:r.c||'', sub:(typeof r.stl==='string'?r.stl:'')||(typeof r.sub==='string'?r.sub:'')||_gbCache[r._key]?.sub||'',
     d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
@@ -686,13 +696,15 @@ function renderBooks(votesData){
   // Fetch Google Books data for any rec without cache
   _recs.forEach(r=>{ if(!_gbCache[r._key]) fetchGoogleBooks(r); });
 
-  // Single unified list — recs newest first, then main books in original order
-  const allBooks=[..._recs.map(r=>recBooks.find(x=>x._key===r._key)).filter(Boolean),...mainBooks];
+  // Recs newest first, then main books A-Z
+  const allBooks=[...recBooks,...mainBooks];
 
   const f=allBooks.filter(b=>{
+    const i=b._isRec?-1:B.indexOf(b);
+    const isRead=b._isRec?b._read:(_overrides[`read_${b.id}`]||_overrides[`read_${i}`]);
     const div=b._isRec?(b._div||''):((_overrides['div_'+b.id])||(b.lat?'Latinx':''));
     const isLatinx=div.includes('Latinx')||div.includes('Creadora');
-    const catMatch=curCat==='all'||(curCat==='latinx'?isLatinx:b.c===curCat);
+    const catMatch=curCat==='all'?!isRead:(curCat==='latinx'?isLatinx:b.c===curCat);
     return catMatch&&(!terms||bookMatches(b,terms));
   });
   if(!f.length){
@@ -827,15 +839,26 @@ window.openBuy=openBuy; window.closeBuy=closeBuy;
 // ── BOOK MODAL ──
 function shareRow(title, author){
   const url='https://marreyes.com/book-club';
-  const txt=encodeURIComponent('📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club! '+url);
-  const fbUrl='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)+'&quote='+encodeURIComponent('📚 Vota por "'+title+'" en Creadora Book Club!');
-  return '<div class="share-row">'
-    +'<a class="share-btn" href="https://wa.me/?text='+txt+'" target="_blank" title="WhatsApp" style="background:#25d366"><span style="font-size:.7rem">💬</span></a>'
-    +'<a class="share-btn" href="https://www.instagram.com/" target="_blank" title="Instagram" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"><span style="font-size:.7rem">📸</span></a>'
-    +'<a class="share-btn" href="'+fbUrl+'" target="_blank" title="Facebook" style="background:#1877f2"><span style="font-size:.7rem">👥</span></a>'
-    +'<span style="font-size:.62rem;color:var(--light);align-self:center;margin-left:.2rem">¡Comparte y junta votos!</span>'
-    +'</div>';
+  const text='📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club!';
+  const shareIcon='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
+  const onclick="shareBook('"+title.replace(/'/g,"\'")+"','"+author.replace(/'/g,"\'"||'')+"')";
+  return '<div class="share-row"><button class="share-btn" onclick="'+onclick+'">'+shareIcon+' Compartir</button></div>';
 }
+
+function shareBook(title, author){
+  const url='https://marreyes.com/book-club';
+  const text='📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club!';
+  if(navigator.share){
+    navigator.share({title:'Creadora Book Club', text, url}).catch(()=>{});
+  } else {
+    // fallback: copy link + show options
+    const wa='https://wa.me/?text='+encodeURIComponent(text+' '+url);
+    const fb='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);
+    const choice=confirm(text+'\n\n¿Compartir en WhatsApp? (Cancelar = Facebook)');
+    window.open(choice?wa:fb,'_blank');
+  }
+}
+window.shareBook=shareBook;
 
 function openModal(i){
   const b=B[i], isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
