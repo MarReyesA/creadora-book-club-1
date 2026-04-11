@@ -251,10 +251,18 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       </div>
       <div class="ldm-body">
         <div class="ldm-label" id="ldm-label">Estamos leyendo</div>
-        <div class="ldm-title" id="ldm-title">Cargando...</div>
+        <div class="ldm-title" id="ldm-title">El libro del mes será anunciado aquí</div>
+        <div id="ldm-badges" style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.5rem"></div>
         <div class="ldm-author" id="ldm-author"></div>
-        <div class="ldm-desc" id="ldm-desc"></div>
+        <div class="ldm-desc" id="ldm-desc">Vota antes del <span id="ldm-vote-deadline">13 de Abril</span></div>
         <div class="ldm-date" id="ldm-date"></div>
+        <div id="ldm-actions" style="display:none;margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
+          <button id="ldm-get-btn" class="cget" style="font-size:.85rem" onclick="">Consíguelo aquí →</button>
+          <button id="ldm-share-btn" class="share-btn" onclick="">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            Invita a tus amigas
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -595,25 +603,49 @@ onValue(ref(db,'overrides'), s=>{
 // ── LIBRO DEL MES ──
 function renderBookOfMonth(){
   const cur = _overrides.currentBook;
-  const ldmTitle  = document.getElementById('ldm-title');
-  const ldmAuthor = document.getElementById('ldm-author');
-  const ldmDesc   = document.getElementById('ldm-desc');
-  const ldmDate   = document.getElementById('ldm-date');
-  const ldmImg    = document.getElementById('ldm-img-wrap');
+  const ldmTitle   = document.getElementById('ldm-title');
+  const ldmAuthor  = document.getElementById('ldm-author');
+  const ldmDesc    = document.getElementById('ldm-desc');
+  const ldmDate    = document.getElementById('ldm-date');
+  const ldmImg     = document.getElementById('ldm-img-wrap');
+  const ldmBadges  = document.getElementById('ldm-badges');
+  const ldmActions = document.getElementById('ldm-actions');
+  const ldmDeadline= document.getElementById('ldm-vote-deadline');
+
   if(cur!==undefined && cur!==null && B[cur]){
     const b=B[cur];
     const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
     ldmTitle.textContent=b.t;
     ldmAuthor.textContent=b.a;
-    ldmDesc.textContent=b.d;
+    ldmDesc.textContent=_overrides.ldmMessage||b.d||'';
     ldmDate.textContent=_overrides.currentBookDate||'';
     ldmImg.innerHTML=cv?`<img src="${cv}" alt="${b.t}" onerror="this.parentNode.innerHTML='<span style=font-size:2rem>📖</span>'">`:'<span style="font-size:2rem">📖</span>';
+    // Badges: lang + diversity
+    const div=_overrides[`div_${b.id}`]||(b.lat?'Latinx':'');
+    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latinx · BIPOC':div==='Latinx'?'Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
+    const lang=_overrides[`lang_${b.id}`]||b.lang||'';
+    const langBadge=lang==='both'?'ENG / ESP':lang==='eng'?'ENG':lang==='esp'?'ESP':'';
+    if(ldmBadges){
+      ldmBadges.innerHTML=''
+        +(langBadge?`<span style="font-size:.7rem;font-weight:500;color:var(--muted);background:var(--beige2);padding:2px 8px;border-radius:100px">${langBadge}</span>`:'')
+        +(divLabel?`<span style="font-size:.7rem;font-weight:600;background:#ffb7a4;color:#7a3a2a;padding:2px 8px;border-radius:100px">${divLabel}</span>`:'');
+    }
+    // Buttons
+    if(ldmActions){
+      ldmActions.style.display='flex';
+      const getBtn=document.getElementById('ldm-get-btn');
+      const shareBtn=document.getElementById('ldm-share-btn');
+      if(getBtn) getBtn.onclick=()=>openBuy(cur,event);
+      if(shareBtn) shareBtn.onclick=()=>shareBook(b.t,b.a);
+    }
   } else {
-    ldmTitle.textContent='Próximamente';
+    ldmTitle.textContent=_overrides.ldmMessage||'El libro del mes será anunciado aquí';
     ldmAuthor.textContent='';
-    ldmDesc.textContent='El libro del mes será anunciado en nuestro grupo de WhatsApp.';
+    ldmDesc.innerHTML='Vota antes del <span id="ldm-vote-deadline">'+((_overrides.ldmDeadline)||'13 de Abril')+'</span>';
     ldmDate.textContent='';
     ldmImg.innerHTML='<span style="font-size:2rem">📖</span>';
+    if(ldmBadges) ldmBadges.innerHTML='';
+    if(ldmActions) ldmActions.style.display='none';
   }
 }
 
@@ -970,6 +1002,7 @@ window.postComment=postComment; window.delComment=delComment;
 // ── ADD BOOK FORM ──
 function showAddForm(){
   document.getElementById('add-overlay').classList.add('open');
+  document.getElementById('add-overlay').scrollTop=0;
   document.getElementById('add-form-inner').style.display='block';
   document.getElementById('add-form-ok').style.display='none';
   ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
@@ -1148,6 +1181,8 @@ function renderAdminPanel(force){
         ${B.map((b,i)=>`<option value="${i}" ${_overrides.currentBook==i?'selected':''}>${b.t}</option>`).join('')}
       </select>
       <input id="admin-cur-date" type="text" placeholder="Ej: Círculo: 8 de Abril 2026" value="${_overrides.currentBookDate||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+      <input id="admin-ldm-deadline" type="text" placeholder="Fecha límite para votar (ej: 13 de Abril)" value="${_overrides.ldmDeadline||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+      <textarea id="admin-ldm-message" placeholder="Mensaje personalizado (opcional, reemplaza la descripción)" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem;resize:vertical;min-height:60px">${_overrides.ldmMessage||''}</textarea>
       <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.45rem;border-radius:8px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
     </div>
 
@@ -1318,9 +1353,15 @@ window.deleteMainBook=deleteMainBook;
 function saveCurrentBook(){
   const val=document.getElementById('admin-current').value;
   const date=document.getElementById('admin-cur-date').value.trim();
+  const deadline=document.getElementById('admin-ldm-deadline').value.trim();
+  const message=document.getElementById('admin-ldm-message').value.trim();
   set(ref(db,'overrides/currentBook'), val===''?null:parseInt(val));
   if(date) set(ref(db,'overrides/currentBookDate'),date);
   else remove(ref(db,'overrides/currentBookDate'));
+  if(deadline) set(ref(db,'overrides/ldmDeadline'),deadline);
+  else remove(ref(db,'overrides/ldmDeadline'));
+  if(message) set(ref(db,'overrides/ldmMessage'),message);
+  else remove(ref(db,'overrides/ldmMessage'));
   showAdminFeedback('✓ Libro del mes guardado');
 }
 function saveRead(i,id){
@@ -1449,6 +1490,14 @@ if(fl) fl.innerHTML=FAQS.map((f,i)=>`
     <div class="fa" id="fa${i}">${f.a}</div>
   </div>`).join('');
 
+</script>
+<script>
+function notifyHeight(){
+  const h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);
+  window.parent.postMessage({iframeHeight:h},'*');
+}
+setInterval(notifyHeight,600);
+window.addEventListener('load',notifyHeight);
 </script>
 </body>
 </html>
