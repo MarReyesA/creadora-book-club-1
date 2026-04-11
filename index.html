@@ -135,7 +135,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem;margin-top:1.5rem}
 
 /* BUY POPUP */
-.overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(42,35,24,.5);align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto}
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:rgba(42,35,24,.5);align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .overlay.open{display:flex}
 #buy-ov{z-index:600}
 .buy-box{background:var(--white);border-radius:var(--rl);max-width:520px;width:100%;padding:1.5rem;position:relative}
@@ -927,9 +927,7 @@ function openRecModal(encT,encA,encD,encCover,key,e){
     +'<button class="mbtn-get" onclick="closeModal();openBuyRec(\''+encT+'\',\''+encA+'\',event)">Consíguelo aquí →</button>'
     +shareRow(t,a)
     +'</div>';
-  document.getElementById('mov').classList.add('open');
-  document.getElementById('mov').scrollTop=0;
-  document.body.style.overflow='hidden';
+  const mov2=document.getElementById('mov');mov2.classList.add('open');mov2.scrollTop=0;
 }
 window.openRecModal=openRecModal;
 
@@ -962,10 +960,9 @@ function openModal(i){
     +'<button onclick="postComment(\'book-'+i+'\',document.getElementById(\'cm-n-'+i+'\'),document.getElementById(\'cm-t-'+i+'\'))">Publicar comentario</button>'
     +'</div></div></div>';
   const mov=document.getElementById('mov');mov.classList.add('open');mov.scrollTop=0;
-  document.body.style.overflow='hidden';
   listenComments(`book-${i}`, document.getElementById(`cm-list-${i}`));
 }
-function closeModal(){document.getElementById('mov').classList.remove('open');document.body.style.overflow='';}
+function closeModal(){document.getElementById('mov').classList.remove('open');}
 window.openModal=openModal; window.closeModal=closeModal;
 
 // ── COMMENTS ──
@@ -1001,8 +998,7 @@ window.postComment=postComment; window.delComment=delComment;
 
 // ── ADD BOOK FORM ──
 function showAddForm(){
-  document.getElementById('add-overlay').classList.add('open');
-  document.getElementById('add-overlay').scrollTop=0;
+  const ao=document.getElementById('add-overlay');ao.classList.add('open');ao.scrollTop=0;
   document.getElementById('add-form-inner').style.display='block';
   document.getElementById('add-form-ok').style.display='none';
   ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
@@ -1061,6 +1057,8 @@ function submitRec(){
   }
 
   localStorage.setItem('cbcUser', JSON.stringify({n,e}));
+  // Subscribe to Mailchimp
+  subscribeMailchimp(e, n);
   const btn=document.getElementById('rec-submit-btn');
   if(btn){btn.disabled=true;btn.textContent='Buscando info del libro...';}
 
@@ -1349,6 +1347,27 @@ function deleteMainBook(i,id){
   showAdminFeedback('✓ Libro eliminado de la vista');
 }
 window.deleteMainBook=deleteMainBook;
+
+function subscribeMailchimp(email, name){
+  try {
+    const firstName=name.split(' ')[0]||'';
+    const lastName=name.split(' ').slice(1).join(' ')||'';
+    // Use Mailchimp's jsonp endpoint (no CORS issues)
+    const url='https://creadoraclub.us4.list-manage.com/subscribe/post-json'
+      +'?u=52389111582a54d6635ec8af6'
+      +'&id=7c0bb0d1e1'
+      +'&EMAIL='+encodeURIComponent(email)
+      +'&FNAME='+encodeURIComponent(firstName)
+      +'&LNAME='+encodeURIComponent(lastName)
+      +'&tags=book+club'
+      +'&c=mcCallback';
+    const s=document.createElement('script');
+    s.src=url;
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),3000);
+  } catch(e){}
+}
+window.mcCallback=function(){};  // silent callback
 
 function saveCurrentBook(){
   const val=document.getElementById('admin-current').value;
