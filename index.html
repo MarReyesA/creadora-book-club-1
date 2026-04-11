@@ -298,12 +298,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
     <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
 
     <!-- COUNTER -->
-    <!-- LIBROS AGREGADOS POR LA COMUNIDAD -->
-    <div id="rec-section" style="margin-top:2rem;display:none">
-      <div style="font-family:var(--ft);font-size:clamp(1.1rem,2.5vw,1.3rem);font-weight:400;color:var(--text);margin-bottom:1rem">Libros sugeridos por la comunidad</div>
-      <div id="rec-list" class="grid"></div>
-    </div>
-
     <div class="counter-wrap">
       <div style="font-family:var(--ft);font-size:clamp(2rem,5vw,3rem);font-weight:400;color:var(--lila-dk)" id="counter-num">42</div>
       <div style="font-size:.875rem;color:var(--muted);margin-top:.25rem">Libros recomendados por nuestras Creadoras</div>
@@ -356,12 +350,12 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       </div>
       <div id="form-name-row">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder="María García"></div>
-          <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder="maria@ejemplo.com"></div>
+          <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder=""></div>
+          <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder=""></div>
         </div>
         <div style="font-size:.75rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>
       </div>
-      <button onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
+      <button id="rec-submit-btn" onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
       <div style="text-align:center;font-size:.72rem;color:var(--light);margin-top:.6rem">Al enviar aceptas recibir novedades del Book Club.</div>
     </div>
     <div id="add-form-ok" style="display:none;text-align:center;padding:1.5rem">
@@ -550,7 +544,7 @@ const SVR = JSON.parse(sessionStorage.getItem('cbcVR')||'{}');
 // cached Firebase data
 let _votes={}, _votesRec={}, _recs=[], _overrides={};
 let curCat='all', curPage=0;
-const PAGE_SIZE=12;
+const PAGE_SIZE=15;
 // Admin detection - works both standalone and inside Squarespace iframe
 function detectAdmin(){
   try {
@@ -648,51 +642,103 @@ function bookMatches(b,terms){
 }
 
 // ── BOOKS GRID ──
+// Cache for Google Books data fetched for rec books
+const _gbCache={};
+function fetchGoogleBooks(r){
+  if(_gbCache[r._key]) return;
+  _gbCache[r._key]='loading';
+  const q=encodeURIComponent(r.t+(r.a?' '+r.a:''));
+  fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`)
+    .then(res=>res.json())
+    .then(data=>{
+      const item=data.items&&data.items[0];
+      if(!item){_gbCache[r._key]={};return;}
+      const info=item.volumeInfo||{};
+      _gbCache[r._key]={
+        cover:(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:'),
+        desc:info.description||info.subtitle||'',
+        sub:info.subtitle||''
+      };
+      renderBooks(); // re-render with new data
+    })
+    .catch(()=>{_gbCache[r._key]={};});
+}
+
 function renderBooks(votesData){
   if(votesData!==undefined) _votes=votesData;
   const q=document.getElementById('srch')?.value.trim()||'';
   const g=document.getElementById('grid'); if(!g) return;
   const terms=q.length>0?expandSearch(q):null;
-  const f=B_SORTED.filter(b=>!_overrides['hidden_'+b.id]&&(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
+
+  // Build combined list: main books + recs mixed in, sorted A-Z
+  const mainBooks=B_SORTED
+    .filter(b=>!_overrides['hidden_'+b.id])
+    .map(b=>({...b,_isRec:false}));
+  const recBooks=_recs.map(r=>({_read:r.read||'',
+    t:r.t, a:r.a||'', c:r.c||'', sub:r.sub||_gbCache[r._key]?.sub||'',
+    d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
+    _cover:r.cover||_gbCache[r._key]?.cover||'', _div:r.div||'', lat:0, lang:'', isbn:null
+  }));
+  // Fetch Google Books data for any rec without cache
+  _recs.forEach(r=>{ if(!_gbCache[r._key]) fetchGoogleBooks(r); });
+
+  const allBooks=[...mainBooks,...recBooks]
+    .sort((a,b)=>a.t.localeCompare(b.t,'es'));
+
+  const f=allBooks.filter(b=>(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
   if(!f.length){
     g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
     document.getElementById('pagination').innerHTML='';
     return;
   }
   const totalPages=Math.ceil(f.length/PAGE_SIZE);
-  if(curPage>=totalPages) curPage=0;
+  if(curPage>=totalPages) curPage=totalPages-1;
   const pageBooks=f.slice(curPage*PAGE_SIZE, (curPage+1)*PAGE_SIZE);
 
   g.innerHTML=pageBooks.map(b=>{
-    const i=B.indexOf(b);
-    const isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
-    const ov=_overrides; const isRead=ov[`read_${b.id}`]; const isCurrent=ov.currentBook==i;
-    const bCat=ov[`cat_${b.id}`]||b.c; // apply category override if set
-    const adminCv=ov[`cover_${b.id}`];
-    const covers=adminCv?[adminCv]:b.isbn?[
-      `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`,
-      `https://books.google.com/books/content?vid=ISBN${b.isbn}&printsec=frontcover&img=1&zoom=1`,
-    ]:[];
-    const cv=covers[0]||null;
-    const imgSrcs=covers.length>1?`data-srcs='${JSON.stringify(covers.slice(1))}'`:'';
+    const i=b._isRec ? -1 : B.indexOf(b);
+    const isV=b._isRec ? !!SVR[b._key] : !!SV[i];
+    const v=b._isRec ? (_votesRec[b._key]||0) : (_votes[b.id]||_votes[i]||0);
+    const ov=_overrides;
+    const isRead=b._isRec ? b._read : ov[`read_${b.id}`];
+    const isCurrent=b._isRec ? false : ov.currentBook==i;
+    const bCat=b._isRec ? b.c : (ov[`cat_${b.id}`]||b.c);
+
+    // Cover
+    let cv, imgSrcs='';
+    if(b._isRec){
+      cv=b._cover||null;
+    } else {
+      const adminCv=ov[`cover_${b.id}`];
+      const covers=adminCv?[adminCv]:b.isbn?[
+        `https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`,
+        `https://images.penguinrandomhouse.com/cover/${b.isbn}`,
+        `https://books.google.com/books/content?vid=ISBN${b.isbn}&printsec=frontcover&img=1&zoom=1`,
+      ]:[];
+      cv=covers[0]||null;
+      if(covers.length>1) imgSrcs=`data-srcs='${JSON.stringify(covers.slice(1))}'`;
+    }
     const img=cv?`<img class="cimg" src="${cv}" alt="${b.t}" loading="lazy" ${imgSrcs} onerror="var srcs=JSON.parse(this.dataset.srcs||'[]');if(srcs.length){this.src=srcs[0];this.dataset.srcs=JSON.stringify(srcs.slice(1));}else{this.style.display='none';var p=this.parentNode.querySelector('.cph');if(p)p.style.removeProperty('display');}">`:'';
     const ph=`<div class="cph" ${cv?'style="display:none"':''}><div class="cph-t">${b.t}</div><div class="cph-a">${b.a}</div></div>`;
     const badge=isCurrent?`<div class="cb-pick">📖 Leyendo</div>`:isRead?`<div class="cb-read">✓ ${isRead}</div>`:'';
-    const div=ov[`div_${b.id}`]||(b.lat?'Latinx':'');
-    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latina · BIPOC':div==='Latinx'?'Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
-    const langLabel=ov[`lang_${b.id}`]||b.lang||'';
+    const div=b._isRec ? (b._div||'') : (ov[`div_${b.id}`]||(b.lat?'Latinx':''));
+    const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latinx · BIPOC':div==='Latinx'?'Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
+    const langLabel=b._isRec?'':(ov[`lang_${b.id}`]||b.lang||'');
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
+    const onVote=b._isRec?`voteRec('${b._key}',this)`:`doVote(${i},this)`;
+    const onBuy=b._isRec?`openBuyRec('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}',event)`:`openBuy(${i},event)`;
+    const onCard=b._isRec?'':`openModal(${i})`;
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
-      :'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="doVote('+i+',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>';
+      :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
     return '<div class="card">'
-      +'<div class="cimgw" onclick="openModal('+i+')">'+(img)+(ph)+(badge)+(divLabel?'<div class="cb-lat" style="background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+'">'+divLabel+'</div>':'')+'</div>'
+      +`<div class="cimgw" ${onCard?`onclick="${onCard}"`:''}>`+(img)+(ph)+(badge)+(divLabel?'<div class="cb-lat" style="background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+'">'+divLabel+'</div>':'')+'</div>'
       +'<div class="cbody">'+catTag(bCat)
-      +'<div class="ctitle" onclick="openModal('+i+')">'+(b.t)+'</div>'
+      +`<div class="ctitle" ${onCard?`onclick="${onCard}"`:''}>`+(b.t)+'</div>'
       +'<div class="cauthor">'+(b.a)+'</div>'
       +(langBadge?'<div style="font-size:.65rem;font-weight:500;color:var(--muted);margin-bottom:.2rem">'+langBadge+'</div>':'')
-      +'<div class="csub">'+(b.sub)+'</div>'
-      +'<button class="cget" onclick="openBuy('+i+',event)">Consíguelo aquí →</button>'
+      +(b.sub?'<div class="csub">'+b.sub+'</div>':'')
+      +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`
       +(vSect)
       +'</div></div>';
   }).join('');
@@ -877,37 +923,72 @@ function submitRec(){
   if(!t){alert('Por favor ingresa el título del libro.');return;}
   if(!n){alert('Por favor ingresa tu nombre y apellido.');return;}
   if(!e||!e.includes('@')){alert('Por favor ingresa un email válido.');return;}
-  // save user to localStorage for next time
+
+  // Check for duplicates in main library
+  const tNorm=norm(t);
+  const inMain=B.some(b=>norm(b.t).includes(tNorm)||tNorm.includes(norm(b.t)));
+  if(inMain){
+    const match=B.find(b=>norm(b.t).includes(tNorm)||tNorm.includes(norm(b.t)));
+    alert(`"${match.t}" ya está en nuestra biblioteca 📚\n\n¡Puedes votarlo abajo para que lo leamos juntas!`);
+    return;
+  }
+  // Check for duplicates in existing recs
+  const inRecs=_recs.some(r=>norm(r.t).includes(tNorm)||tNorm.includes(norm(r.t)));
+  if(inRecs){
+    const match=_recs.find(r=>norm(r.t).includes(tNorm)||tNorm.includes(norm(r.t)));
+    alert(`"${match.t}" ya fue sugerido por la comunidad 🌿\n\n¡Puedes votarlo para que suba en la lista!`);
+    return;
+  }
+
   localStorage.setItem('cbcUser', JSON.stringify({n,e}));
-  push(ref(db,'recs'),{t,a,n,e,c:document.getElementById('rcat').value||'',ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),ts:Date.now()});
-  document.getElementById('add-form-inner').style.display='none';
-  document.getElementById('add-form-ok').style.display='block';
+  const btn=document.getElementById('rec-submit-btn');
+  if(btn){btn.disabled=true;btn.textContent='Buscando info del libro...';}
+
+  // Fetch cover + description from Google Books before saving
+  const q=encodeURIComponent(t+(a?' '+a:''));
+  fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`)
+    .then(res=>res.json())
+    .then(data=>{
+      const item=data.items&&data.items[0];
+      const info=item?item.volumeInfo:{};
+      const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
+      const sub=info.subtitle||'';
+      const desc=info.description||'';
+      const cat=document.getElementById('rcat').value||info.categories?.[0]||'';
+      if(btn) btn.textContent='Guardando...';
+      return push(ref(db,'recs'),{
+        t, a:a||(info.authors?info.authors[0]:''), n,
+        c:cat, sub, desc, cover,
+        ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
+        fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),
+        ts:Date.now()
+      });
+    })
+    .then(()=>{
+      document.getElementById('add-form-inner').style.display='none';
+      document.getElementById('add-form-ok').style.display='block';
+    })
+    .catch(err=>{
+      // If Google Books fails, save without cover/desc
+      if(btn) btn.textContent='Guardando...';
+      push(ref(db,'recs'),{t,a,n,c:document.getElementById('rcat').value||'',ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),ts:Date.now()})
+        .then(()=>{
+          document.getElementById('add-form-inner').style.display='none';
+          document.getElementById('add-form-ok').style.display='block';
+        })
+        .catch(e2=>{
+          alert('Error al guardar: '+e2.message);
+          if(btn){btn.disabled=false;btn.textContent='Agregar libro ✦';}
+        });
+    });
 }
 window.showAddForm=showAddForm; window.closeAddForm=closeAddForm;
 window.resetAddForm=resetAddForm; window.submitRec=submitRec;
 
-// ── COMMUNITY BOOKS ──
+// ── COMMUNITY BOOKS — now merged into main grid ──
 function renderRecBooks(){
-  const section=document.getElementById('rec-section');
-  const list=document.getElementById('rec-list');
-  if(!list||!section) return;
-  if(!_recs.length){section.style.display='none';return;}
-  section.style.display='block';
-  list.innerHTML=_recs.map(r=>{
-    const isV=!!SVR[r._key], v=_votesRec[r._key]||0;
-    return '<div class="card">'
-      +'<div class="cimgw" style="cursor:default">'
-      +'<div class="cph"><div class="cph-t">'+r.t+'</div><div class="cph-a">'+(r.a||'')+'</div></div>'
-      +(ADMIN?'<button onclick="deleteRec(\''+r._key+'\')" style="position:absolute;top:7px;right:7px;background:rgba(176,88,72,.85);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center" title="Eliminar">🗑</button>':'')
-      +'</div>'
-      +'<div class="cbody">'
-      +'<div class="ctitle">'+r.t+'</div>'
-      +(r.a?'<div class="cauthor">'+r.a+'</div>':'')
-      +'<div class="csub" style="font-style:italic">Recomendado por la comunidad</div>'
-      +'<button class="cget" onclick="openBuyRec(\''+encodeURIComponent(r.t)+'\',\''+encodeURIComponent(r.a||'')+'\',event)">Consíguelo aquí →</button>'
-      +'<div class="vrow"><button class="vbtn'+(isV?' voted':'')+'" onclick="voteRec(\''+r._key+'\',this)">'+(isV?'♥ Votado':'♡ Votar')+'</button>'+(v>0?'<span class="vcount">'+v+' voto'+(v!==1?'s':'')+'</span>':'')+'</div>'
-      +'</div></div>';
-  }).join('');
+  renderBooks(); // recs are mixed into the main grid
+  renderCounter();
 }
 
 function voteRec(key,btn){
@@ -1041,16 +1122,50 @@ function renderAdminCommunityBooks(){
   const list=document.getElementById('admin-community-list');
   if(!list) return;
   if(!_recs.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Aún no hay libros agregados.</div>';return;}
+  const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
   list.innerHTML=_recs.map(r=>`
-    <div style="display:flex;gap:.5rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px solid var(--bdr)">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:.75rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t}</div>
-        <div style="font-size:.68rem;color:var(--muted)">${r.a||'—'} · ${r.n} · ${r.fecha||''}</div>
+    <div id="admin-rec-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
+      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
+        <div style="flex:1;font-size:.72rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;color:var(--muted)">· ${r.a||'—'}</span></div>
+        <button onclick="deleteRec('${r._key}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑</button>
       </div>
-      <button onclick="deleteRec('${r._key}')" style="background:none;border:none;color:var(--sal-dk);cursor:pointer;font-size:.8rem;flex-shrink:0;padding:.1rem .3rem" title="Eliminar">🗑</button>
+      <div style="font-size:.65rem;color:var(--light);margin-bottom:.35rem">Agregado por ${r.n||'—'} · ${r.fecha||''}</div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="rec-read-${r._key}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${r.read||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
+        <button onclick="saveRecField('${r._key}','read','rec-read-${r._key}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <input id="rec-cover-${r._key}" type="text" placeholder="URL portada" value="${r.cover||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
+        <button onclick="saveRecField('${r._key}','cover','rec-cover-${r._key}')" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
+        <select id="rec-cat-${r._key}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+          <option value="">— Categoría: ${CAT_ES[r.c]||r.c||'Sin categoría'} —</option>
+          ${catOptions}
+        </select>
+        <button onclick="saveRecField('${r._key}','c','rec-cat-${r._key}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <select id="rec-div-${r._key}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+          <option value="">— Autoría —</option>
+          <option value="Latinx" ${r.div==='Latinx'?'selected':''}>Latinx ✦</option>
+          <option value="BIPOC" ${r.div==='BIPOC'?'selected':''}>BIPOC</option>
+          <option value="Latinx,BIPOC" ${r.div==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+          <option value="Creadora" ${r.div==='Creadora'?'selected':''}>Creadora ✦</option>
+        </select>
+        <button onclick="saveRecField('${r._key}','div','rec-div-${r._key}')" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
     </div>`).join('');
 }
 window.renderAdminCommunityBooks=renderAdminCommunityBooks;
+
+function saveRecField(key,field,inputId){
+  const val=document.getElementById(inputId)?.value.trim();
+  if(val) set(ref(db,`recs/${key}/${field}`),val);
+  else remove(ref(db,`recs/${key}/${field}`));
+  showAdminFeedback('✓ Guardado');
+}
+window.saveRecField=saveRecField;
 
 function deleteRec(key){
   if(confirm('¿Eliminar este libro de la comunidad?')) remove(ref(db,`recs/${key}`));
@@ -1074,22 +1189,25 @@ function saveCurrentBook(){
   else remove(ref(db,'overrides/currentBookDate'));
   showAdminFeedback('✓ Libro del mes guardado');
 }
-function saveRead(i){
-  const val=document.getElementById('read-'+b.id).value.trim();
-  if(val) set(ref(db,`overrides/read_${B[i].id}`),val);
-  else remove(ref(db,`overrides/read_${B[i].id}`));
+function saveRead(i,id){
+  id=id||B[i].id;
+  const val=document.getElementById('read-'+id)?.value.trim();
+  if(val) set(ref(db,'overrides/read_'+id),val);
+  else remove(ref(db,'overrides/read_'+id));
   showAdminFeedback('✓ Guardado');
 }
-function saveCover(i){
-  const val=document.getElementById('cover-'+b.id).value.trim();
-  if(val) set(ref(db,`overrides/cover_${B[i].id}`),val);
-  else remove(ref(db,`overrides/cover_${B[i].id}`));
+function saveCover(i,id){
+  id=id||B[i].id;
+  const val=document.getElementById('cover-'+id)?.value.trim();
+  if(val) set(ref(db,'overrides/cover_'+id),val);
+  else remove(ref(db,'overrides/cover_'+id));
   showAdminFeedback('✓ Portada guardada');
 }
-function saveDiversity(i){
-  const val=document.getElementById('div-'+b.id).value;
-  if(val) set(ref(db,`overrides/div_${B[i].id}`),val);
-  else remove(ref(db,`overrides/div_${B[i].id}`));
+function saveDiversity(i,id){
+  id=id||B[i].id;
+  const val=document.getElementById('div-'+id)?.value;
+  if(val) set(ref(db,'overrides/div_'+id),val);
+  else remove(ref(db,'overrides/div_'+id));
   showAdminFeedback('✓ Autoría guardada');
 }
 function saveCat(i){
