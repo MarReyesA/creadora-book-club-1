@@ -61,7 +61,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .vote-hdr p{font-size:1rem;color:var(--muted)}
 
 /* RANKING CAROUSEL */
-.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none;justify-content:center;flex-wrap:wrap}
+.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none;flex-wrap:wrap}
 .carousel::-webkit-scrollbar{display:none}
 .rk-card{flex-shrink:0;width:110px;cursor:pointer;transition:transform .15s;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(42,35,24,.12)}
 .rk-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(42,35,24,.18)}
@@ -106,6 +106,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .crec{font-size:.74rem;color:var(--light);margin-bottom:.35rem}
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);margin-bottom:.45rem;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3)}
 .cget:hover{color:var(--sal-dk)}
+.share-row{display:flex;gap:.35rem;margin-bottom:.35rem}
+.share-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:1px solid var(--bdr);background:var(--white);cursor:pointer;font-size:.75rem;text-decoration:none;transition:all .15s;flex-shrink:0}
+.share-btn:hover{transform:scale(1.12);border-color:var(--lila)}
 .vrow{margin-top:auto;display:flex;align-items:center;gap:.4rem}
 .vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
 .vbtn:hover{border-color:var(--lila-dk);color:var(--lila-dk);background:var(--lila-lt)}
@@ -209,7 +212,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 .swrap{max-width:700px;margin:0 auto;padding:0 1.25rem 3rem}
 
 /* ADMIN PANEL */
-#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1rem 1.25rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:260px;max-height:80vh;overflow-y:auto}
+#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1rem 1.25rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:280px;max-height:80vh;overflow-y:auto;font-size:1rem}
 #admin-panel h3{font-family:var(--ft);font-size:1rem;color:var(--lila-dk);margin-bottom:.75rem}
 .admin-book-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bdr);font-size:.75rem}
 .admin-book-row input[type=text]{flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.72rem;background:var(--beige)}
@@ -280,6 +283,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
     </div>
     <div class="filts">
       <button class="filt on" onclick="setCat('all',this)">Todos</button>
+      <button class="filt" onclick="setCat('latinx',this)">✦ Latinx</button>
       <button class="filt" onclick="setCat('Money Mindset',this)">💰 Dinero</button>
       <button class="filt" onclick="setCat('Manifesting',this)">💫 Manifestación</button>
       <button class="filt" onclick="setCat('Finding Purpose',this)">🔍 Propósito</button>
@@ -670,22 +674,27 @@ function renderBooks(votesData){
   const g=document.getElementById('grid'); if(!g) return;
   const terms=q.length>0?expandSearch(q):null;
 
-  // Build combined list: main books + recs mixed in, sorted A-Z
-  const mainBooks=B_SORTED
+  // All books — main books get ts=0, recs have real timestamps
+  const mainBooks=B
     .filter(b=>!_overrides['hidden_'+b.id])
-    .map(b=>({...b,_isRec:false}));
+    .map((b,idx)=>({...b,_isRec:false,_ts:idx}));
   const recBooks=_recs.map(r=>({_read:r.read||'',
-    t:r.t, a:r.a||'', c:r.c||'', sub:r.sub||_gbCache[r._key]?.sub||'',
+    t:r.t, a:r.a||'', c:r.c||'', sub:(typeof r.stl==='string'?r.stl:'')||(typeof r.sub==='string'?r.sub:'')||_gbCache[r._key]?.sub||'',
     d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
     _cover:r.cover||_gbCache[r._key]?.cover||'', _div:r.div||'', lat:0, lang:'', isbn:null
   }));
   // Fetch Google Books data for any rec without cache
   _recs.forEach(r=>{ if(!_gbCache[r._key]) fetchGoogleBooks(r); });
 
-  const allBooks=[...mainBooks,...recBooks]
-    .sort((a,b)=>a.t.localeCompare(b.t,'es'));
+  // Single unified list — recs newest first, then main books in original order
+  const allBooks=[..._recs.map(r=>recBooks.find(x=>x._key===r._key)).filter(Boolean),...mainBooks];
 
-  const f=allBooks.filter(b=>(curCat==='all'||b.c===curCat)&&(!terms||bookMatches(b,terms)));
+  const f=allBooks.filter(b=>{
+    const div=b._isRec?(b._div||''):((_overrides['div_'+b.id])||(b.lat?'Latinx':''));
+    const isLatinx=div.includes('Latinx')||div.includes('Creadora');
+    const catMatch=curCat==='all'||(curCat==='latinx'?isLatinx:b.c===curCat);
+    return catMatch&&(!terms||bookMatches(b,terms));
+  });
   if(!f.length){
     g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
     document.getElementById('pagination').innerHTML='';
@@ -727,7 +736,7 @@ function renderBooks(votesData){
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const onVote=b._isRec?`voteRec('${b._key}',this)`:`doVote(${i},this)`;
     const onBuy=b._isRec?`openBuyRec('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}',event)`:`openBuy(${i},event)`;
-    const onCard=b._isRec?'':`openModal(${i})`;
+    const onCard=b._isRec?`openBuyRec('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}',event)`:`openModal(${i})`;
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
@@ -739,6 +748,7 @@ function renderBooks(votesData){
       +(langBadge?'<div style="font-size:.65rem;font-weight:500;color:var(--muted);margin-bottom:.2rem">'+langBadge+'</div>':'')
       +(b.sub?'<div class="csub">'+b.sub+'</div>':'')
       +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`
+      +shareRow(b.t, b.a)
       +(vSect)
       +'</div></div>';
   }).join('');
@@ -815,6 +825,18 @@ function closeBuy(){document.getElementById('buy-ov').classList.remove('open');}
 window.openBuy=openBuy; window.closeBuy=closeBuy;
 
 // ── BOOK MODAL ──
+function shareRow(title, author){
+  const url='https://marreyes.com/book-club';
+  const txt=encodeURIComponent('📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club! '+url);
+  const fbUrl='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url)+'&quote='+encodeURIComponent('📚 Vota por "'+title+'" en Creadora Book Club!');
+  return '<div class="share-row">'
+    +'<a class="share-btn" href="https://wa.me/?text='+txt+'" target="_blank" title="WhatsApp" style="background:#25d366"><span style="font-size:.7rem">💬</span></a>'
+    +'<a class="share-btn" href="https://www.instagram.com/" target="_blank" title="Instagram" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"><span style="font-size:.7rem">📸</span></a>'
+    +'<a class="share-btn" href="'+fbUrl+'" target="_blank" title="Facebook" style="background:#1877f2"><span style="font-size:.7rem">👥</span></a>'
+    +'<span style="font-size:.62rem;color:var(--light);align-self:center;margin-left:.2rem">¡Comparte y junta votos!</span>'
+    +'</div>';
+}
+
 function openModal(i){
   const b=B[i], isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
   const ov=_overrides, isRead=ov[`read_${b.id}`], isCurrent=ov.currentBook==i;
@@ -834,6 +856,7 @@ function openModal(i){
     +'<div class="mdesc">'+b.d+'</div>'
     +voteBtn
     +'<button class="mbtn-get" onclick="closeModal();openBuy('+i+',event)">Consíguelo aquí →</button>'
+    +shareRow(b.t, b.a)
     +'<div class="comments-box">'
     +'<div style="font-family:var(--ft);font-size:1rem;font-weight:400;margin-bottom:.75rem">💬 Comentarios</div>'
     +'<div class="cm-list" id="cm-list-'+i+'"><div style="font-size:.78rem;color:var(--light)">Cargando...</div></div>'
@@ -958,7 +981,7 @@ function submitRec(){
       if(btn) btn.textContent='Guardando...';
       return push(ref(db,'recs'),{
         t, a:a||(info.authors?info.authors[0]:''), n,
-        c:cat, sub, desc, cover,
+        c:cat, stl:sub, desc, cover,
         ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),
         fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),
         ts:Date.now()
@@ -967,17 +990,19 @@ function submitRec(){
     .then(()=>{
       document.getElementById('add-form-inner').style.display='none';
       document.getElementById('add-form-ok').style.display='block';
+      if(btn){btn.disabled=false;btn.textContent='Agregar libro ✦';}
     })
-    .catch(err=>{
-      // If Google Books fails, save without cover/desc
+    .catch(()=>{
+      // Google Books failed — save without enrichment
       if(btn) btn.textContent='Guardando...';
       push(ref(db,'recs'),{t,a,n,c:document.getElementById('rcat').value||'',ini:n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),fecha:new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}),ts:Date.now()})
         .then(()=>{
           document.getElementById('add-form-inner').style.display='none';
           document.getElementById('add-form-ok').style.display='block';
+          if(btn){btn.disabled=false;btn.textContent='Agregar libro ✦';}
         })
-        .catch(e2=>{
-          alert('Error al guardar: '+e2.message);
+        .catch(()=>{
+          alert('No se pudo guardar. Revisa tu conexión e intenta de nuevo.');
           if(btn){btn.disabled=false;btn.textContent='Agregar libro ✦';}
         });
     });
@@ -1016,12 +1041,19 @@ function renderCounter(){
 // ── READ CAROUSEL ──
 function renderReadCarousel(){
   const el=document.getElementById('read-carousel'); if(!el) return;
-  const read=B.map((b,i)=>({b,i})).filter(({b,i})=>_overrides[`read_${b.id}`]||_overrides[`read_${i}`]);
+  // Main library books with read date
+  const readMain=B.map((b,i)=>({b,i,readVal:_overrides[`read_${b.id}`]||_overrides[`read_${i}`],isRec:false}))
+    .filter(x=>x.readVal);
+  // Community rec books with read date
+  const readRecs=_recs.filter(r=>r.read).map(r=>({b:{t:r.t,a:r.a||'',isbn:null,id:r._key,_cover:r.cover||''},i:-1,readVal:r.read,isRec:true,key:r._key}));
+  const read=[...readMain,...readRecs];
   if(!read.length){el.innerHTML='<div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>';return;}
-  el.innerHTML=read.map(({b,i})=>{
-    const readVal=_overrides[`read_${b.id}`]||_overrides[`read_${i}`];
-    const img=coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
-    return`<div class="rc-card" onclick="openModal(${i})">${img}
+  el.innerHTML=read.map(({b,i,readVal,isRec,key})=>{
+    const img=isRec
+      ? (b._cover?`<img src="${b._cover}" style="width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem" onerror="this.style.display='none'">`:`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`)
+      : coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
+    const onclick=isRec?'':`onclick="openModal(${i})"`;
+    return`<div class="rc-card" ${onclick} style="${isRec?'':'cursor:pointer'}">${img}
       <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
       <div style="font-size:.65rem;color:var(--muted)">${b.a}</div>
       <div style="font-size:.62rem;color:var(--sage-dk);background:var(--sage-lt);padding:1px 6px;border-radius:100px;display:inline-block;margin-top:.35rem">✓ ${readVal}</div>
@@ -1039,7 +1071,11 @@ function renderAdminPanel(force){
     document.body.appendChild(panel);
   }
   panel.innerHTML=`
-    <h3>✦ Panel de Mar</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+      <h3 style="margin:0">✦ Panel de Mar</h3>
+      <button id="admin-minimize" onclick="toggleAdminPanel()" style="background:none;border:1px solid var(--bdr);border-radius:6px;padding:2px 8px;font-family:var(--fb);font-size:.75rem;cursor:pointer;color:var(--muted)">— Minimizar</button>
+    </div>
+    <div id="admin-body">
 
     <div style="margin-bottom:1rem">
       <div style="font-size:.75rem;font-weight:500;margin-bottom:.4rem">📖 Libro del mes actual</div>
@@ -1053,7 +1089,7 @@ function renderAdminPanel(force){
 
       <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
       <div style="font-size:.82rem;font-weight:600;color:var(--lila-dk);margin-bottom:.4rem">📚 Editar libro de la biblioteca</div>
-      <input id="admin-search" type="text" placeholder="🔍 Escribe aquí para buscar un libro..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.5rem .75rem;border:2px solid var(--lila);border-radius:8px;font-family:var(--fb);font-size:.78rem;background:var(--white);margin-bottom:.5rem;outline:none;color:var(--text)">
+      <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.5rem .75rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.78rem;background:#fff8f6;margin-bottom:.5rem;outline:none;color:var(--text)">
     </div>
     <div id="admin-book-list" style="max-height:300px;overflow-y:auto"></div>
 
@@ -1068,6 +1104,7 @@ function renderAdminPanel(force){
       <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV (${_recs.length} libros)</button>
     </div>
     <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
+  </div>
   `;
   // populate book list and community books
   filterAdminBooks('');
@@ -1079,14 +1116,16 @@ function filterAdminBooks(q){
   q=(q||'').toLowerCase();
   const list=document.getElementById('admin-book-list');
   if(!list) return;
-  const scrollTop=list.scrollTop; // preserve scroll position
-  const filtered=B.map((b,i)=>({b,i})).filter(({b})=>!q||b.t.toLowerCase().includes(q)||b.a.toLowerCase().includes(q));
-  if(!filtered.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
+  const scrollTop=list.scrollTop;
+  const filtered=B.map((b,i)=>({b,i,isRec:false})).filter(({b})=>!q||b.t.toLowerCase().includes(q)||b.a.toLowerCase().includes(q));
+  // Also search recs
+  const filteredRecs=_recs.filter(r=>!q||(r.t||'').toLowerCase().includes(q)||(r.a||'').toLowerCase().includes(q));
+  if(!filtered.length && !filteredRecs.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
   const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
   list.innerHTML=filtered.map(({b,i})=>`
     <div id="admin-row-${b.id}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
       <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
-        <div style="flex:1;font-size:.72rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;color:var(--muted)">· ${b.a}</span></div>
+        <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${b.a}</span></div>
         <button onclick="deleteMainBook(${i},'${b.id}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑 Eliminar</button>
       </div>
       <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
@@ -1115,7 +1154,27 @@ function filterAdminBooks(q){
         <button onclick="saveDiversity(${i},'${b.id}')" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
     </div>`).join('');
-  list.scrollTop=scrollTop; // restore scroll position
+  // Append rec books results
+  if(filteredRecs.length){
+    const recHtml=filteredRecs.map(r=>`
+      <div id="admin-rec-search-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0;background:#fff8f6">
+        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
+          <div style="font-size:.65rem;background:#ffb7a4;color:#7a3a2a;padding:1px 6px;border-radius:100px;flex-shrink:0">Comunidad</div>
+          <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${r.a||'—'}</span></div>
+          <button onclick="deleteRec('${r._key}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk)">🗑</button>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+          <input id="rec-read-${r._key}" type="text" placeholder="Mes leído" value="${r.read||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
+          <button onclick="saveRecField('${r._key}','read','rec-read-${r._key}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
+        </div>
+        <div style="display:flex;gap:.4rem">
+          <input id="rec-cover-${r._key}" type="text" placeholder="URL portada" value="${r.cover||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
+          <button onclick="saveRecField('${r._key}','cover','rec-cover-${r._key}')" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
+        </div>
+      </div>`).join('');
+    list.innerHTML+=(filtered.length?'<div style="height:.5rem"></div>':'')+recHtml;
+  }
+  list.scrollTop=scrollTop;
 }
 window.filterAdminBooks=filterAdminBooks;
 
@@ -1127,7 +1186,7 @@ function renderAdminCommunityBooks(){
   list.innerHTML=_recs.map(r=>`
     <div id="admin-rec-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
       <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
-        <div style="flex:1;font-size:.72rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;color:var(--muted)">· ${r.a||'—'}</span></div>
+        <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${r.a||'—'}</span></div>
         <button onclick="deleteRec('${r._key}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑</button>
       </div>
       <div style="font-size:.65rem;color:var(--light);margin-bottom:.35rem">Agregado por ${r.n||'—'} · ${r.fecha||''}</div>
@@ -1172,6 +1231,16 @@ function deleteRec(key){
   if(confirm('¿Eliminar este libro de la comunidad?')) remove(ref(db,`recs/${key}`));
 }
 window.deleteRec=deleteRec;
+
+function toggleAdminPanel(){
+  const body=document.getElementById('admin-body');
+  const btn=document.getElementById('admin-minimize');
+  if(!body||!btn) return;
+  const hidden=body.style.display==='none';
+  body.style.display=hidden?'block':'none';
+  btn.textContent=hidden?'— Minimizar':'+ Expandir';
+}
+window.toggleAdminPanel=toggleAdminPanel;
 
 function deleteMainBook(i,id){
   if(!confirm('¿Eliminar "'+B[i].t+'" de la biblioteca?')) return;
