@@ -61,7 +61,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .vote-hdr p{font-size:1rem;color:var(--muted)}
 
 /* RANKING CAROUSEL */
-.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none}
+.carousel{display:flex;gap:.75rem;overflow-x:auto;scroll-behavior:smooth;padding-bottom:.5rem;scrollbar-width:none;justify-content:center;flex-wrap:wrap}
 .carousel::-webkit-scrollbar{display:none}
 .rk-card{flex-shrink:0;width:110px;cursor:pointer;transition:transform .15s;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 8px rgba(42,35,24,.12)}
 .rk-card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(42,35,24,.18)}
@@ -320,7 +320,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- FOOTER CTA — sin fondo, texto y botón solamente -->
   <div style="text-align:center;padding:3rem 1.25rem 2rem;border-top:1px solid var(--bdr)">
-    <h2 style="font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:var(--text);margin-bottom:.75rem">Únete a Creadora <em style="color:var(--lila-dk);font-style:italic">Book Club</em></h2>
+    <h2 onclick="secretAdminTap()" style="font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:var(--text);margin-bottom:.75rem;cursor:default">Únete a Creadora <em style="color:var(--lila-dk);font-style:italic">Book Club</em></h2>
     <p style="font-size:.9rem;color:var(--muted);max-width:480px;margin:0 auto 1.5rem;line-height:1.7">Cada libro es una oportunidad para abrir conversaciones profundas, sanar, cuestionar y crecer. No solo leerás, sino que transformarás tu manera de pensar para acercarte a vivir una vida libre y abundante.</p>
     <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none">Regístrate aquí ✦</a>
   </div>
@@ -551,7 +551,20 @@ const SVR = JSON.parse(sessionStorage.getItem('cbcVR')||'{}');
 let _votes={}, _votesRec={}, _recs=[], _overrides={};
 let curCat='all', curPage=0;
 const PAGE_SIZE=12;
-const ADMIN = new URLSearchParams(location.search).get('admin')==='creadora2026';
+// Admin detection - works both standalone and inside Squarespace iframe
+function detectAdmin(){
+  try {
+    // Try own URL params first
+    if(new URLSearchParams(location.search).get('admin')==='creadora2026') return true;
+    // Try parent window URL (inside iframe)
+    if(window.parent && window.parent.location.search.includes('admin=creadora2026')) return true;
+    if(window.parent && window.parent.location.href.includes('admin=creadora2026')) return true;
+  } catch(e){}
+  // Also check hash
+  if(location.hash.includes('admin=creadora2026')) return true;
+  return false;
+}
+const ADMIN = detectAdmin();
 
 // ── FIREBASE LISTENERS ──
 onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{};    renderRanking(); renderBooks(); });
@@ -604,11 +617,14 @@ function renderRanking(){
   if(!el) return;
   const ranked=Object.entries(_votes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
-  el.innerHTML=ranked.map(([idx,count])=>{
-    const b=B[parseInt(idx)]; if(!b) return '';
-        const imgTag=coverImgTag(b,b.id,'rk-thumb','','M');
+  el.innerHTML=ranked.map(([key,count])=>{
+    // key can be either a book id (string) or legacy numeric index
+    const b=B.find(x=>x.id===key)||B[parseInt(key)];
+    const i=B.indexOf(b);
+    if(!b) return '';
+    const imgTag=coverImgTag(b,b.id,'rk-thumb','','M');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
-    return'<div class="rk-card" onclick="openModal('+idx+')" title="'+b.t+'">'
+    return'<div class="rk-card" onclick="openModal('+i+')" title="'+b.t+'">'
       +'<div class="rk-wrap" style="position:relative">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
       +'</div></div>';
@@ -649,7 +665,7 @@ function renderBooks(votesData){
 
   g.innerHTML=pageBooks.map(b=>{
     const i=B.indexOf(b);
-    const isV=!!SV[i], v=_votes[i]||0;
+    const isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
     const ov=_overrides; const isRead=ov[`read_${b.id}`]; const isCurrent=ov.currentBook==i;
     const bCat=ov[`cat_${b.id}`]||b.c; // apply category override if set
     const adminCv=ov[`cover_${b.id}`];
@@ -707,6 +723,7 @@ window.setCat=setCat;
 
 // ── VOTE ──
 function doVote(i,btn){
+  const b=B[i];
   const vRef=ref(db,`votes/${b.id}`);
   if(SV[i]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SV[i];}
   else{runTransaction(vRef,c=>(c||0)+1);SV[i]=true;}
@@ -753,7 +770,7 @@ window.openBuy=openBuy; window.closeBuy=closeBuy;
 
 // ── BOOK MODAL ──
 function openModal(i){
-  const b=B[i], isV=!!SV[i], v=_votes[i]||0;
+  const b=B[i], isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
   const ov=_overrides, isRead=ov[`read_${b.id}`], isCurrent=ov.currentBook==i;
   const cv=ov[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
   const imgH=coverImgTag(b,i,'','width:100%;max-height:260px;object-fit:cover;border-radius:var(--rl) var(--rl) 0 0;display:block','L')||'<div class="mph">📖</div>';
@@ -918,11 +935,10 @@ function renderCounter(){
 // ── READ CAROUSEL ──
 function renderReadCarousel(){
   const el=document.getElementById('read-carousel'); if(!el) return;
-  const read=B.map((b,i)=>({b,i})).filter(({i})=>_overrides[`read_${b.id}`]);
+  const read=B.map((b,i)=>({b,i})).filter(({b,i})=>_overrides[`read_${b.id}`]);
   if(!read.length){el.innerHTML='<div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>';return;}
   el.innerHTML=read.map(({b,i})=>{
-    const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:null);
-        const img=coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
+    const img=coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
     return`<div class="rc-card" onclick="openModal(${i})">${img}
       <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
       <div style="font-size:.65rem;color:var(--muted)">${b.a}</div>
@@ -932,8 +948,8 @@ function renderReadCarousel(){
 }
 
 // ── ADMIN PANEL ──
-function renderAdminPanel(){
-  if(!ADMIN) return;
+function renderAdminPanel(force){
+  if(!ADMIN && !force) return;
   let panel=document.getElementById('admin-panel');
   if(!panel){
     panel=document.createElement('div');
@@ -1119,23 +1135,50 @@ renderBookOfMonth();
 renderBooks();
 renderReadCarousel();
 
-// Admin panel
+// Admin panel init
 if(ADMIN) {
   setTimeout(()=>{
     renderAdminPanel();
-    // Add floating button to reopen if closed
     const btn=document.createElement('button');
     btn.id='admin-fab';
     btn.textContent='⚙ Admin';
     btn.onclick=()=>{
       const p=document.getElementById('admin-panel');
-      if(p) p.style.display=p.style.display==='none'?'block':'none';
-      else renderAdminPanel();
+      if(!p){renderAdminPanel();return;}
+      const hidden=p.style.display==='none'||p.style.display==='';
+      p.style.display=hidden?'block':'none';
     };
     btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:var(--lila-dk);color:#fff;border:none;padding:.4rem .9rem;border-radius:100px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)';
     document.body.appendChild(btn);
-  }, 800);
+  }, 1200);
 }
+
+// Secret admin activation: tap the footer logo 5 times
+let _adminTaps=0, _adminTimer=null;
+function secretAdminTap(){
+  _adminTaps++;
+  clearTimeout(_adminTimer);
+  _adminTimer=setTimeout(()=>_adminTaps=0, 3000);
+  if(_adminTaps>=5){
+    _adminTaps=0;
+    const code=prompt('Código admin:');
+    if(code==='creadora2026'){
+      const existing=document.getElementById('admin-panel');
+      if(existing){ existing.style.display='block'; }
+      else { renderAdminPanel(true); }
+      let fab=document.getElementById('admin-fab');
+      if(!fab){
+        const btn=document.createElement('button');
+        btn.id='admin-fab';
+        btn.textContent='⚙ Admin';
+        btn.onclick=()=>{const p=document.getElementById('admin-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';else renderAdminPanel();};
+        btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:var(--lila-dk);color:#fff;border:none;padding:.4rem .9rem;border-radius:100px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)';
+        document.body.appendChild(btn);
+      }
+    }
+  }
+}
+window.secretAdminTap=secretAdminTap;
 
 // FAQS
 const FAQS=[
