@@ -109,6 +109,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .card-expand.open{display:block}
 .card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .card.expanded{grid-column:span 2}
+.card.expanded .cbody{display:flex;flex-direction:column}
+.card.expanded .card-expand{column-count:1}
 @media(max-width:599px){.card.expanded{grid-column:span 2}}
 .cget:hover{color:var(--sal-dk)}
 .share-row{margin:0}
@@ -919,12 +921,21 @@ window.openBuy=openBuy; window.closeBuy=closeBuy;
 
 // ── BOOK MODAL ──
 function toggleCardExpand(cardId){
+  const card=document.getElementById(cardId);
   const exp=document.getElementById('expand-'+cardId);
-  const btn=document.querySelector('#'+cardId+' .card-expand-btn');
+  const btn=document.querySelector('#'+CSS.escape(cardId)+' .card-expand-btn');
   if(!exp) return;
   const open=exp.classList.contains('open');
   exp.classList.toggle('open');
+  if(card) card.classList.toggle('expanded',!open);
   if(btn) btn.textContent=open?'▾ Ver reseña y comentarios':'▴ Ocultar';
+  // Load comments on first open
+  if(!open && exp.dataset && !exp.dataset.commentsLoaded){
+    exp.dataset.commentsLoaded='1';
+    const cmKey=exp.dataset.cmkey;
+    const cmList=exp.querySelector('.cm-list-inline');
+    if(cmKey&&cmList) listenComments(cmKey,cmList);
+  }
 }
 window.toggleCardExpand=toggleCardExpand;
 
