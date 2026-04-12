@@ -532,7 +532,7 @@ function coverImgTag(b, i, cls, style, size){
     ? `var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`
     : `this.style.display='none';`;
   // onload: if Open Library returns a tiny placeholder image (w<10), skip to next source
-  const loadHandler=`if(this.naturalWidth<10){${nextSrc||"this.style.display='none';"}}`;
+  const loadHandler=`if(this.naturalWidth>0&&this.naturalWidth<2){${nextSrc||"this.style.display='none';"}}`;
   const dataAttr=rest.length?` data-srcs='${JSON.stringify(rest)}'`:'';
   return `<img src="${srcs[0]}" alt="${b.t}"${cls?` class="${cls}"`:''}${style?` style="${style}"`:''}${dataAttr} onload="${loadHandler}" onerror="${errHandler}">`;
 }
@@ -674,15 +674,15 @@ function renderRanking(){
   const ranked=Object.entries(allVotes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
   el.innerHTML=ranked.map(([key,count])=>{
-    const b=B.find(x=>x.id===key)||B[parseInt(key)];
+    // key could be: book id string, numeric string, or rec key
+    const b=B.find(x=>x.id===key)||B[parseInt(key)]||null;
     const rec=!b?_recs.find(r=>r._key===key):null;
     if(!b&&!rec) return '';
     const i=b?B.indexOf(b):-1;
     const title=b?b.t:rec.t;
-    const cover=b?null:(rec.cover||'');
     const imgTag=b
       ? coverImgTag(b,b.id,'rk-thumb','','M')
-      : (cover?`<img class="rk-thumb" src="${cover}" onerror="this.style.display='none'">`:'');
+      : (rec?.cover?`<img class="rk-thumb" src="${rec.cover}" onerror="this.style.display='none'">`:'');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
     const onclick=b?`openModal(${i})`:`openBuyRec('${encodeURIComponent(title)}','${encodeURIComponent(rec?.a||'')}',event)`;
     const isV=b?!!SV[i]:!!SVR[key];
