@@ -341,8 +341,8 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 </div>
 
 <!-- ADD BOOK MODAL -->
-<div class="overlay" id="add-overlay" onclick="if(event.target===this)closeAddForm()">
-  <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
+<div id="add-overlay" style="display:none;position:relative;z-index:10;max-width:500px;margin:1rem auto 0;padding:0 1rem">
+  <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
     <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
     <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
     <div id="add-form-inner">
@@ -998,34 +998,32 @@ window.postComment=postComment; window.delComment=delComment;
 
 // ── ADD BOOK FORM ──
 function showAddForm(){
-  // Scroll to top so fixed overlay appears in view on mobile
-  window.scrollTo({top:0,behavior:'smooth'});
-  try{window.parent.scrollTo({top:0,behavior:'smooth'});}catch(e){}
-  setTimeout(()=>{
-    const ao=document.getElementById('add-overlay');ao.classList.add('open');ao.scrollTop=0;
-    document.getElementById('add-form-inner').style.display='block';
-    document.getElementById('add-form-ok').style.display='none';
-    ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-    const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
-    const saved=JSON.parse(localStorage.getItem('cbcUser')||'{}');
-    const greeting=document.getElementById('form-greeting');
-    const nameRow=document.getElementById('form-name-row');
-    if(saved.n && saved.e){
-      document.getElementById('rn').value=saved.n;
-      document.getElementById('re').value=saved.e;
-      nameRow.style.display='none';
-      const firstName=saved.n.split(' ')[0];
-      if(greeting) greeting.innerHTML=`<div style="font-family:var(--ft);font-size:1.15rem;font-weight:400;color:var(--text);margin-bottom:1rem">Hola <em style="color:var(--lila-dk)">${firstName}</em>, ¿qué libro quieres agregar?</div>`;
-    } else {
-      nameRow.style.display='block';
-      document.getElementById('rn').value='';
-      document.getElementById('re').value='';
-      if(greeting) greeting.innerHTML='';
-    }
-  },250);
+  const ao=document.getElementById('add-overlay');
+  ao.style.display='block';
+  document.getElementById('add-form-inner').style.display='block';
+  document.getElementById('add-form-ok').style.display='none';
+  ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
+  const saved=JSON.parse(localStorage.getItem('cbcUser')||'{}');
+  const greeting=document.getElementById('form-greeting');
+  const nameRow=document.getElementById('form-name-row');
+  if(saved.n && saved.e){
+    document.getElementById('rn').value=saved.n;
+    document.getElementById('re').value=saved.e;
+    nameRow.style.display='none';
+    const firstName=saved.n.split(' ')[0];
+    if(greeting) greeting.innerHTML=`<div style="font-family:var(--ft);font-size:1.15rem;font-weight:400;color:var(--text);margin-bottom:1rem">Hola <em style="color:var(--lila-dk)">${firstName}</em>, ¿qué libro quieres agregar?</div>`;
+  } else {
+    nameRow.style.display='block';
+    document.getElementById('rn').value='';
+    document.getElementById('re').value='';
+    if(greeting) greeting.innerHTML='';
+  }
+  // Scroll to form
+  setTimeout(()=>ao.scrollIntoView({behavior:'smooth',block:'start'}),50);
 }
 
-function closeAddForm(){document.getElementById('add-overlay').classList.remove('open');}
+function closeAddForm(){document.getElementById('add-overlay').style.display='none';}
 
 function resetAddForm(){
   ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
