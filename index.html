@@ -730,7 +730,7 @@ function renderBooks(votesData){
   const recBooks=_recs.map(r=>({_read:r.read||'',
     t:r.t, a:r.a||'', c:r.c||'', sub:(r.hasOwnProperty('stl')&&typeof r.stl==='string'?r.stl:''),
     d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
-    _cover:r.cover||_gbCache[r._key]?.cover||'', _div:r.div||'', lat:0, lang:'', isbn:null
+    _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:'', isbn:null
   }));
   // Fetch Google Books data for any rec without cache
   _recs.forEach(r=>{ if(!_gbCache[r._key]) fetchGoogleBooks(r); });
@@ -768,7 +768,6 @@ function renderBooks(votesData){
     let cv, imgSrcs='';
     if(b._isRec){
       cv=b._cover||null;
-      if(cv && !cv.startsWith('http')) cv=null; // ignore invalid URLs
     } else {
       const adminCv=ov[`cover_${b.id}`];
       const covers=adminCv?[adminCv]:b.isbn?[
