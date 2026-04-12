@@ -689,7 +689,7 @@ function expandSearch(q){
   return terms;
 }
 function bookMatches(b,terms){
-  const h=norm(b.t)+' '+norm(b.a)+' '+norm(b.c)+' '+norm(b.sub||'');
+  const h=norm(b.t)+' '+norm(b.a)+' '+norm(b.c)+' '+norm(typeof b.sub==='string'?b.sub:'');
   return terms.some(t=>h.includes(t));
 }
 
@@ -728,7 +728,7 @@ function renderBooks(votesData){
     .sort((a,b)=>a.t.localeCompare(b.t,'es'))
     .map(b=>({...b,_isRec:false}));
   const recBooks=_recs.map(r=>({_read:r.read||'',
-    t:r.t, a:r.a||'', c:r.c||'', sub:(typeof r.stl==='string'?r.stl:'')||(typeof r.sub==='string'?r.sub:'')||_gbCache[r._key]?.sub||'',
+    t:r.t, a:r.a||'', c:r.c||'', sub:(r.hasOwnProperty('stl')&&typeof r.stl==='string'?r.stl:''),
     d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
     _cover:r.cover||_gbCache[r._key]?.cover||'', _div:r.div||'', lat:0, lang:'', isbn:null
   }));
@@ -800,7 +800,7 @@ function renderBooks(votesData){
         +(langBadge?'<span style="font-size:.65rem;font-weight:500;color:var(--muted)">'+langBadge+'</span>':'')
         +(divLabel?'<span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span>':'')
         +'</div>':'')
-      +(b.sub?'<div class="csub">'+b.sub+'</div>':'')
+      +(typeof b.sub==='string'&&b.sub?'<div class="csub">'+b.sub+'</div>':'')
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.3rem">'
       +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`
       +shareRow(b.t, b.a)
@@ -946,7 +946,7 @@ function openModal(i){
     +'<div class="mbadges">'+catTag(b.c)+(divLabel?'<span style="font-size:.62rem;font-weight:500;color:var(--sage-dk);background:var(--sage-lt);padding:2px 7px;border-radius:100px">'+divLabel+'</span>':'')+(isCurrent?'<span style="font-size:.62rem;font-weight:500;color:var(--lila-dk);background:var(--lila-lt);padding:2px 7px;border-radius:100px">📖 Leyendo</span>':'')+'</div>'
     +'<div class="mttl">'+b.t+'</div>'
     +'<div class="maut">'+b.a+'</div>'
-    +'<div class="msub">'+b.sub+'</div>'
+    +(typeof b.sub==='string'&&b.sub?'<div class="msub">'+b.sub+'</div>':'')
     +'<div class="mdesc">'+b.d+'</div>'
     +voteBtn
     +'<button class="mbtn-get" onclick="closeModal();openBuy('+i+',event)">Consíguelo aquí →</button>'
