@@ -837,12 +837,11 @@ window.setCat=setCat;
 function doVote(i,btn){
   const b=B[i];
   const vRef=ref(db,`votes/${b.id}`);
-  const cur=_votes[b.id]||_votes[i]||0;
   if(SV[i]){
-    set(vRef, Math.max(0,(cur-1)));
+    vRef.transaction(c=>(c||0)>0?(c-1):0);
     delete SV[i];
   } else {
-    set(vRef, cur+1);
+    vRef.transaction(c=>(c||0)+1);
     SV[i]=true;
   }
   sessionStorage.setItem('cbcV',JSON.stringify(SV));
@@ -1121,12 +1120,11 @@ function renderRecBooks(){
 
 function voteRec(key,btn){
   const vRef=ref(db,`votesRec/${key}`);
-  const cur=_votesRec[key]||0;
   if(SVR[key]){
-    set(vRef, Math.max(0,(cur-1)));
+    vRef.transaction(c=>(c||0)>0?(c-1):0);
     delete SVR[key];
   } else {
-    set(vRef, cur+1);
+    vRef.transaction(c=>(c||0)+1);
     SVR[key]=true;
   }
   sessionStorage.setItem('cbcVR',JSON.stringify(SVR));
