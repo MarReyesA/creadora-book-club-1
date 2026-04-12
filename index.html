@@ -107,7 +107,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .card-expand{display:none;padding:.75rem 0 .25rem;border-top:1px solid var(--bdr);margin-top:.5rem;font-size:.8rem;color:var(--muted);line-height:1.6}
 .card-expand.open{display:block}
-.card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.75rem;color:var(--lila-dk);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
+.card.expanded{grid-column:span 2}
+@media(max-width:599px){.card.expanded{grid-column:span 2}}
 .cget:hover{color:var(--sal-dk)}
 .share-row{margin:0}
 .share-btn{display:inline-flex;align-items:center;gap:.3rem;background:none;border:none;color:var(--muted);font-family:var(--fb);font-size:.75rem;cursor:pointer;padding:0;transition:color .15s}
@@ -216,8 +218,8 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 .swrap{max-width:700px;margin:0 auto;padding:0 1.25rem 3rem}
 
 /* ADMIN PANEL */
-#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1rem 1.25rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:280px;max-height:80vh;overflow-y:auto;font-size:1rem}
-#admin-panel h3{font-family:var(--ft);font-size:1rem;color:var(--lila-dk);margin-bottom:.75rem}
+#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.5rem 1.75rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:360px;max-width:440px;max-height:85vh;overflow-y:auto;font-size:1.05rem}
+#admin-panel h3{font-family:var(--ft);font-size:1.3rem;color:var(--lila-dk);margin-bottom:.75rem}
 .admin-book-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bdr);font-size:.75rem}
 .admin-book-row input[type=text]{flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.72rem;background:var(--beige)}
 .admin-btn{padding:.3rem .6rem;border-radius:6px;font-size:.68rem;font-weight:500;cursor:pointer;border:none;font-family:var(--fb)}
@@ -806,8 +808,17 @@ function renderBooks(votesData){
         +(divLabel?'<span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span>':'')
         +'</div>':'')
       +(typeof b.sub==='string'&&b.sub?'<div class="csub">'+b.sub+'</div>':'')
-      +(desc?'<button class="card-expand-btn" onclick="toggleCardExpand(\''+cardId+'\')">▾ Ver descripción</button>':'')
-      +(desc?'<div class="card-expand" id="expand-'+cardId+'">'+desc+'</div>':'')
+      +'<button class="card-expand-btn" onclick="toggleCardExpand(\''+cardId+'\')">'+(b._isRec?'▾ Ver reseña y comentarios':'▾ Ver reseña y comentarios')+'</button>'
+      +'<div class="card-expand" id="expand-'+cardId+'" data-cmkey="'+(b._isRec?'rec-'+encodeURIComponent(b._key):'book-'+(b._isRec?b._key:i))+'">'
+      +(desc?'<div style="margin-bottom:.75rem">'+desc+'</div>':'')
+      +'<div style="font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:.5rem">💬 Comentarios</div>'
+      +'<div class="cm-list-inline" style="margin-bottom:.5rem"></div>'
+      +'<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
+      +'<input id="cm-n-'+cardId+'" type="text" placeholder="Tu nombre" style="flex:1;min-width:100px;padding:.35rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige)">'
+      +'<input id="cm-t-'+cardId+'" type="text" placeholder="Tu comentario..." style="flex:2;min-width:150px;padding:.35rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige)">'
+      +'<button onclick="postComment(\'book-'+(b._isRec?encodeURIComponent(b._key):i)+'\',document.getElementById(\'cm-n-'+cardId+'\'),document.getElementById(\'cm-t-'+cardId+'\'))" style="background:var(--lila-dk);color:#fff;border:none;padding:.35rem .75rem;border-radius:8px;font-family:var(--fb);font-size:.75rem;cursor:pointer;white-space:nowrap">Publicar</button>'
+      +'</div>'
+      +'</div>'
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.3rem">'
       +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`
       +shareRow(b.t, b.a)
@@ -913,7 +924,7 @@ function toggleCardExpand(cardId){
   if(!exp) return;
   const open=exp.classList.contains('open');
   exp.classList.toggle('open');
-  if(btn) btn.textContent=open?'▾ Ver descripción':'▴ Ocultar';
+  if(btn) btn.textContent=open?'▾ Ver reseña y comentarios':'▴ Ocultar';
 }
 window.toggleCardExpand=toggleCardExpand;
 
@@ -1230,31 +1241,32 @@ function renderAdminPanel(force){
 
     <div style="margin-bottom:1rem">
       <div style="font-size:.75rem;font-weight:500;margin-bottom:.4rem">📖 Libro del mes actual</div>
-      <select id="admin-current" style="width:100%;padding:.4rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+      <select id="admin-current" style="width:100%;padding:.4rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
         <option value="">— Ninguno —</option>
         ${B.map((b,i)=>`<option value="${i}" ${_overrides.currentBook==i?'selected':''}>${b.t}</option>`).join('')}
       </select>
-      <input id="admin-cur-date" type="text" placeholder="Ej: Círculo: 8 de Abril 2026" value="${_overrides.currentBookDate||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
-      <input id="admin-ldm-deadline" type="text" placeholder="Fecha límite para votar (ej: 13 de Abril)" value="${_overrides.ldmDeadline||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem">
+      <input id="admin-cur-date" type="text" placeholder="Ej: Círculo: 8 de Abril 2026" value="${_overrides.currentBookDate||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
+      <input id="admin-ldm-deadline" type="text" placeholder="Fecha límite para votar (ej: 13 de Abril)" value="${_overrides.ldmDeadline||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
       <textarea id="admin-ldm-message" placeholder="Mensaje personalizado (opcional, reemplaza la descripción)" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige);margin-bottom:.4rem;resize:vertical;min-height:60px">${_overrides.ldmMessage||''}</textarea>
-      <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.45rem;border-radius:8px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
+      <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:8px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
     </div>
 
       <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
-      <div style="font-size:.82rem;font-weight:600;color:var(--lila-dk);margin-bottom:.4rem">📚 Editar libro de la biblioteca</div>
-      <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.5rem .75rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.78rem;background:#fff8f6;margin-bottom:.5rem;outline:none;color:var(--text)">
+      <div style="font-size:.95rem;font-weight:600;color:var(--lila-dk);margin-bottom:.5rem">📚 Editar libro de la biblioteca</div>
+      <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.6rem .9rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.88rem;background:#fff8f6;margin-bottom:.6rem;outline:none;color:var(--text)">
     </div>
     <div id="admin-book-list" style="max-height:300px;overflow-y:auto"></div>
 
     <div style="border-top:2px solid var(--sage);padding-top:.75rem;margin-top:.75rem;margin-bottom:.5rem">
-      <div style="font-size:.82rem;font-weight:600;color:var(--sage-dk);margin-bottom:.4rem">📋 Libros agregados por la comunidad</div>
+      <div style="font-size:.95rem;font-weight:600;color:var(--sage-dk);margin-bottom:.5rem">📋 Libros agregados por la comunidad</div>
       <div id="admin-community-list" style="max-height:200px;overflow-y:auto">
         <div style="font-size:.75rem;color:var(--muted)">Cargando...</div>
       </div>
     </div>
 
     <div style="margin-top:.875rem;border-top:1px solid var(--bdr);padding-top:.875rem">
-      <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV (${_recs.length} libros)</button>
+      <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV libros (${_recs.length})</button>
+      <button onclick="downloadCommentsCSV()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV comentarios</button>
     </div>
     <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
   </div>
@@ -1491,6 +1503,31 @@ window.setCurrentBook=setCurrentBook; window.setRead=setRead; window.setCover=se
 window.set=set; window.ref=ref; window.db=db;
 
 // ── CSV ──
+// Cache for all comments
+let _allComments={};
+onValue(ref(db,'comments'), s=>{_allComments=s.val()||{};});
+
+function downloadCommentsCSV(){
+  const rows=[['Libro','Nombre','Comentario','Fecha']];
+  // Map book keys to titles
+  const keyToTitle={};
+  B.forEach((b,i)=>{ keyToTitle['book-'+i]=b.t; });
+  _recs.forEach(r=>{ keyToTitle['book-'+encodeURIComponent(r._key)]=r.t; keyToTitle['rec-'+encodeURIComponent(r._key)]=r.t; });
+  Object.entries(_allComments).forEach(([bookKey,comments])=>{
+    const title=keyToTitle[bookKey]||bookKey;
+    Object.values(comments||{}).forEach(c=>{
+      rows.push([title, c.name||'', c.text||'', c.ts?new Date(c.ts).toLocaleDateString('es-MX'):'']);
+    });
+  });
+  if(rows.length<=1){alert('No hay comentarios todavía.');return;}
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='comentarios-creadoras.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+window.downloadCommentsCSV=downloadCommentsCSV;
+
 function downloadCSV(){
   if(!_recs.length){alert('No hay libros agregados todavía.');return;}
   const rows=[['Fecha','Título','Autor','Nombre','Email']];
