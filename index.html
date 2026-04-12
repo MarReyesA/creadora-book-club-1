@@ -1322,6 +1322,10 @@ function saveRecField(key,field,inputId){
   const val=document.getElementById(inputId)?.value.trim();
   if(val) set(ref(db,`recs/${key}/${field}`),val);
   else remove(ref(db,`recs/${key}/${field}`));
+  // Update _recs in memory immediately so card re-renders without waiting for Firebase
+  const r=_recs.find(x=>x._key===key);
+  if(r) r[field]=val||'';
+  renderBooks();
   showAdminFeedback('✓ Guardado');
 }
 window.saveRecField=saveRecField;
