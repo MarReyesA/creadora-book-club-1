@@ -109,9 +109,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .card-expand.open{display:block}
 .card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .card.expanded{grid-column:span 2;display:flex;flex-direction:column}
-.card.expanded .cimgw{width:100%;height:200px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff}
+.card.expanded .cimgw{width:100%;height:200px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--beige2)}
 .card.expanded .cimgw .cimg{width:auto;max-width:100%;height:180px;aspect-ratio:unset;object-fit:contain;display:block}
-.card.expanded .cimgw .cph{width:100%;min-height:200px;aspect-ratio:unset;background:#fff}
+.card.expanded .cimgw .cph{width:100%;min-height:200px;aspect-ratio:unset;background:var(--beige2)}
 .card.expanded .cbody{flex:1;min-width:0;display:flex;flex-direction:column}
 .card.expanded .card-expand{column-count:1}
 @media(max-width:599px){.card.expanded{grid-column:span 2}}
@@ -119,6 +119,11 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .share-row{margin:0}
 .share-btn{display:inline-flex;align-items:center;gap:.3rem;background:none;border:none;color:var(--muted);font-family:var(--fb);font-size:.75rem;cursor:pointer;padding:0;transition:color .15s}
 .share-btn:hover{color:var(--lila-dk)}
+.share-menu{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--white);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 16px rgba(42,35,24,.12);padding:.4rem;z-index:100;white-space:nowrap;min-width:180px}
+.share-menu.open{display:block}
+.share-menu a{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:7px;text-decoration:none;font-size:.78rem;font-weight:500;color:var(--text);transition:background .12s}
+.share-menu a:hover{background:var(--beige2)}
+.share-wrap{position:relative;display:inline-block}
 .share-btn svg{flex-shrink:0}
 .vrow{display:flex;align-items:center;gap:.4rem}
 .vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
@@ -527,7 +532,7 @@ function coverImgTag(b, i, cls, style, size){
     ? `var s=JSON.parse(this.dataset.srcs||'[]');if(s.length){this.src=s[0];this.dataset.srcs=JSON.stringify(s.slice(1));}else{this.style.display='none';}`
     : `this.style.display='none';`;
   // onload: if Open Library returns a tiny placeholder image (w<10), skip to next source
-  const loadHandler=`if(this.naturalWidth<10){${nextSrc||"this.style.display='none';"}}`;
+  const loadHandler=`if(this.naturalWidth>0&&this.naturalWidth<2){${nextSrc||"this.style.display='none';"}}`;
   const dataAttr=rest.length?` data-srcs='${JSON.stringify(rest)}'`:'';
   return `<img src="${srcs[0]}" alt="${b.t}"${cls?` class="${cls}"`:''}${style?` style="${style}"`:''}${dataAttr} onload="${loadHandler}" onerror="${errHandler}">`;
 }
@@ -669,21 +674,27 @@ function renderRanking(){
   const ranked=Object.entries(allVotes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
   el.innerHTML=ranked.map(([key,count])=>{
-    const b=B.find(x=>x.id===key)||B[parseInt(key)];
+    // key could be: book id string, numeric string, or rec key
+    const b=B.find(x=>x.id===key)||B[parseInt(key)]||null;
     const rec=!b?_recs.find(r=>r._key===key):null;
     if(!b&&!rec) return '';
     const i=b?B.indexOf(b):-1;
     const title=b?b.t:rec.t;
-    const cover=b?null:(rec.cover||'');
     const imgTag=b
       ? coverImgTag(b,b.id,'rk-thumb','','M')
-      : (cover?`<img class="rk-thumb" src="${cover}" onerror="this.style.display='none'">`:'');
+      : (rec?.cover?`<img class="rk-thumb" src="${rec.cover}" onerror="this.style.display='none'">`:'');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
     const onclick=b?`openModal(${i})`:`openBuyRec('${encodeURIComponent(title)}','${encodeURIComponent(rec?.a||'')}',event)`;
-    return'<div class="rk-card" onclick="'+onclick+'" title="'+title+'">'
-      +'<div class="rk-wrap" style="position:relative">'+imgTag+ph
+    const isV=b?!!SV[i]:!!SVR[key];
+    const cardId=b?'card-'+b.id:'card-'+key;
+    const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
+    const expandOnClick=`toggleCardExpand('${cardId}')`;
+    return'<div class="rk-card" title="'+title+'">'
+      +'<div class="rk-wrap" style="position:relative;cursor:pointer" onclick="'+expandOnClick+'">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
-      +'</div></div>';
+      +'</div>'
+      +'<button class="vbtn'+(isV?' voted':'')+'" onclick="'+voteOnClick+'" style="width:100%;margin-top:.3rem;font-size:.68rem;padding:.25rem .4rem;border-radius:100px">'+(isV?'♥':'♡')+'</button>'
+      +'</div>';
   }).join('');
 }
 
@@ -796,13 +807,22 @@ function renderBooks(votesData){
     const langLabel=b._isRec?'':(ov[`lang_${b.id}`]||b.lang||'');
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const onVote=b._isRec?`voteRec('${b._key}',this)`:`doVote(${i},this)`;
-    const onBuy=b._isRec?`openBuyRec('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}',event)`:`openBuy(${i},event)`;
+    const cardId='card-'+(b._isRec?b._key:b.id);
+    const buyId='buy-inline-'+cardId;
+    const q2=b._isRec?b.t:(b.q||b.t);
+    const mkL=arr=>arr.map(x=>'<a class="buy-lnk" href="'+x.u+'" target="_blank"><span>'+x.f+'</span><span style="flex:1">'+x.l+'</span><span class="arr">↗</span></a>').join('');
+    const buyLinks='<div id="'+buyId+'" style="display:none;margin-top:.5rem"><div style="display:flex;gap:.75rem;flex-wrap:wrap"><div style="flex:1;min-width:140px"><div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">🎧 Audiolibro</div>'+mkL([{f:'🇺🇸',l:'Audible USA',u:aAud(q2)},{f:'🍁',l:'Audible CA',u:aAudCA(q2)},{f:'🇲🇽',l:'Storytel MX',u:aStory(q2)}])+'</div><div style="flex:1;min-width:140px"><div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">📖 Libro físico</div>'+mkL([{f:'🍁',l:'Amazon CA',u:aCA(q2)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q2)},{f:'🇲🇽',l:'Buscalibre MX',u:aMX(q2)}])+'</div></div></div>';
+    const onBuy="toggleBuyInline('"+buyId+"')";
     const onCard=b._isRec?`openRecModal('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}','${encodeURIComponent((b.d||'').slice(0,120))}','${encodeURIComponent(b._cover||'')}','${encodeURIComponent(b._key)}',event)`:`openModal(${i})`;
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
-    const cardId='card-'+(b._isRec?b._key:b.id);
-    const desc=b._isRec?(b.d||'').slice(0,200):(b.d||'');
+    const fullDesc=b._isRec?(b.d||''):(b.d||'');
+    const descShort=fullDesc.length>220?fullDesc.slice(0,220)+'…':fullDesc;
+    const descId='desc-'+cardId;
+    const desc=fullDesc.length>220
+      ?'<span id="short-'+descId+'">'+descShort+' <button onclick="document.getElementById(\'short-'+descId+'\').style.display=\'none\';document.getElementById(\'full-'+descId+'\').style.display=\'inline\';" style="background:none;border:none;color:var(--lila-dk);cursor:pointer;font-family:var(--fb);font-size:.8rem;padding:0;text-decoration:underline">Seguir leyendo</button></span><span id="full-'+descId+'" style="display:none">'+fullDesc+'</span>'
+      :fullDesc;
     return '<div class="card" id="'+cardId+'">'
       +'<div class="cimgw" onclick="toggleCardExpand(\''+cardId+'\')" style="cursor:pointer">'+(img)+(ph)+(badge)+'</div>'
       +'<div class="cbody">'+catTag(bCat)
@@ -812,7 +832,7 @@ function renderBooks(votesData){
         +(langBadge?'<span style="font-size:.65rem;font-weight:500;color:var(--muted)">'+langBadge+'</span>':'')
         +(divLabel?'<span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span>':'')
         +'</div>':'')
-      +(typeof b.sub==='string'&&b.sub?'<div class="csub">'+b.sub+'</div>':'')
+
       +'<button class="card-expand-btn" onclick="toggleCardExpand(\''+cardId+'\')">'+(b._isRec?'▾ Ver reseña y comentarios':'▾ Ver reseña y comentarios')+'</button>'
       +'<div class="card-expand" id="expand-'+cardId+'" data-cmkey="'+(b._isRec?'rec-'+encodeURIComponent(b._key):'book-'+(b._isRec?b._key:i))+'">'
       +(desc?'<div style="margin-bottom:.75rem">'+desc+'</div>':'')
@@ -825,7 +845,7 @@ function renderBooks(votesData){
       +'</div>'
       +'</div>'
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.3rem">'
-      +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`
+      +`<button class="cget" onclick="${onBuy}">Consíguelo aquí →</button>`+buyLinks
       +shareRow(b.t, b.a)
       +(vSect)
       +'</div>'
@@ -926,12 +946,29 @@ window.openBuy=openBuy; window.closeBuy=closeBuy;
 function toggleCardExpand(cardId){
   const card=document.getElementById(cardId);
   const exp=document.getElementById('expand-'+cardId);
-  const btn=document.querySelector('#'+CSS.escape(cardId)+' .card-expand-btn');
-  if(!exp) return;
+  const btn=card?card.querySelector('.card-expand-btn'):null;
+  if(!exp||!card) return;
   const open=exp.classList.contains('open');
   exp.classList.toggle('open');
-  if(card) card.classList.toggle('expanded',!open);
+  card.classList.toggle('expanded',!open);
+  if(!open){const cards=Array.from(card.parentElement.children).filter(c=>c.classList.contains('card'));const idx=cards.indexOf(card);if(idx%2===1)card.style.gridColumnStart='1';else card.style.gridColumnStart='';} else {card.style.gridColumnStart='';}
   if(btn) btn.textContent=open?'▾ Ver reseña y comentarios':'▴ Ocultar';
+  // Show/hide X close button
+  let xBtn=card.querySelector('.card-close-x');
+  if(!open){
+    if(!xBtn){
+      xBtn=document.createElement('button');
+      xBtn.className='card-close-x';
+      xBtn.innerHTML='✕';
+      xBtn.onclick=(e)=>{e.stopPropagation();toggleCardExpand(cardId);};
+      xBtn.style.cssText='position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:1px solid var(--bdr);border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;z-index:10;font-family:var(--fb)';
+      card.style.position='relative';
+      card.appendChild(xBtn);
+    }
+    xBtn.style.display='flex';
+  } else {
+    if(xBtn) xBtn.style.display='none';
+  }
   // Load comments on first open
   if(!open && exp.dataset && !exp.dataset.commentsLoaded){
     exp.dataset.commentsLoaded='1';
@@ -942,28 +979,45 @@ function toggleCardExpand(cardId){
 }
 window.toggleCardExpand=toggleCardExpand;
 
+let _openShareMenu=null;
 function shareRow(title, author){
+  const uid='sm-'+Math.random().toString(36).slice(2,7);
   const url='https://marreyes.com/book-club';
-  const text='📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club!';
-  const shareIcon='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
-  const onclick="shareBook('"+title.replace(/'/g,"\'")+"','"+author.replace(/'/g,"\'"||'')+"')";
-  return '<div class="share-row"><button class="share-btn" onclick="'+onclick+'">'+shareIcon+' Comparte y aumenta votos</button></div>';
+  const txt=encodeURIComponent('📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club! '+url);
+  const fb='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);
+  const wa='https://wa.me/?text='+txt;
+  const shareIcon='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
+  return '<div class="share-row"><div class="share-wrap">'
+    +'<button class="share-btn" onclick="toggleShareMenu(\''+uid+'\')">'
+    +shareIcon+' Comparte y aumenta votos</button>'
+    +'<div class="share-menu" id="'+uid+'">'
+    +'<a href="'+wa+'" target="_blank" onclick="closeShareMenu()">💬 WhatsApp</a>'
+    +'<a href="'+fb+'" target="_blank" onclick="closeShareMenu()">👥 Facebook</a>'
+    +'</div>'
+    +'</div></div>';
 }
+function toggleBuyInline(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.style.display=el.style.display==='block'?'none':'block';
+}
+window.toggleBuyInline=toggleBuyInline;
 
-function shareBook(title, author){
-  const url='https://marreyes.com/book-club';
-  const text='📚 Vota por "'+title+'"'+(author?' de '+author:'')+' en Creadora Book Club!';
-  if(navigator.share){
-    navigator.share({title:'Creadora Book Club', text, url}).catch(()=>{});
-  } else {
-    // fallback: copy link + show options
-    const wa='https://wa.me/?text='+encodeURIComponent(text+' '+url);
-    const fb='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);
-    const choice=confirm(text+'\n\n¿Compartir en WhatsApp? (Cancelar = Facebook)');
-    window.open(choice?wa:fb,'_blank');
+function toggleShareMenu(id){
+  if(_openShareMenu&&_openShareMenu!==id){
+    const prev=document.getElementById(_openShareMenu);
+    if(prev) prev.classList.remove('open');
   }
+  const m=document.getElementById(id);
+  if(m){m.classList.toggle('open');_openShareMenu=m.classList.contains('open')?id:null;}
 }
-window.shareBook=shareBook;
+function closeShareMenu(){
+  if(_openShareMenu){const m=document.getElementById(_openShareMenu);if(m)m.classList.remove('open');_openShareMenu=null;}
+}
+document.addEventListener('click',e=>{
+  if(_openShareMenu&&!e.target.closest('.share-wrap')) closeShareMenu();
+});
+window.toggleShareMenu=toggleShareMenu; window.closeShareMenu=closeShareMenu;
 
 function scrollCarousel(dir){
   const el=document.getElementById('read-carousel');
@@ -1228,8 +1282,10 @@ function renderReadCarousel(){
     const img=isRec
       ? (b._cover?`<img src="${b._cover}" style="width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem" onerror="this.style.display='none'">`:`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`)
       : coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
-    const onclick=isRec?'':`onclick="openModal(${i})"`;
-    return`<div class="rc-card" ${onclick} style="${isRec?'':'cursor:pointer'}">${img}
+    const rcCardId=isRec?'card-'+b.id:('card-'+(b.id||i));
+    const rcOnClick=`toggleCardExpand('${rcCardId}')`;
+    return`<div class="rc-card" style="cursor:pointer" onclick="${rcOnClick}">
+      <div style="cursor:pointer">${img}</div>
       <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
       <div style="font-size:.65rem;color:var(--muted)">${b.a}</div>
       <div style="font-size:.62rem;color:var(--sage-dk);background:var(--sage-lt);padding:1px 6px;border-radius:100px;display:inline-block;margin-top:.35rem">✓ ${readVal}</div>
