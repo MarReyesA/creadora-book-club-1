@@ -636,7 +636,7 @@ function renderRanking(){
     const isV=b?!!SV[i]:!!SVR[key];
     const cardId=b?'card-'+b.id:'card-'+key;
     const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
-    const expandOnClick=`scrollToAndExpand('${cardId}')`;
+    const expandOnClick=`scrollToAndExpand('${cardId}',event)`;
     return'<div class="rk-card" title="'+title+'">'
       +'<div class="rk-wrap" style="position:relative;cursor:pointer" onclick="'+expandOnClick+'">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
@@ -755,7 +755,7 @@ function renderBooks(votesData){
     const langLabel=b._isRec?'':(ov[`lang_${b.id}`]||b.lang||'');
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const onVote=b._isRec?`voteRec('${b._key}',this)`:`doVote(${i},this)`;
-    const cardId='card-'+(b._isRec?b._key:b.id);
+    const cardId='card-'+(b._isRec?b._key.replace(/[^a-zA-Z0-9-_]/g,'_'):b.id);
     const buyId='buy-inline-'+cardId;
     const q2=b._isRec?b.t:(b.q||b.t);
     const mkL=arr=>arr.map(x=>'<a class="buy-lnk" href="'+x.u+'" target="_blank"><span>'+x.f+'</span><span style="flex:1">'+x.l+'</span><span class="arr">↗</span></a>').join('');
@@ -881,18 +881,56 @@ window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=se
 // ── BUY POPUP ──
 
 // ── BOOK MODAL ──
-function scrollToAndExpand(cardId){
+function scrollToAndExpand(cardId, evt){
+  // If card exists on current page, scroll to it and expand
   const card=document.getElementById(cardId);
-  if(!card) return;
-  card.scrollIntoView({behavior:'smooth',block:'center'});
-  setTimeout(()=>toggleCardExpand(cardId),400);
+  if(card){
+    card.scrollIntoView({behavior:'smooth',block:'center'});
+    setTimeout(()=>{ if(!card.classList.contains('expanded')) toggleCardExpand(cardId); },350);
+    return;
+  }
+  // Card not in DOM (different page) — find book data and show mini popup
+  const bookId=cardId.replace('card-','');
+  const b=B.find(x=>x.id===bookId)||B[parseInt(bookId)]||null;
+  const rec=!b?_recs.find(r=>r._key===bookId):null;
+  if(!b&&!rec) return;
+  showRkPopup(b||rec, b?B.indexOf(b):-1, !b, evt);
 }
 window.scrollToAndExpand=scrollToAndExpand;
+
+function showRkPopup(b, i, isRec, evt){
+  let pop=document.getElementById('rk-popup');
+  if(!pop){ pop=document.createElement('div'); pop.id='rk-popup'; document.body.appendChild(pop); }
+  const cv=isRec?(b._cover||b.cover||''):(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:'');
+  const desc=(b.d||b.desc||'').slice(0,200);
+  const q=isRec?b.t:(b.q||b.t);
+  pop.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9000;background:#fff;border-radius:16px;padding:1.25rem;max-width:340px;width:90%;box-shadow:0 8px 40px rgba(42,35,24,.22);border:1px solid var(--bdr)';
+  pop.innerHTML=
+    '<button onclick="closeRkPopup()" style="position:absolute;top:.6rem;right:.75rem;background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted)">✕</button>'
+    +(cv?`<img src="${cv}" style="width:70px;height:105px;object-fit:contain;display:block;margin:0 auto .75rem;border-radius:6px">`:'')
+    +`<div style="font-family:var(--ft);font-size:1.05rem;text-align:center;margin-bottom:.2rem">${b.t}</div>`
+    +`<div style="font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:.6rem">${b.a||''}</div>`
+    +(desc?`<div style="font-size:.78rem;color:var(--muted);line-height:1.55;margin-bottom:.75rem">${desc}</div>`:'')
+    +'<div style="display:flex;gap:.5rem;flex-direction:column">'
+    +`<button onclick="toggleBuyInline('rkpop-buy')" class="cget" style="text-align:center">Consíguelo aquí →</button>`
+    +`<div id="rkpop-buy" style="display:none">`
+    +`<div style="font-size:.72rem;font-weight:600;margin-bottom:.25rem">📖 Libro físico</div>`
+    +`<a class="buy-lnk" href="${aCA(q)}" target="_blank"><span>🍁</span><span style="flex:1">Amazon CA</span><span class="arr">↗</span></a>`
+    +`<a class="buy-lnk" href="${aUS(q)}" target="_blank"><span>🇺🇸</span><span style="flex:1">Amazon USA</span><span class="arr">↗</span></a>`
+    +`<a class="buy-lnk" href="${aMX(q)}" target="_blank"><span>🇲🇽</span><span style="flex:1">Buscalibre MX</span><span class="arr">↗</span></a>`
+    +'</div></div>';
+  pop.style.display='block';
+  // Close on outside click
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!pop.contains(e.target)){pop.style.display='none';document.removeEventListener('click',h);}},),100);
+}
+window.showRkPopup=showRkPopup;
+function closeRkPopup(){const p=document.getElementById('rk-popup');if(p)p.style.display='none';}
+window.closeRkPopup=closeRkPopup;
 
 function toggleCardExpand(cardId){
   const card=document.getElementById(cardId);
   const exp=document.getElementById('expand-'+cardId);
-  const btn=card?card.querySelector('.card-expand-btn'):null;
+  const btn=card?card.querySelector('.card-expand-btn'):null; // btn found via card reference, safe
   if(!exp||!card) return;
   const open=exp.classList.contains('open');
   exp.classList.toggle('open');
