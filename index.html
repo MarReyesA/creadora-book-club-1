@@ -217,7 +217,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 <div class="sec on" id="s-books">
 
   <!-- LIBRO DEL MES (filled by Firebase) -->
-  <div class="ldm" id="ldm-wrap">
+  <div class="ldm" id="ldm-wrap" style="display:none">
     <div class="ldm-card">
       <div class="ldm-img" id="ldm-img-wrap">
         <span style="font-size:2rem">📖</span>
@@ -245,6 +245,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
     <div class="vote-hdr">
       <h2>Vota por los libros que quieres leer</h2>
       <p>Estos son los top 5 del momento</p>
+      <p id="vote-deadline-txt" style="font-size:.82rem;color:var(--lila-dk);font-weight:500;margin-top:.2rem"></p>
     </div>
     <div style="position:relative;display:flex;align-items:center;gap:.5rem">
       <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:-200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">‹</button>
@@ -579,6 +580,8 @@ function renderBookOfMonth(){
     const b=B[cur];
     const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
     ldmTitle.textContent=b.t;
+    const vdTxt=document.getElementById('vote-deadline-txt');
+    if(vdTxt) vdTxt.textContent=_overrides.ldmDeadline?'Vota antes del '+_overrides.ldmDeadline:'';
     ldmAuthor.textContent=b.a;
     ldmDesc.textContent=_overrides.ldmMessage||b.d||'';
     ldmDate.textContent=_overrides.currentBookDate||'';
@@ -601,14 +604,11 @@ function renderBookOfMonth(){
       if(getBtn) getBtn.onclick=()=>openBuy(cur,event);
       if(shareBtn) shareBtn.onclick=()=>shareBook(b.t,b.a);
     }
+    const wrap=document.getElementById('ldm-wrap');
+    if(wrap) wrap.style.display='block';
   } else {
-    ldmTitle.textContent=_overrides.ldmMessage||'El libro del mes será anunciado aquí';
-    ldmAuthor.textContent='';
-    ldmDesc.innerHTML='Vota antes del <span id="ldm-vote-deadline">'+((_overrides.ldmDeadline)||'13 de Abril')+'</span>';
-    ldmDate.textContent='';
-    ldmImg.innerHTML='<span style="font-size:2rem">📖</span>';
-    if(ldmBadges) ldmBadges.innerHTML='';
-    if(ldmActions) ldmActions.style.display='none';
+    const wrap=document.getElementById('ldm-wrap');
+    if(wrap) wrap.style.display='none';
   }
 }
 
@@ -636,7 +636,7 @@ function renderRanking(){
     const isV=b?!!SV[i]:!!SVR[key];
     const cardId=b?'card-'+b.id:'card-'+key;
     const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
-    const expandOnClick=`toggleCardExpand('${cardId}')`;
+    const expandOnClick=`scrollToAndExpand('${cardId}')`;
     return'<div class="rk-card" title="'+title+'">'
       +'<div class="rk-wrap" style="position:relative;cursor:pointer" onclick="'+expandOnClick+'">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
@@ -824,10 +824,8 @@ function goPage(p){
   // On mobile, scroll to very top — user can scroll down to grid
   // On desktop, scroll to grid
   if(window.innerWidth<600){
-    const filts=document.getElementById('filts');
-    const scrollTarget=filts?filts.offsetTop-10:0;
-    window.scrollTo({top:scrollTarget,behavior:'smooth'});
-    try{window.parent.postMessage({scrollTo:scrollTarget},'*');}catch(e){}
+    window.scrollTo({top:0,behavior:'smooth'});
+    try{window.parent.postMessage({scrollTo:0},'*');}catch(e){}
   } else {
     const target=document.getElementById('grid');
     if(!target) return;
@@ -883,6 +881,14 @@ window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=se
 // ── BUY POPUP ──
 
 // ── BOOK MODAL ──
+function scrollToAndExpand(cardId){
+  const card=document.getElementById(cardId);
+  if(!card) return;
+  card.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>toggleCardExpand(cardId),400);
+}
+window.scrollToAndExpand=scrollToAndExpand;
+
 function toggleCardExpand(cardId){
   const card=document.getElementById(cardId);
   const exp=document.getElementById('expand-'+cardId);
@@ -891,7 +897,7 @@ function toggleCardExpand(cardId){
   const open=exp.classList.contains('open');
   exp.classList.toggle('open');
   card.classList.toggle('expanded',!open);
-  if(!open){const cards=Array.from(card.parentElement.children).filter(c=>c.classList.contains('card'));const idx=cards.indexOf(card);if(idx%2===1)card.style.gridColumnStart='1';else card.style.gridColumnStart='';} else {card.style.gridColumnStart='';}
+  if(!open){const cards=Array.from(card.parentElement.children).filter(c=>c.classList.contains('card'));const idx=cards.indexOf(card);card.style.gridColumnStart=idx%2===1?'1':'';} else {card.style.gridColumnStart='';}
   if(btn) btn.textContent=open?'▾ Ver reseña y comentarios':'▴ Ocultar';
   // Show/hide X close button
   let xBtn=card.querySelector('.card-close-x');
