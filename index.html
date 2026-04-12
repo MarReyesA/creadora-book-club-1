@@ -564,7 +564,7 @@ const SVR = JSON.parse(sessionStorage.getItem('cbcVR')||'{}');
 // cached Firebase data
 let _votes={}, _votesRec={}, _recs=[], _overrides={};
 let curCat='all', curPage=0;
-const PAGE_SIZE=15;
+const PAGE_SIZE=window.innerWidth<600?16:15;
 // Admin detection - works both standalone and inside Squarespace iframe
 function detectAdmin(){
   try {
@@ -787,7 +787,7 @@ function renderBooks(votesData){
     const langBadge=langLabel==='both'?'ENG / ESP':langLabel==='eng'?'ENG':langLabel==='esp'?'ESP':'';
     const onVote=b._isRec?`voteRec('${b._key}',this)`:`doVote(${i},this)`;
     const onBuy=b._isRec?`openBuyRec('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}',event)`:`openBuy(${i},event)`;
-    const onCard=b._isRec?`openRecModal('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}','${encodeURIComponent(b.d||'')}','${encodeURIComponent(b._cover||'')}','${b._key}',event)`:`openModal(${i})`;
+    const onCard=b._isRec?`openRecModal('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}','${encodeURIComponent((b.d||'').slice(0,120))}','${encodeURIComponent(b._cover||'')}','${encodeURIComponent(b._key)}',event)`:`openModal(${i})`;
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
@@ -827,7 +827,21 @@ function renderBooks(votesData){
   pg.innerHTML=html;
 }
 
-function goPage(p){curPage=p;renderBooks();window.scrollTo({top:0,behavior:'smooth'});try{window.parent.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
+function goPage(p){
+  curPage=p;
+  renderBooks();
+  // Scroll to the grid/search area
+  const target=document.getElementById('grid');
+  if(target){
+    target.scrollIntoView({behavior:'smooth',block:'start'});
+    // Also tell parent iframe to scroll to match
+    try{
+      const rect=target.getBoundingClientRect();
+      const scrollY=window.scrollY||window.pageYOffset||0;
+      window.parent.scrollTo({top:rect.top+scrollY-80,behavior:'smooth'});
+    }catch(e){}
+  }
+}
 window.goPage=goPage;
 
 function setCat(cat,btn){curCat=cat;curPage=0;document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderBooks();}
@@ -915,10 +929,11 @@ function scrollCarousel(dir){
 }
 window.scrollCarousel=scrollCarousel;
 
-function openRecModal(encT,encA,encD,encCover,key,e){
+function openRecModal(encT,encA,encD,encCover,encKey,e){
+  const key=decodeURIComponent(encKey);
   if(e) e.stopPropagation();
   const t=decodeURIComponent(encT), a=decodeURIComponent(encA);
-  const d=decodeURIComponent(encD), cover=decodeURIComponent(encCover);
+  const d=(decodeURIComponent(encD)||'').slice(0,160), cover=decodeURIComponent(encCover);
   const r=_recs.find(x=>x._key===key)||{};
   const isV=!!SVR[key], v=_votesRec[key]||0;
   document.getElementById('mcontent').innerHTML=
@@ -952,7 +967,7 @@ function openModal(i){
     +'<div class="mttl">'+b.t+'</div>'
     +'<div class="maut">'+b.a+'</div>'
     +(typeof b.sub==='string'&&b.sub?'<div class="msub">'+b.sub+'</div>':'')
-    +'<div class="mdesc">'+b.d+'</div>'
+    +(b.d?'<div class="mdesc">'+(b.d.length>200?b.d.slice(0,200)+'…':b.d)+'</div>':'')
     +voteBtn
     +'<button class="mbtn-get" onclick="closeModal();openBuy('+i+',event)">Consíguelo aquí →</button>'
     +shareRow(b.t, b.a)
