@@ -768,6 +768,7 @@ function renderBooks(votesData){
     let cv, imgSrcs='';
     if(b._isRec){
       cv=b._cover||null;
+      if(cv && !cv.startsWith('http')) cv=null; // ignore invalid URLs
     } else {
       const adminCv=ov[`cover_${b.id}`];
       const covers=adminCv?[adminCv]:b.isbn?[
@@ -1087,6 +1088,7 @@ function submitRec(){
       document.getElementById('add-form-inner').style.display='none';
       document.getElementById('add-form-ok').style.display='block';
       if(btn){btn.disabled=false;btn.textContent='Agregar libro ✦';}
+      setTimeout(()=>closeAddForm(),3500);
     })
     .catch(()=>{
       // Google Books failed — save without enrichment
