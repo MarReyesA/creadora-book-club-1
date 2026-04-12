@@ -26,11 +26,6 @@ body{font-family:var(--fb);background:transparent;color:var(--text);line-height:
 nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bdr);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:54px;gap:.5rem}
 .logo{font-family:var(--ft);font-size:1rem;color:var(--text);white-space:nowrap}
 .logo em{color:var(--sage-dk);font-style:italic}
-.nav-links{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
-.nav-links a{color:var(--muted);font-size:.78rem;padding:5px 10px;border-radius:8px;text-decoration:none;transition:all .15s;cursor:pointer;white-space:nowrap}
-.nav-links a:hover{background:var(--beige2);color:var(--text)}
-.nav-links .jb{background:var(--lila-dk);color:#fff;border-radius:100px;padding:5px 14px}
-.nav-links .jb:hover{background:#6a5f90;color:#fff}
 
 /* SECTIONS */
 .sec{display:none}.sec.on{display:block}
@@ -39,8 +34,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .hero{text-align:center;padding:2.5rem 1.25rem 1.5rem}
 .hero h1{font-family:var(--ft);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:400;color:var(--text);line-height:1.2;margin-bottom:1rem}
 .hero h1 em{color:var(--lila-dk);font-style:italic}
-.hero-reg{display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:500;padding:.75rem 2rem;border-radius:100px;text-decoration:none;transition:background .15s}
-.hero-reg:hover{background:#6a5f90}
 
 /* LIBRO DEL MES */
 .ldm{max-width:720px;margin:1.75rem auto;padding:0 1.25rem}
@@ -96,14 +89,11 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .cph-a{font-size:.82rem;color:var(--muted)}
 .cb-pick{position:absolute;top:7px;left:7px;background:var(--lila-lt);color:var(--lila-dk);font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;border:1px solid rgba(122,96,160,.25)}
 .cb-read{position:absolute;top:7px;left:7px;background:var(--sage-lt);color:var(--sage-dk);font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;border:1px solid rgba(78,112,96,.25)}
-.cb-lat{position:absolute;top:7px;right:7px;background:rgba(78,112,96,.85);color:#fff;font-size:.62rem;font-weight:500;padding:2px 5px;border-radius:100px}
 .cbody{padding:.875rem .9rem 1rem;flex:1;display:flex;flex-direction:column}
 .ctag{display:inline-block;font-size:.72rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:100px;margin-bottom:.35rem}
 .ctitle{font-family:var(--ft);font-size:1rem;line-height:1.3;margin-bottom:.15rem;color:var(--text);cursor:pointer}
 .ctitle:hover{color:var(--lila-dk)}
 .cauthor{font-size:.82rem;color:var(--muted);margin-bottom:.25rem}
-.csub{font-size:.8rem;color:var(--muted);line-height:1.45;margin-bottom:.4rem;font-style:italic}
-.crec{font-size:.74rem;color:var(--light);margin-bottom:.35rem}
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .card-expand{display:none;padding:.75rem 0 .25rem;border-top:1px solid var(--bdr);margin-top:.5rem;font-size:.8rem;color:var(--muted);line-height:1.6}
 .card-expand.open{display:block}
@@ -140,19 +130,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .rc-card:hover{transform:translateY(-2px)}
 
 /* ADD BOOK FORM */
-.fcard{background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:1.5rem;max-width:520px;margin:0 auto}
 .fg{margin-bottom:.875rem}
 .fg label{display:block;font-size:.8rem;font-weight:500;margin-bottom:3px}
 .fg input,.fg textarea{width:100%;padding:.6rem .9rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.84rem;color:var(--text);background:var(--beige);outline:none;resize:vertical}
 .fg input:focus,.fg textarea:focus{border-color:var(--lila-dk)}
 
 /* COMMUNITY BOOKS GRID */
-.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem;margin-top:1.5rem}
 
 /* BUY POPUP */
 .overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:500;background:rgba(42,35,24,.5);align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .overlay.open{display:flex}
-#buy-ov{z-index:600}
 .buy-box{background:var(--white);border-radius:var(--rl);max-width:520px;width:100%;padding:1.5rem;position:relative}
 .buy-close{position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem}
 .buy-cols{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
@@ -191,41 +178,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .fa.open{display:block}
 
 /* JOIN SECTION */
-.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:1rem;margin-bottom:1.1rem}
-.plan{background:var(--white);border:1px solid var(--bdr);border-radius:var(--rl);padding:1.4rem;text-align:center}
-.plan.feat{background:var(--lila-dk);border-color:var(--lila-dk);position:relative}
-.plan .plbl{font-size:.65rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
-.plan.feat .plbl{color:rgba(255,255,255,.7)}
-.plan .pnum{font-family:var(--ft);font-size:1.9rem;color:var(--text);line-height:1}
-.plan.feat .pnum{color:#fff}
-.plan .pdis{font-size:.72rem;color:var(--lila-dk);font-weight:500;margin:2px 0 3px}
-.plan.feat .pdis{color:rgba(255,255,255,.88)}
-.plan .pdesc{font-size:.73rem;color:var(--muted);margin-bottom:1rem;line-height:1.5}
-.plan.feat .pdesc{color:rgba(255,255,255,.65)}
-.ptag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--sal);color:#fff;font-size:.58rem;font-weight:500;padding:2px 8px;border-radius:100px;white-space:nowrap}
-.plna{display:block;padding:7px;border-radius:100px;font-family:var(--fb);font-size:.78rem;font-weight:500;text-decoration:none;text-align:center;border:1.5px solid rgba(42,35,24,.15);color:var(--text);transition:background .15s}
-.plna:hover{background:var(--beige2)}
-.plan.feat .plna{background:#fff;color:var(--lila-dk);border:none}
 
 /* FOOTER CTA */
-.footer-cta{background:var(--sage-dk);padding:3rem 1.25rem;text-align:center}
-.footer-cta h2{font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:#fff;margin-bottom:.75rem}
-.footer-cta p{font-size:.9rem;color:rgba(255,255,255,.8);max-width:480px;margin:0 auto 1.5rem;line-height:1.7}
-.footer-cta a{display:inline-block;background:#fff;color:var(--sage-dk);font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none;transition:all .15s}
-.footer-cta a:hover{background:var(--beige)}
 
 /* FOOTER BANNER */
 footer{background:var(--sage-dk);border-top:1px solid rgba(255,255,255,.15);padding:1.5rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem}
 footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
-.footer-links{display:flex;gap:1.25rem;flex-wrap:wrap}
-.footer-links a{color:rgba(255,255,255,.8);font-size:.78rem;font-weight:500;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;transition:color .15s}
-.footer-links a:hover{color:#fff}
 
 /* SHDR */
-.shdr{padding:1.5rem 1.25rem 1rem;max-width:700px;margin:0 auto}
-.shdr h2{font-family:var(--ft);font-size:1.6rem;font-weight:400;margin-bottom:.25rem}
-.shdr p{color:var(--muted);font-size:.875rem}
-.swrap{max-width:700px;margin:0 auto;padding:0 1.25rem 3rem}
 
 /* ADMIN PANEL */
 #admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.5rem 1.75rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:360px;max-width:440px;max-height:85vh;overflow-y:auto;font-size:1.05rem}
@@ -235,14 +195,12 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 .admin-btn{padding:.3rem .6rem;border-radius:6px;font-size:.68rem;font-weight:500;cursor:pointer;border:none;font-family:var(--fb)}
 
 @media(max-width:600px){
-  .nav-links .hide-mob{display:none}
   .grid{grid-template-columns:repeat(2,1fr);gap:.75rem}
   .buy-cols{grid-template-columns:1fr}
   .ldm-img{flex:0 0 100%;min-height:200px}
   .card .cbody{padding:.65rem .7rem .75rem}
   .ctitle{font-size:.82rem}
   .cauthor{font-size:.68rem}
-  .csub{font-size:.68rem}
   /* top5: no carousel on mobile, just wrap */
   #ranking{flex-wrap:wrap !important;justify-content:center !important}
   .rk-card{width:100px !important;min-width:0 !important}
@@ -308,7 +266,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       </div>
       <button class="btn-add" onclick="showAddForm()">+ Agregar un libro</button>
     </div>
-    <div class="filts">
+    <div class="filts" id="filts">
       <button class="filt on" onclick="setCat('all',this)">Todos</button>
       <button class="filt" onclick="setCat('latinx',this)">✦ Latinx</button>
       <button class="filt" onclick="setCat('Money Mindset',this)">💰 Dinero</button>
@@ -402,11 +360,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
   </div>
 </div>
 
-<!-- BUY POPUP -->
-<div class="overlay" id="buy-ov" onclick="if(event.target===this)closeBuy()">
-  <div class="buy-box" onclick="event.stopPropagation()">
-    <button class="buy-close" onclick="closeBuy()">✕</button>
-    <div style="font-family:var(--ft);font-size:1.1rem;margin-bottom:.2rem" id="buy-ttl"></div>
     <div style="font-size:.78rem;color:var(--muted);font-style:italic" id="buy-sub"></div>
     <div class="buy-cols">
       <div class="buy-col"><h4>🎧 Audiolibro</h4><div id="buy-audio"></div></div>
@@ -415,11 +368,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
   </div>
 </div>
 
-<!-- BOOK MODAL -->
-<div class="overlay" id="mov" onclick="if(event.target===this)closeModal()">
-  <div class="mbox" onclick="event.stopPropagation()">
-    <button class="mclose" onclick="closeModal()">✕</button>
-    <div id="mcontent"></div>
   </div>
 </div>
 
@@ -684,7 +632,7 @@ function renderRanking(){
       ? coverImgTag(b,b.id,'rk-thumb','','M')
       : (rec?.cover?`<img class="rk-thumb" src="${rec.cover}" onerror="this.style.display='none'">`:'');
     const ph='<div class="rk-thumb-ph" '+(imgTag?'style="display:none"':'')+'}>📖</div>';
-    const onclick=b?`openModal(${i})`:`openBuyRec('${encodeURIComponent(title)}','${encodeURIComponent(rec?.a||'')}',event)`;
+    const onclick='';
     const isV=b?!!SV[i]:!!SVR[key];
     const cardId=b?'card-'+b.id:'card-'+key;
     const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
@@ -813,7 +761,7 @@ function renderBooks(votesData){
     const mkL=arr=>arr.map(x=>'<a class="buy-lnk" href="'+x.u+'" target="_blank"><span>'+x.f+'</span><span style="flex:1">'+x.l+'</span><span class="arr">↗</span></a>').join('');
     const buyLinks='<div id="'+buyId+'" style="display:none;margin-top:.5rem"><div style="display:flex;gap:.75rem;flex-wrap:wrap"><div style="flex:1;min-width:140px"><div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">🎧 Audiolibro</div>'+mkL([{f:'🇺🇸',l:'Audible USA',u:aAud(q2)},{f:'🍁',l:'Audible CA',u:aAudCA(q2)},{f:'🇲🇽',l:'Storytel MX',u:aStory(q2)}])+'</div><div style="flex:1;min-width:140px"><div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">📖 Libro físico</div>'+mkL([{f:'🍁',l:'Amazon CA',u:aCA(q2)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q2)},{f:'🇲🇽',l:'Buscalibre MX',u:aMX(q2)}])+'</div></div></div>';
     const onBuy="toggleBuyInline('"+buyId+"')";
-    const onCard=b._isRec?`openRecModal('${encodeURIComponent(b.t)}','${encodeURIComponent(b.a)}','${encodeURIComponent((b.d||'').slice(0,120))}','${encodeURIComponent(b._cover||'')}','${encodeURIComponent(b._key)}',event)`:`openModal(${i})`;
+    const onCard='';
     const vSect=isRead
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
@@ -873,15 +821,20 @@ function renderBooks(votesData){
 function goPage(p){
   curPage=p;
   renderBooks();
-  // Scroll to the grid/search area
-  const target=document.getElementById('grid');
-  if(target){
+  // On mobile, scroll to very top — user can scroll down to grid
+  // On desktop, scroll to grid
+  if(window.innerWidth<600){
+    const filts=document.getElementById('filts');
+    const scrollTarget=filts?filts.offsetTop-10:0;
+    window.scrollTo({top:scrollTarget,behavior:'smooth'});
+    try{window.parent.postMessage({scrollTo:scrollTarget},'*');}catch(e){}
+  } else {
+    const target=document.getElementById('grid');
+    if(!target) return;
     target.scrollIntoView({behavior:'smooth',block:'start'});
-    // Also tell parent iframe to scroll to match
     try{
-      const rect=target.getBoundingClientRect();
-      const scrollY=window.scrollY||window.pageYOffset||0;
-      window.parent.scrollTo({top:rect.top+scrollY-80,behavior:'smooth'});
+      const iframeOffsetTop=window.frameElement?window.frameElement.offsetTop:0;
+      window.parent.postMessage({scrollTo:iframeOffsetTop+target.offsetTop-80},'*');
     }catch(e){}
   }
 }
@@ -923,24 +876,11 @@ function onSearch(){
   }).join('');
   drop.style.display='block';
 }
-function selectBook(i){openModal(i);document.getElementById('srch').value='';hideDropdown();renderBooks();}
+function selectBook(i){document.getElementById('srch').value='';hideDropdown();renderBooks();const b=B[i];if(b){const cid='card-'+b.id;setTimeout(()=>toggleCardExpand(cid),100);}}
 function hideDropdown(){const d=document.getElementById('srch-drop');if(d)d.style.display='none';}
 window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=selectBook;
 
 // ── BUY POPUP ──
-function openBuy(i,e){
-  if(e) e.stopPropagation();
-  const b=typeof i==='object'?i:B[i];
-  const q=b.q||b.t;
-  document.getElementById('buy-ttl').textContent=b.t;
-  document.getElementById('buy-sub').textContent=b.a||'';
-  const mk=arr=>arr.map(x=>`<a class="buy-lnk" href="${x.u}" target="_blank"><span>${x.f}</span><span style="flex:1">${x.l}</span><span class="arr">↗</span></a>`).join('');
-  document.getElementById('buy-audio').innerHTML=mk([{f:'🇺🇸',l:'Audible USA',u:aAud(q)},{f:'🍁',l:'Audible Canadá',u:aAudCA(q)},{f:'🇲🇽',l:'Storytel México',u:aStory(b.t)}]);
-  document.getElementById('buy-fisico').innerHTML=mk([{f:'🍁',l:'Amazon Canadá',u:aCA(q)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q)},{f:'🇲🇽',l:'Buscalibre México',u:aMX(b.t)}]);
-  document.getElementById('buy-ov').classList.add('open');
-}
-function closeBuy(){document.getElementById('buy-ov').classList.remove('open');}
-window.openBuy=openBuy; window.closeBuy=closeBuy;
 
 // ── BOOK MODAL ──
 function toggleCardExpand(cardId){
@@ -1025,27 +965,6 @@ function scrollCarousel(dir){
 }
 window.scrollCarousel=scrollCarousel;
 
-function openRecModal(encT,encA,encD,encCover,encKey,e){
-  const key=decodeURIComponent(encKey);
-  if(e) e.stopPropagation();
-  const t=decodeURIComponent(encT), a=decodeURIComponent(encA);
-  const d=(decodeURIComponent(encD)||'').slice(0,160), cover=decodeURIComponent(encCover);
-  const r=_recs.find(x=>x._key===key)||{};
-  const isV=!!SVR[key], v=_votesRec[key]||0;
-  document.getElementById('mcontent').innerHTML=
-    (cover?`<img src="${cover}" style="width:100%;max-height:260px;object-fit:cover;border-radius:var(--rl) var(--rl) 0 0;display:block" onerror="this.style.display='none'">`:'<div class="mph">📖</div>')
-    +'<div class="mbody">'
-    +(r.c?'<div class="mbadges">'+catTag(r.c)+'</div>':'')
-    +'<div class="mttl">'+t+'</div>'
-    +'<div class="maut">'+a+'</div>'
-    +(d?'<div class="mdesc">'+d+'</div>':'')
-    +`<button id="mbv" class="vbtn${isV?' voted':''}" style="width:100%;padding:.6rem;font-size:.85rem;margin-bottom:.5rem" onclick="voteRec('${key}',this)">${isV?'♥ Votado':'♡ Votar por este libro'}</button>`
-    +'<button class="mbtn-get" onclick="closeModal();openBuyRec(\''+encT+'\',\''+encA+'\',event)">Consíguelo aquí →</button>'
-    +shareRow(t,a)
-    +'</div>';
-  const mov2=document.getElementById('mov');mov2.classList.add('open');mov2.scrollTop=0;
-}
-window.openRecModal=openRecModal;
 
 function openModal(i){
   const b=B[i], isV=!!SV[i], v=_votes[b.id]||_votes[i]||0;
