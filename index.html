@@ -827,7 +827,7 @@ function renderBooks(votesData){
   pg.innerHTML=html;
 }
 
-function goPage(p){curPage=p;renderBooks();document.getElementById('grid').scrollIntoView({behavior:'smooth',block:'start'});}
+function goPage(p){curPage=p;renderBooks();window.scrollTo({top:0,behavior:'smooth'});try{window.parent.scrollTo({top:0,behavior:'smooth'});}catch(e){}}
 window.goPage=goPage;
 
 function setCat(cat,btn){curCat=cat;curPage=0;document.querySelectorAll('.filt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderBooks();}
@@ -837,8 +837,14 @@ window.setCat=setCat;
 function doVote(i,btn){
   const b=B[i];
   const vRef=ref(db,`votes/${b.id}`);
-  if(SV[i]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SV[i];}
-  else{runTransaction(vRef,c=>(c||0)+1);SV[i]=true;}
+  const cur=_votes[b.id]||_votes[i]||0;
+  if(SV[i]){
+    set(vRef, Math.max(0,(cur-1)));
+    delete SV[i];
+  } else {
+    set(vRef, cur+1);
+    SV[i]=true;
+  }
   sessionStorage.setItem('cbcV',JSON.stringify(SV));
 }
 window.doVote=doVote;
@@ -1115,8 +1121,14 @@ function renderRecBooks(){
 
 function voteRec(key,btn){
   const vRef=ref(db,`votesRec/${key}`);
-  if(SVR[key]){runTransaction(vRef,c=>(c||0)>0?c-1:0);delete SVR[key];}
-  else{runTransaction(vRef,c=>(c||0)+1);SVR[key]=true;}
+  const cur=_votesRec[key]||0;
+  if(SVR[key]){
+    set(vRef, Math.max(0,(cur-1)));
+    delete SVR[key];
+  } else {
+    set(vRef, cur+1);
+    SVR[key]=true;
+  }
   sessionStorage.setItem('cbcVR',JSON.stringify(SVR));
 }
 function openBuyRec(encT,encA,e){
@@ -1144,6 +1156,18 @@ function renderReadCarousel(){
   // Community rec books with read date
   const readRecs=_recs.filter(r=>r.read).map(r=>({b:{t:r.t,a:r.a||'',isbn:null,id:r._key,_cover:r.cover||''},i:-1,readVal:r.read,isRec:true,key:r._key}));
   const read=[...readMain,...readRecs];
+  // Sort most recent first using Spanish month names
+  const MESES={enero:0,febrero:1,marzo:2,abril:3,mayo:4,junio:5,julio:6,agosto:7,septiembre:8,octubre:9,noviembre:10,diciembre:11};
+  function parseReadDate(s){
+    if(!s) return 0;
+    const parts=s.toLowerCase().replace(/[^a-záéíóúü0-9 ]/gi,'').trim().split(/\s+/);
+    const year=parts.find(p=>/^\d{4}$/.test(p));
+    const month=parts.find(p=>MESES[p]!==undefined);
+    if(year&&month) return parseInt(year)*100+MESES[month];
+    if(year) return parseInt(year)*100;
+    return 0;
+  }
+  read.sort((a,b)=>parseReadDate(b.readVal)-parseReadDate(a.readVal));
   if(!read.length){el.innerHTML='<div style="color:var(--light);font-size:.82rem;padding:.5rem">Pronto aquí aparecerán los libros leídos...</div>';return;}
   el.innerHTML=read.map(({b,i,readVal,isRec,key})=>{
     const img=isRec
