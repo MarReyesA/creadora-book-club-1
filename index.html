@@ -998,28 +998,31 @@ window.postComment=postComment; window.delComment=delComment;
 
 // ── ADD BOOK FORM ──
 function showAddForm(){
-  const ao=document.getElementById('add-overlay');ao.classList.add('open');ao.scrollTop=0;
-  document.getElementById('add-form-inner').style.display='block';
-  document.getElementById('add-form-ok').style.display='none';
-  ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
-
-  const saved=JSON.parse(localStorage.getItem('cbcUser')||'{}');
-  const greeting=document.getElementById('form-greeting');
-  const nameRow=document.getElementById('form-name-row');
-  if(saved.n && saved.e){
-    // returning user — hide name/email, show warm greeting
-    document.getElementById('rn').value=saved.n;
-    document.getElementById('re').value=saved.e;
-    nameRow.style.display='none';
-    const firstName=saved.n.split(' ')[0];
-    if(greeting) greeting.innerHTML=`<div style="font-family:var(--ft);font-size:1.15rem;font-weight:400;color:var(--text);margin-bottom:1rem">Hola <em style="color:var(--lila-dk)">${firstName}</em>, ¿qué libro quieres agregar?</div>`;
-  } else {
-    // first time — show full form with subtle hint
-    nameRow.style.display='block';
-    document.getElementById('rn').value='';
-    document.getElementById('re').value='';
-    if(greeting) greeting.innerHTML='';
-  }
+  // Scroll to top so fixed overlay appears in view on mobile
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{window.parent.scrollTo({top:0,behavior:'smooth'});}catch(e){}
+  setTimeout(()=>{
+    const ao=document.getElementById('add-overlay');ao.classList.add('open');ao.scrollTop=0;
+    document.getElementById('add-form-inner').style.display='block';
+    document.getElementById('add-form-ok').style.display='none';
+    ['rt','ra'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const rcatEl=document.getElementById('rcat');if(rcatEl)rcatEl.value='';
+    const saved=JSON.parse(localStorage.getItem('cbcUser')||'{}');
+    const greeting=document.getElementById('form-greeting');
+    const nameRow=document.getElementById('form-name-row');
+    if(saved.n && saved.e){
+      document.getElementById('rn').value=saved.n;
+      document.getElementById('re').value=saved.e;
+      nameRow.style.display='none';
+      const firstName=saved.n.split(' ')[0];
+      if(greeting) greeting.innerHTML=`<div style="font-family:var(--ft);font-size:1.15rem;font-weight:400;color:var(--text);margin-bottom:1rem">Hola <em style="color:var(--lila-dk)">${firstName}</em>, ¿qué libro quieres agregar?</div>`;
+    } else {
+      nameRow.style.display='block';
+      document.getElementById('rn').value='';
+      document.getElementById('re').value='';
+      if(greeting) greeting.innerHTML='';
+    }
+  },250);
 }
 
 function closeAddForm(){document.getElementById('add-overlay').classList.remove('open');}
