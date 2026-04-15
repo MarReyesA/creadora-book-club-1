@@ -241,6 +241,9 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
   </div>
 
   <!-- VOTE + RANKING -->
+  <div style="text-align:center;padding:.5rem 1.25rem 1.5rem">
+    <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.7rem 2rem;border-radius:100px;text-decoration:none">Únete aquí ✦</a>
+  </div>
   <div class="vote-section">
     <div class="vote-hdr">
       <h2>Vota por los libros que quieres leer</h2>
@@ -636,9 +639,9 @@ function renderRanking(){
     const isV=b?!!SV[i]:!!SVR[key];
     const cardId=b?'card-'+b.id:'card-'+key;
     const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
-    const expandOnClick=`scrollToAndExpand('${cardId}',event)`;
+    const expandOnClick=window.innerWidth<600?'':`scrollToAndExpand('${cardId}',event)`;
     return'<div class="rk-card" title="'+title+'">'
-      +'<div class="rk-wrap" style="position:relative;cursor:pointer" onclick="'+expandOnClick+'">'+imgTag+ph
+      +'<div class="rk-wrap" style="position:relative'+(expandOnClick?';cursor:pointer':'')+'"'+(expandOnClick?' onclick="'+expandOnClick+'"':'')+'>'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
       +'</div>'
       +'<button class="vbtn'+(isV?' voted':'')+'" onclick="'+voteOnClick+'" style="width:100%;margin-top:.3rem;font-size:.68rem;padding:.25rem .4rem;border-radius:100px">'+(isV?'♥':'♡')+'</button>'
@@ -673,14 +676,33 @@ function fetchGoogleBooks(r){
     .then(res=>res.json())
     .then(data=>{
       const item=data.items&&data.items[0];
-      if(!item){_gbCache[r._key]={};return;}
-      const info=item.volumeInfo||{};
-      _gbCache[r._key]={
-        cover:(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:'),
-        desc:info.description||info.subtitle||'',
-        sub:info.subtitle||''
-      };
-      renderBooks(); // re-render with new data
+      const info=item?item.volumeInfo||{}:{};
+      const desc=info.description||info.subtitle||'';
+      const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
+      if(desc||cover){
+        _gbCache[r._key]={cover, desc, sub:info.subtitle||''};
+        renderBooks();
+      } else {
+        // Fallback: try Open Library
+        fetchOpenLibrary(r);
+      }
+    })
+    .catch(()=>fetchOpenLibrary(r));
+}
+
+function fetchOpenLibrary(r){
+  const q=encodeURIComponent(r.t+(r.a?' '+r.a:''));
+  fetch(`https://openlibrary.org/search.json?q=${q}&limit=1&fields=title,author_name,cover_i,first_sentence,description`)
+    .then(res=>res.json())
+    .then(data=>{
+      const doc=data.docs&&data.docs[0];
+      if(!doc){_gbCache[r._key]={};return;}
+      const desc=typeof doc.description==='string'?doc.description
+        :(doc.description&&doc.description.value)||
+        (doc.first_sentence&&(typeof doc.first_sentence==='string'?doc.first_sentence:doc.first_sentence.value))||'';
+      const cover=doc.cover_i?`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`:'';
+      _gbCache[r._key]={cover, desc, sub:''};
+      renderBooks();
     })
     .catch(()=>{_gbCache[r._key]={};});
 }
@@ -1402,6 +1424,10 @@ function renderAdminCommunityBooks(){
           ${catOptions}
         </select>
         <button onclick=\"saveRecField('${r._key}','c','rec-cat-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.desc||''}</textarea>
+        <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;align-items:center">
         <select data-reckey="${r._key}" data-recfield="div" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
