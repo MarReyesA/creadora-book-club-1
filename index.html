@@ -271,7 +271,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <button class="btn-add" onclick="showAddForm()">+ Agregar un libro</button>
     </div>
     <!-- ADD BOOK MODAL (moved inline) -->
-    <div id="add-overlay" style="display:none">
+    <div id="add-overlay" style="display:none;max-width:500px;margin:1rem auto 0">
       <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
         <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
         <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
