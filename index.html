@@ -571,8 +571,30 @@ function renderBookOfMonth(){
   const ldmActions = document.getElementById('ldm-actions');
   const ldmDeadline= document.getElementById('ldm-vote-deadline');
 
-  if(cur!==undefined && cur!==null && B[cur]){
-    const b=B[cur];
+  // cur can be a numeric index (library book) or 'rec_KEY' (community book)
+  const isRecBook=typeof cur==='string'&&cur.startsWith('rec_');
+  const recBookKey=isRecBook?cur.slice(4):'';
+  const recBook=isRecBook?_recs.find(r=>r._key===recBookKey):null;
+  if(isRecBook&&recBook){
+    const b=recBook;
+    const cv=b.cover||b._cover||null;
+    ldmTitle.textContent=b.t;
+    ldmAuthor.textContent=b.a||'';
+    ldmDesc.textContent=_overrides.ldmMessage||b.desc||b.d||'';
+    ldmDate.textContent=_overrides.currentBookDate||'';
+    ldmImg.innerHTML=cv?`<img src="${cv}" alt="${b.t}" style="width:160px;height:220px;object-fit:cover;display:block" onerror="this.parentNode.innerHTML='<span style=font-size:2rem>📖</span>'">`:'<span style="font-size:2rem">📖</span>';
+    if(ldmBadges) ldmBadges.innerHTML='';
+    if(ldmActions){
+      ldmActions.style.display='flex';
+      const getBtn=document.getElementById('ldm-get-btn');
+      if(getBtn) getBtn.onclick=()=>toggleBuyInline('ldm-buy-inline');
+    }
+    const wrap2=document.getElementById('ldm-wrap');
+    if(wrap2) wrap2.style.display='block';
+    const vdTxt=document.getElementById('vote-deadline-txt');
+    if(vdTxt) vdTxt.textContent=_overrides.ldmDeadline?'Vota antes del '+_overrides.ldmDeadline:'';
+  } else if(!isRecBook && cur!==undefined && cur!==null && B[cur]){
+    const b=B[parseInt(cur)];
     const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
     ldmTitle.textContent=b.t;
     const vdTxt=document.getElementById('vote-deadline-txt');
@@ -1311,7 +1333,7 @@ function renderAdminPanel(force){
       <div style="font-size:.75rem;font-weight:500;margin-bottom:.4rem">📖 Libro del mes actual</div>
       <select id="admin-current" style="width:100%;padding:.4rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
         <option value="">— Ninguno —</option>
-        ${B.map((b,i)=>`<option value="${i}" ${_overrides.currentBook==i?'selected':''}>${b.t}</option>`).join('')}
+        ${[...B.map((b,i)=>({val:String(i),t:b.t})), ..._recs.map(r=>({val:'rec_'+r._key,t:r.t+' ✦ comunidad'}))].sort((a,b)=>a.t.localeCompare(b.t,'es')).map(x=>`<option value="${x.val}" ${_overrides.currentBook==x.val?'selected':''}>${x.t}</option>`).join('')}
       </select>
       <input id="admin-cur-date" type="text" placeholder="Ej: Círculo: 8 de Abril 2026" value="${_overrides.currentBookDate||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
       <input id="admin-ldm-deadline" type="text" placeholder="Fecha límite para votar (ej: 13 de Abril)" value="${_overrides.ldmDeadline||''}" style="width:100%;padding:.4rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.85rem;background:var(--beige);margin-bottom:.5rem">
@@ -1520,7 +1542,7 @@ function saveCurrentBook(){
   const date=document.getElementById('admin-cur-date').value.trim();
   const deadline=document.getElementById('admin-ldm-deadline').value.trim();
   const message=document.getElementById('admin-ldm-message').value.trim();
-  set(ref(db,'overrides/currentBook'), val===''?null:parseInt(val));
+  set(ref(db,'overrides/currentBook'), val===''?null:val);
   if(date) set(ref(db,'overrides/currentBookDate'),date);
   else remove(ref(db,'overrides/currentBookDate'));
   if(deadline) set(ref(db,'overrides/ldmDeadline'),deadline);
@@ -1532,8 +1554,13 @@ function saveCurrentBook(){
 function saveRead(i,id){
   id=id||B[i].id;
   const val=document.getElementById('read-'+id)?.value.trim();
-  if(val) set(ref(db,'overrides/read_'+id),val);
-  else remove(ref(db,'overrides/read_'+id));
+  if(val){
+    set(ref(db,'overrides/read_'+id),val);
+    // Remove from votes when marked as read
+    remove(ref(db,'votes/'+id));
+  } else {
+    remove(ref(db,'overrides/read_'+id));
+  }
   showAdminFeedback('✓ Guardado');
 }
 function saveCover(i,id){
