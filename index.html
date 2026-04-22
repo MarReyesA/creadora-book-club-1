@@ -1675,13 +1675,17 @@ function secretAdminTap(){
     if(code==='creadora2026'){
       const existing=document.getElementById('admin-panel');
       if(existing){ existing.style.display='block'; }
-      else { renderAdminPanel(true); }
+      else {
+        renderAdminPanel(true);
+        // Re-render after short delay to ensure Firebase data is loaded
+        setTimeout(()=>renderAdminPanel(true), 1500);
+      }
       let fab=document.getElementById('admin-fab');
       if(!fab){
         const btn=document.createElement('button');
         btn.id='admin-fab';
         btn.textContent='⚙ Admin';
-        btn.onclick=()=>{const p=document.getElementById('admin-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';else renderAdminPanel();};
+        btn.onclick=()=>{const p=document.getElementById('admin-panel');if(p)p.style.display=p.style.display==='none'?'block':'none';else renderAdminPanel(true);};
         btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:var(--lila-dk);color:#fff;border:none;padding:.4rem .9rem;border-radius:100px;font-family:var(--fb);font-size:.75rem;font-weight:500;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)';
         document.body.appendChild(btn);
       }
