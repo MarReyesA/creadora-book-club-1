@@ -270,6 +270,56 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       </div>
       <button class="btn-add" onclick="showAddForm()">+ Agregar un libro</button>
     </div>
+    <!-- ADD BOOK MODAL (moved inline) -->
+    <div id="add-overlay" style="display:none">
+      <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
+        <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
+        <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
+        <div id="add-form-inner">
+          <div id="form-greeting"></div>
+          <div class="fg"><label>Título del libro <span style="color:var(--sal-dk)">*</span></label><input id="rt" type="text" placeholder="En Español o Inglés"></div>
+          <div class="fg"><label>Autora / Autor <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label><input id="ra" type="text" placeholder="En Español o Inglés"></div>
+          <div class="fg">
+            <label>Categoría <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label>
+            <select id="rcat" style="width:100%;padding:.6rem .9rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.84rem;color:var(--text);background:var(--beige);outline:none;cursor:pointer">
+              <option value="">— Elige una categoría —</option>
+              <option value="Money Mindset">💰 Dinero</option>
+              <option value="Manifesting">💫 Manifestación</option>
+              <option value="Finding Purpose">🔍 Propósito</option>
+              <option value="Female Entrepreneurship">🚀 Emprendimiento</option>
+              <option value="Women Rising">🌸 Poder femenino</option>
+              <option value="Healing">🧘🏽‍♀️ Espiritualidad</option>
+              <option value="Health">🌿 Salud</option>
+              <option value="Spark Creativity">🎨 Creatividad y Habilidades</option>
+              <option value="Relationships">💞 Relaciones</option>
+              <option value="Poesia">📝 Poesía</option>
+              <option value="Liderazgo">🏆 Liderazgo</option>
+              <option value="Biografia">👤 Biografía</option>
+              <option value="Tecnologia">💻 Tecnología</option>
+            </select>
+          </div>
+          <div id="form-name-row">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+              <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder=""></div>
+              <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder=""></div>
+            </div>
+            <div style="font-size:.75rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>
+          </div>
+          <button id="rec-submit-btn" onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
+          <div style="text-align:center;font-size:.72rem;color:var(--light);margin-top:.6rem">Al enviar aceptas recibir novedades del Book Club.</div>
+        </div>
+        <div id="add-form-ok" style="display:none;text-align:center;padding:1.5rem">
+          <div style="width:52px;height:52px;background:var(--sage-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;font-size:1.4rem">✓</div>
+          <div style="font-family:var(--ft);font-size:1.2rem;margin-bottom:.4rem">¡Gracias por agregar!</div>
+          <div style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem">Tu libro ya aparece en la lista de la comunidad.</div>
+          <button onclick="resetAddForm()" style="background:transparent;color:var(--text);border:1.5px solid var(--bdr);padding:.55rem 1.25rem;border-radius:100px;font-family:var(--fb);font-size:.85rem;cursor:pointer">Agregar otro libro</button>
+        </div>
+      </div>
+    </div>
+    
+    
+      </div>
+    </div>
     <div class="filts" id="filts">
       <button class="filt on" onclick="setCat('all',this)">Todos</button>
       <button class="filt" onclick="setCat('latinx',this)">✦ Latinx</button>
@@ -314,64 +364,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
     <h2 onclick="secretAdminTap()" style="font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:var(--text);margin-bottom:.75rem;cursor:default">Únete a Creadora <em style="color:var(--lila-dk);font-style:italic">Book Club</em></h2>
     <p style="font-size:.9rem;color:var(--muted);max-width:480px;margin:0 auto 1.5rem;line-height:1.7">Cada libro es una oportunidad para abrir conversaciones profundas, sanar, cuestionar y crecer. No solo leerás, sino que transformarás tu manera de pensar para acercarte a vivir una vida libre y abundante.</p>
     <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none">Regístrate aquí ✦</a>
-  </div>
-</div>
-
-<!-- ADD BOOK MODAL -->
-<div id="add-overlay" style="display:none;position:relative;z-index:10;max-width:500px;margin:1rem auto 0;padding:0 1rem">
-  <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
-    <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
-    <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
-    <div id="add-form-inner">
-      <div id="form-greeting"></div>
-      <div class="fg"><label>Título del libro <span style="color:var(--sal-dk)">*</span></label><input id="rt" type="text" placeholder="En Español o Inglés"></div>
-      <div class="fg"><label>Autora / Autor <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label><input id="ra" type="text" placeholder="En Español o Inglés"></div>
-      <div class="fg">
-        <label>Categoría <span style="color:var(--muted);font-weight:400;font-size:.75rem">(opcional)</span></label>
-        <select id="rcat" style="width:100%;padding:.6rem .9rem;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--fb);font-size:.84rem;color:var(--text);background:var(--beige);outline:none;cursor:pointer">
-          <option value="">— Elige una categoría —</option>
-          <option value="Money Mindset">💰 Dinero</option>
-          <option value="Manifesting">💫 Manifestación</option>
-          <option value="Finding Purpose">🔍 Propósito</option>
-          <option value="Female Entrepreneurship">🚀 Emprendimiento</option>
-          <option value="Women Rising">🌸 Poder femenino</option>
-          <option value="Healing">🧘🏽‍♀️ Espiritualidad</option>
-          <option value="Health">🌿 Salud</option>
-          <option value="Spark Creativity">🎨 Creatividad y Habilidades</option>
-          <option value="Relationships">💞 Relaciones</option>
-          <option value="Poesia">📝 Poesía</option>
-          <option value="Liderazgo">🏆 Liderazgo</option>
-          <option value="Biografia">👤 Biografía</option>
-          <option value="Tecnologia">💻 Tecnología</option>
-        </select>
-      </div>
-      <div id="form-name-row">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div class="fg"><label>Nombre y apellido <span style="color:var(--sal-dk)">*</span></label><input id="rn" type="text" placeholder=""></div>
-          <div class="fg"><label>Email <span style="color:var(--sal-dk)">*</span></label><input id="re" type="email" placeholder=""></div>
-        </div>
-        <div style="font-size:.75rem;color:var(--light);margin-bottom:.75rem">Tus datos solo los llenarás en tu primer libro sugerido.</div>
-      </div>
-      <button id="rec-submit-btn" onclick="submitRec()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.7rem;border-radius:100px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Agregar libro ✦</button>
-      <div style="text-align:center;font-size:.72rem;color:var(--light);margin-top:.6rem">Al enviar aceptas recibir novedades del Book Club.</div>
-    </div>
-    <div id="add-form-ok" style="display:none;text-align:center;padding:1.5rem">
-      <div style="width:52px;height:52px;background:var(--sage-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .875rem;font-size:1.4rem">✓</div>
-      <div style="font-family:var(--ft);font-size:1.2rem;margin-bottom:.4rem">¡Gracias por agregar!</div>
-      <div style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem">Tu libro ya aparece en la lista de la comunidad.</div>
-      <button onclick="resetAddForm()" style="background:transparent;color:var(--text);border:1.5px solid var(--bdr);padding:.55rem 1.25rem;border-radius:100px;font-family:var(--fb);font-size:.85rem;cursor:pointer">Agregar otro libro</button>
-    </div>
-  </div>
-</div>
-
-    <div style="font-size:.78rem;color:var(--muted);font-style:italic" id="buy-sub"></div>
-    <div class="buy-cols">
-      <div class="buy-col"><h4>🎧 Audiolibro</h4><div id="buy-audio"></div></div>
-      <div class="buy-col"><h4>📖 Libro físico</h4><div id="buy-fisico"></div></div>
-    </div>
-  </div>
-</div>
-
   </div>
 </div>
 
@@ -696,13 +688,34 @@ function fetchOpenLibrary(r){
     .then(res=>res.json())
     .then(data=>{
       const doc=data.docs&&data.docs[0];
-      if(!doc){_gbCache[r._key]={};return;}
-      const desc=typeof doc.description==='string'?doc.description
+      const desc=!doc?'':typeof doc.description==='string'?doc.description
         :(doc.description&&doc.description.value)||
         (doc.first_sentence&&(typeof doc.first_sentence==='string'?doc.first_sentence:doc.first_sentence.value))||'';
-      const cover=doc.cover_i?`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`:'';
-      _gbCache[r._key]={cover, desc, sub:''};
-      renderBooks();
+      const cover=doc&&doc.cover_i?`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`:'';
+      if(desc||cover){
+        _gbCache[r._key]={cover, desc, sub:''};
+        renderBooks();
+      } else {
+        // Last fallback: search in English (normalize title, try Google Books again)
+        fetchEnglishFallback(r);
+      }
+    })
+    .catch(()=>fetchEnglishFallback(r));
+}
+
+function fetchEnglishFallback(r){
+  // Normalize: remove accents, try author name only if needed
+  const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const q=encodeURIComponent(normalize(r.t)+(r.a?' '+normalize(r.a):''));
+  fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&langRestrict=en`)
+    .then(res=>res.json())
+    .then(data=>{
+      const item=data.items&&data.items[0];
+      const info=item?item.volumeInfo||{}:{};
+      const desc=info.description||info.subtitle||'';
+      const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
+      _gbCache[r._key]={cover:_gbCache[r._key]?.cover||cover, desc, sub:info.subtitle||''};
+      if(desc||cover) renderBooks();
     })
     .catch(()=>{_gbCache[r._key]={};});
 }
@@ -1120,8 +1133,8 @@ function showAddForm(){
     document.getElementById('re').value='';
     if(greeting) greeting.innerHTML='';
   }
-  // Scroll to form
-  setTimeout(()=>ao.scrollIntoView({behavior:'smooth',block:'start'}),50);
+  // Scroll to form — nearest so it doesn't jump far
+  setTimeout(()=>ao.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
 }
 
 function closeAddForm(){document.getElementById('add-overlay').style.display='none';}
@@ -1670,7 +1683,12 @@ if(fl) fl.innerHTML=FAQS.map((f,i)=>`
 </script>
 <script>
 function notifyHeight(){
-  const h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);
+  const h=Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.offsetHeight
+  );
   window.parent.postMessage({iframeHeight:h},'*');
 }
 setInterval(notifyHeight,600);
