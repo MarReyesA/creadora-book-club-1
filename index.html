@@ -633,10 +633,19 @@ function renderBookOfMonth(){
 function renderRanking(){
   const el=document.getElementById('ranking');
   if(!el) return;
-  // Combine main votes and rec votes
+  const cur=_overrides.currentBook;
+  // Combine main votes and rec votes, excluding current book of the month
   const allVotes={..._votes};
   Object.entries(_votesRec).forEach(([k,v])=>{ if(v>0) allVotes[k]=(allVotes[k]||0)+v; });
-  const ranked=Object.entries(allVotes).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const ranked=Object.entries(allVotes).filter(([key,v])=>{
+    if(v<=0) return false;
+    // Exclude current book of month
+    if(cur===undefined||cur===null||cur==='') return true;
+    const b=B.find(x=>x.id===key)||B[parseInt(key)];
+    if(b && (String(B.indexOf(b))===String(cur) || b.id===cur)) return false;
+    if(String(cur).startsWith('rec_') && key===String(cur).slice(4)) return false;
+    return true;
+  }).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(!ranked.length){el.innerHTML='<div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>';return;}
   el.innerHTML=ranked.map(([key,count])=>{
     // key could be: book id string, numeric string, or rec key
@@ -1543,6 +1552,16 @@ function saveCurrentBook(){
   const deadline=document.getElementById('admin-ldm-deadline').value.trim();
   const message=document.getElementById('admin-ldm-message').value.trim();
   set(ref(db,'overrides/currentBook'), val===''?null:val);
+  // Remove votes for the chosen book so it disappears from top5
+  if(val){
+    if(val.startsWith('rec_')){
+      const key=val.slice(4);
+      remove(ref(db,'votesRec/'+key));
+    } else {
+      const b=B[parseInt(val)];
+      if(b) remove(ref(db,'votes/'+b.id));
+    }
+  }
   if(date) set(ref(db,'overrides/currentBookDate'),date);
   else remove(ref(db,'overrides/currentBookDate'));
   if(deadline) set(ref(db,'overrides/ldmDeadline'),deadline);
