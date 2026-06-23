@@ -872,14 +872,14 @@ function renderBooks(votesData){
   const prevDis=curPage===0;
   const nextDis=curPage===totalPages-1;
   // prev button
-  html+=`<button onclick="${prevDis?'':''`goPage(${curPage-1})`}" ${prevDis?'disabled':''} style="${btnBase}padding:.65rem 1.6rem;border:2px solid ${prevDis?'var(--bdr)':'var(--lila-dk)'};background:${prevDis?'none':'var(--lila-lt)'};color:${prevDis?'var(--light)':'var(--lila-dk)'};opacity:${prevDis?'.4':'1'}">← Anterior</button>`;
+  html+=`<button onclick="${prevDis?'':'goPage('+(curPage-1)+')'}" ${prevDis?'disabled':''} style="${btnBase}padding:.65rem 1.6rem;border:2px solid ${prevDis?'var(--bdr)':'var(--lila-dk)'};background:${prevDis?'none':'var(--lila-lt)'};color:${prevDis?'var(--light)':'var(--lila-dk)'};opacity:${prevDis?'.4':'1'}">← Anterior</button>`;
   // page numbers
   for(let p=0;p<totalPages;p++){
     const active=p===curPage;
     html+=`<button onclick="goPage(${p})" style="${btnBase}width:42px;height:42px;border:2px solid ${active?'var(--lila-dk)':'var(--bdr)'};background:${active?'var(--lila-dk)':'none'};color:${active?'#fff':'var(--muted)'};font-size:1rem">${p+1}</button>`;
   }
   // next button
-  html+=`<button onclick="${nextDis?'':''`goPage(${curPage+1})`}" ${nextDis?'disabled':''} style="${btnBase}padding:.65rem 1.6rem;border:2px solid ${nextDis?'var(--bdr)':'var(--lila-dk)'};background:${nextDis?'none':'var(--lila-dk)'};color:${nextDis?'var(--light)':'#fff'};opacity:${nextDis?'.4':'1'}">Siguiente →</button>`;
+  html+=`<button onclick="${nextDis?'':'goPage('+(curPage+1)+')'}" ${nextDis?'disabled':''} style="${btnBase}padding:.65rem 1.6rem;border:2px solid ${nextDis?'var(--bdr)':'var(--lila-dk)'};background:${nextDis?'none':'var(--lila-dk)'};color:${nextDis?'var(--light)':'#fff'};opacity:${nextDis?'.4':'1'}">Siguiente →</button>`;
   html+=`<div style="width:100%;text-align:center;font-size:.78rem;color:var(--light);margin-top:-.25rem">${f.length} libros · página ${curPage+1} de ${totalPages}</div>`;
   pg.innerHTML=html;
 }
@@ -1672,6 +1672,26 @@ renderCounter();
 renderBookOfMonth();
 renderBooks();
 renderReadCarousel();
+renderRanking(); // ensure top5 shows even before Firebase listener fires
+
+// Always-visible tiny admin entry point (fallback in case secret tap / URL param fail)
+(function(){
+  if(document.getElementById('admin-fab-fallback')) return;
+  const btn=document.createElement('button');
+  btn.id='admin-fab-fallback';
+  btn.textContent='⚙';
+  btn.title='Admin';
+  btn.onclick=function(){
+    const code=prompt('Código admin:');
+    if(code==='creadora2026'){
+      let panel=document.getElementById('admin-panel');
+      if(panel){ panel.style.display='block'; }
+      else { renderAdminPanel(true); setTimeout(()=>renderAdminPanel(true),1200); }
+    }
+  };
+  btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:rgba(122,96,160,.55);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:.8rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+  document.body.appendChild(btn);
+})();
 
 // Admin panel init
 if(ADMIN) {
