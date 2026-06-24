@@ -774,7 +774,7 @@ function renderBooks(votesData){
   const allBooks=[...recBooks,...mainBooks];
 
   const f=allBooks.filter(b=>{
-    const i=b._isRec?-1:B.indexOf(b);
+    const i=b._isRec?-1:B.findIndex(x=>x.id===b.id);
     const isRead=b._isRec?b._read:(_overrides[`read_${b.id}`]||_overrides[`read_${i}`]);
     const div=b._isRec?(b._div||''):((_overrides['div_'+b.id])||(b.lat?'Latinx':''));
     const isLatinx=div.includes('Latinx')||div.includes('Creadora');
@@ -791,7 +791,7 @@ function renderBooks(votesData){
   const pageBooks=f.slice(curPage*PAGE_SIZE, (curPage+1)*PAGE_SIZE);
 
   g.innerHTML=pageBooks.map(b=>{
-    const i=b._isRec ? -1 : B.indexOf(b);
+    const i=b._isRec ? -1 : B.findIndex(x=>x.id===b.id);
     const isV=b._isRec ? !!SVR[b._key] : !!SV[i];
     const v=b._isRec ? (_votesRec[b._key]||0) : (_votes[b.id]||_votes[i]||0);
     const ov=_overrides;
@@ -1663,6 +1663,25 @@ renderCounter();
 renderBookOfMonth();
 renderBooks();
 renderReadCarousel();
+
+// Always-visible tiny admin entry point (fallback — does not replace the 5-tap or ?admin= methods)
+(function(){
+  if(document.getElementById('admin-fab-fallback')) return;
+  const btn=document.createElement('button');
+  btn.id='admin-fab-fallback';
+  btn.textContent='⚙';
+  btn.title='Admin';
+  btn.onclick=function(){
+    const code=prompt('Código admin:');
+    if(code==='creadora2026'){
+      let panel=document.getElementById('admin-panel');
+      if(panel){ panel.style.display='block'; }
+      else { renderAdminPanel(true); setTimeout(()=>renderAdminPanel(true),1200); }
+    }
+  };
+  btn.style.cssText='position:fixed;bottom:1.25rem;left:1.25rem;z-index:9998;background:rgba(122,96,160,.55);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:.8rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)';
+  document.body.appendChild(btn);
+})();
 
 // Admin panel init
 if(ADMIN) {
