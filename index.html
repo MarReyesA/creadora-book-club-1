@@ -706,11 +706,11 @@ function fetchGoogleBooks(r){
         _gbCache[r._key]={cover, desc, sub:info.subtitle||''};
         renderBooks();
       } else {
-        // Fallback: try Open Library
-        fetchOpenLibrary(r);
+        // Open Library is blocked by CORS from browsers — skip straight to English search
+        fetchEnglishFallback(r);
       }
     })
-    .catch(()=>fetchOpenLibrary(r));
+    .catch(()=>fetchEnglishFallback(r));
 }
 
 function fetchOpenLibrary(r){
