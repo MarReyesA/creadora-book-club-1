@@ -77,14 +77,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .filts{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem}
 .filt{background:var(--white);border:1px solid var(--bdr);color:var(--muted);padding:.3rem .8rem;border-radius:100px;font-size:.73rem;cursor:pointer;font-family:var(--fb);transition:all .15s}
 .filt:hover,.filt.on{background:var(--lila-dk);color:#fff;border-color:var(--lila-dk)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.25rem}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem}
 
 /* CARDS */
-.card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s}
+.card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-direction:row;transition:transform .18s,box-shadow .18s}
 .card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(42,35,24,.09)}
-.cimgw{position:relative;cursor:pointer;flex-shrink:0}
-.cimg{width:100%;aspect-ratio:11/16;object-fit:cover;display:block;background:var(--beige2)}
-.cph{width:100%;aspect-ratio:11/16;background:linear-gradient(160deg,var(--lila-lt),var(--sal-lt));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;text-align:center}
+.cimgw{position:relative;cursor:default;flex-shrink:0;width:130px}
+.cimg{width:130px;aspect-ratio:11/16;object-fit:cover;display:block;background:var(--beige2)}
+.cph{width:130px;aspect-ratio:11/16;background:linear-gradient(160deg,var(--lila-lt),var(--sal-lt));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;text-align:center}
 .cph-t{font-family:var(--ft);font-size:1rem;color:var(--text);line-height:1.3;margin-bottom:.3rem}
 .cph-a{font-size:.82rem;color:var(--muted)}
 .cb-pick{position:absolute;top:7px;left:7px;background:var(--lila-lt);color:var(--lila-dk);font-size:.62rem;font-weight:600;padding:2px 6px;border-radius:100px;border:1px solid rgba(122,96,160,.25)}
@@ -97,13 +97,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .cget-pill{font-size:.78rem;font-weight:600;color:#b85a40;background:none;border:1.5px solid #ffb7a4;padding:.5rem 1.1rem;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:all .15s;white-space:nowrap}
 .cget-pill:hover{background:#fff0eb;border-color:#ff9f86}
-.card-expand{display:none;padding:.75rem 0 .25rem;border-top:1px solid var(--bdr);margin-top:.5rem;font-size:.8rem;color:var(--muted);line-height:1.6}
-.card-expand.open{display:block}
-.card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
-.card.expanded{grid-column:1/-1;display:flex;flex-direction:column}
-.card.expanded .cimgw{max-width:185px;margin:0 auto}
-.card.expanded .cbody{flex:1;min-width:0;display:flex;flex-direction:column}
-.card.expanded .card-expand.open{display:block!important;column-count:1}
+.card-expand{font-size:.85rem;color:#3a332a;line-height:1.65}
+.card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left;display:block;margin-top:.4rem}
 
 .cget:hover{color:var(--sal-dk)}
 .share-row{margin:0}
@@ -116,8 +111,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .share-wrap{position:relative;display:inline-block}
 .share-btn svg{flex-shrink:0}
 .vrow{display:flex;align-items:center;gap:.4rem}
-.card.expanded .vrow .vbtn{flex:none}
-.vbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
+.vbtn{display:flex;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .75rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;border:1.5px solid var(--bdr);background:var(--white);color:var(--muted);cursor:pointer;transition:all .15s}
 .vbtn:hover{border-color:var(--lila-dk);color:var(--lila-dk);background:var(--lila-lt)}
 .vbtn.voted{background:var(--lila-dk);color:#fff;border-color:var(--lila-dk)}
 .vbtn.voted:hover{background:#6a5f90;border-color:#6a5f90}
@@ -197,7 +191,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 .admin-btn{padding:.3rem .6rem;border-radius:6px;font-size:.68rem;font-weight:500;cursor:pointer;border:none;font-family:var(--fb)}
 
 @media(max-width:600px){
-  .grid{grid-template-columns:repeat(2,1fr);gap:.75rem}
+  .grid{grid-template-columns:1fr;gap:1rem}
   .buy-cols{grid-template-columns:1fr}
   .ldm-img{flex:0 0 100%;min-height:200px}
   .card .cbody{padding:.65rem .7rem .75rem}
@@ -264,6 +258,10 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- SEARCH + FILTERS + GRID -->
   <div class="bwrap">
+    <div id="grid-section-label"></div>
+    <div class="grid" id="grid"></div>
+    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
+
     <div class="search-area">
       <div class="search-wrap" style="display:none">
         <input id="srch" type="text" autocomplete="off"
@@ -319,10 +317,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
         </div>
       </div>
     </div>
-    
-    
-      </div>
-    </div>
+
     <div class="filts" id="filts">
       <button class="filt on" onclick="setCat('all',this)">Todos</button>
       <button class="filt" onclick="setCat('latinx',this)">✦ Latinx</button>
@@ -340,9 +335,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <button class="filt" onclick="setCat('Biografia',this)">👤 Biografía</button>
       <button class="filt" onclick="setCat('Tecnologia',this)">💻 Tecnología</button>
     </div>
-    <div id="grid-section-label"></div>
-    <div class="grid" id="grid"></div>
-    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
 
     <!-- COUNTER -->
     <div class="counter-wrap">
@@ -831,8 +823,8 @@ function renderBooks(votesData){
   if(sectionHead){
     sectionHead.innerHTML=usingFinalists
       ? (sectionLabel==='finalists'
-          ?'<div style="text-align:center;font-size:.85rem;color:var(--lila-dk);font-weight:600;margin-bottom:.75rem">✦ Los 10 finalistas de este mes</div>'
-          :'<div style="text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:.75rem">Otros libros sugeridos</div>')
+          ?'<div style="text-align:center;font-family:var(--ft);font-size:clamp(1.3rem,3vw,1.75rem);font-weight:400;color:var(--lila-dk);margin-bottom:1.25rem">Los 10 finalistas de este mes</div>'
+          :'<div style="text-align:center;font-family:var(--ft);font-size:clamp(1.1rem,2.5vw,1.4rem);font-weight:400;color:var(--muted);margin-bottom:1.25rem">Otros libros sugeridos</div>')
       :'';
   }
 
@@ -878,20 +870,24 @@ function renderBooks(votesData){
       ?'<div style="font-size:.68rem;color:var(--light);font-style:italic;margin-top:auto;padding-top:.35rem">Ya lo leímos juntas ✓</div>'
       :`<div class="vrow"><button class="vbtn${isV?' voted':''}" onclick="${onVote}">${isV?'♥ Votado':'♡ Votar'}</button>${v>0?`<span class="vcount">${v} voto${v!==1?'s':''}</span>`:''}</div>`;
     const fullDesc=b._isRec?(b.d||b.desc||_gbCache[b._key]?.desc||''):(_overrides['desc_'+b.id]||b.d||'');
-    const descShort=fullDesc.length>220?fullDesc.slice(0,220)+'…':fullDesc;
     const descId='desc-'+cardId;
-    const desc=fullDesc.length>220
-      ?'<span id="short-'+descId+'">'+descShort+' <button onclick="document.getElementById(\'short-'+descId+'\').style.display=\'none\';document.getElementById(\'full-'+descId+'\').style.display=\'inline\';" style="background:none;border:none;color:var(--lila-dk);cursor:pointer;font-family:var(--fb);font-size:.8rem;padding:0;text-decoration:underline">Seguir leyendo</button></span><span id="full-'+descId+'" style="display:none">'+fullDesc+'</span>'
-      :fullDesc;
+    const desc=fullDesc
+      ?'<div id="clamp-'+descId+'" class="card-expand" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+fullDesc+'</div>'
+        +'<div id="full-'+descId+'" class="card-expand" style="display:none">'+fullDesc+'</div>'
+        +'<button id="toggle-'+descId+'" class="card-expand-btn" onclick="toggleDescFull(\''+descId+'\')">Seguir leyendo</button>'
+      :'';
     // Author bio
     const fullBio=b._isRec?(b.bio||''):(_overrides['bio_'+b.id]||'');
-    const bioShort=fullBio.length>200?fullBio.slice(0,200)+'…':fullBio;
     const bioId='bio-'+cardId;
-    const bioHtml=fullBio.length>200
-      ?'<span id="short-'+bioId+'">'+bioShort+' <button onclick="document.getElementById(\'short-'+bioId+'\').style.display=\'none\';document.getElementById(\'full-'+bioId+'\').style.display=\'inline\';" style="background:none;border:none;color:var(--lila-dk);cursor:pointer;font-family:var(--fb);font-size:.8rem;padding:0;text-decoration:underline">Seguir leyendo</button></span><span id="full-'+bioId+'" style="display:none">'+fullBio+'</span>'
-      :fullBio;
+    const bioHtml=fullBio
+      ?'<div style="margin-top:.6rem"><div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.2rem">✦ Sobre '+b.a+'</div>'
+        +'<div id="clamp-'+bioId+'" class="card-expand" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+fullBio+'</div>'
+        +'<div id="full-'+bioId+'" class="card-expand" style="display:none">'+fullBio+'</div>'
+        +'<button id="toggle-'+bioId+'" class="card-expand-btn" onclick="toggleDescFull(\''+bioId+'\')">Seguir leyendo</button>'
+        +'</div>'
+      :'';
     return '<div class="card" id="'+cardId+'">'
-      +'<div class="cimgw" onclick="toggleCardExpand(\''+cardId+'\')" style="cursor:pointer">'+(img)+(ph)+(badge)+'</div>'
+      +'<div class="cimgw">'+(img)+(ph)+(badge)+'</div>'
       +'<div class="cbody">'+catTag(bCat)
       +'<div class="ctitle">'+(b.t)+'</div>'
       +'<div class="cauthor">'+(b.a)+'</div>'
@@ -899,21 +895,8 @@ function renderBooks(votesData){
         +(langBadge?'<span style="font-size:.65rem;font-weight:500;color:var(--muted)">'+langBadge+'</span>':'')
         +(divLabel?'<span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span>':'')
         +'</div>':'')
-
-      +'<button class="card-expand-btn" onclick="toggleCardExpand(\''+cardId+'\')">'+(b._isRec?'▾ Ver reseña y comentarios':'▾ Ver reseña y comentarios')+'</button>'
-      +'<div class="card-expand" id="expand-'+cardId+'" data-cmkey="'+(b._isRec?'rec-'+encodeURIComponent(b._key):'book-'+(b._isRec?b._key:i))+'">'
-      +(desc?'<div style="margin-bottom:.75rem">'+desc+'</div>':'')
-      +(bioHtml?'<div style="margin-bottom:.75rem"><div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.25rem">✦ Sobre '+b.a+'</div>'+bioHtml+'</div>':'')
-      +'<div style="display:none">'
-      +'<div style="font-size:.8rem;font-weight:500;color:var(--text);margin-bottom:.5rem">💬 Comentarios</div>'
-      +'<div class="cm-list-inline" style="margin-bottom:.5rem"></div>'
-      +'<div style="display:flex;gap:.5rem;flex-wrap:wrap">'
-      +'<input id="cm-n-'+cardId+'" type="text" placeholder="Tu nombre" style="flex:1;min-width:100px;padding:.35rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige)">'
-      +'<input id="cm-t-'+cardId+'" type="text" placeholder="Tu comentario..." style="flex:2;min-width:150px;padding:.35rem .6rem;border:1px solid var(--bdr);border-radius:8px;font-family:var(--fb);font-size:.75rem;background:var(--beige)">'
-      +'<button onclick="postComment(\'book-'+(b._isRec?encodeURIComponent(b._key):i)+'\',document.getElementById(\'cm-n-'+cardId+'\'),document.getElementById(\'cm-t-'+cardId+'\'))" style="background:var(--lila-dk);color:#fff;border:none;padding:.35rem .75rem;border-radius:8px;font-family:var(--fb);font-size:.75rem;cursor:pointer;white-space:nowrap">Publicar</button>'
-      +'</div>'
-      +'</div>'
-      +'</div>'
+      +desc
+      +bioHtml
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.5rem">'
       +'<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">'
       +`<button class="cget-pill" onclick="${onBuy}">Cómpralo aquí →</button>`
@@ -999,7 +982,7 @@ function onSearch(){
   }).join('');
   drop.style.display='block';
 }
-function selectBook(i){document.getElementById('srch').value='';hideDropdown();renderBooks();const b=B[i];if(b){const cid='card-'+b.id;setTimeout(()=>toggleCardExpand(cid),100);}}
+function selectBook(i){document.getElementById('srch').value='';hideDropdown();renderBooks();const b=B[i];if(b){const cid='card-'+b.id;setTimeout(()=>{const el=document.getElementById(cid);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},100);}}
 function hideDropdown(){const d=document.getElementById('srch-drop');if(d)d.style.display='none';}
 window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=selectBook;
 
@@ -1008,11 +991,10 @@ window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=se
 // ── BOOK MODAL ──
 function scrollToAndExpand(cardId, evt){
   if(evt && evt.stopPropagation) evt.stopPropagation();
-  // If card exists on current page, scroll to it and expand
+  // If card exists on current page, just scroll to it
   const card=document.getElementById(cardId);
   if(card){
     card.scrollIntoView({behavior:'smooth',block:'center'});
-    setTimeout(()=>{ if(!card.classList.contains('expanded')) toggleCardExpand(cardId); },350);
     return;
   }
   // Card not in DOM (different page) — find book data and show mini popup
@@ -1053,41 +1035,23 @@ window.showRkPopup=showRkPopup;
 function closeRkPopup(){const p=document.getElementById('rk-popup');if(p)p.style.display='none';}
 window.closeRkPopup=closeRkPopup;
 
-function toggleCardExpand(cardId){
-  const card=document.getElementById(cardId);
-  const exp=document.getElementById('expand-'+cardId);
-  const btn=card?card.querySelector('.card-expand-btn'):null; // btn found via card reference, safe
-  if(!exp||!card) return;
-  const open=exp.classList.contains('open');
-  exp.classList.toggle('open');
-  card.classList.toggle('expanded',!open);
-  card.style.gridColumnStart='';
-  if(btn) btn.textContent=open?'▾ Ver reseña y comentarios':'▴ Ocultar';
-  // Show/hide X close button
-  let xBtn=card.querySelector('.card-close-x');
-  if(!open){
-    if(!xBtn){
-      xBtn=document.createElement('button');
-      xBtn.className='card-close-x';
-      xBtn.innerHTML='✕';
-      xBtn.onclick=(e)=>{e.stopPropagation();toggleCardExpand(cardId);};
-      xBtn.style.cssText='position:absolute;top:8px;right:8px;background:rgba(255,255,255,.85);border:1px solid var(--bdr);border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.7rem;display:flex;align-items:center;justify-content:center;z-index:10;font-family:var(--fb)';
-      card.style.position='relative';
-      card.appendChild(xBtn);
-    }
-    xBtn.style.display='flex';
+function toggleDescFull(id){
+  const clamp=document.getElementById('clamp-'+id);
+  const full=document.getElementById('full-'+id);
+  const btn=document.getElementById('toggle-'+id);
+  if(!clamp||!full||!btn) return;
+  const isShowingFull=full.style.display!=='none';
+  if(isShowingFull){
+    full.style.display='none';
+    clamp.style.display='-webkit-box';
+    btn.textContent='Seguir leyendo';
   } else {
-    if(xBtn) xBtn.style.display='none';
-  }
-  // Load comments on first open
-  if(!open && exp.dataset && !exp.dataset.commentsLoaded){
-    exp.dataset.commentsLoaded='1';
-    const cmKey=exp.dataset.cmkey;
-    const cmList=exp.querySelector('.cm-list-inline');
-    if(cmKey&&cmList) listenComments(cmKey,cmList);
+    full.style.display='block';
+    clamp.style.display='none';
+    btn.textContent='Ocultar';
   }
 }
-window.toggleCardExpand=toggleCardExpand;
+window.toggleDescFull=toggleDescFull;
 
 let _openShareMenu=null;
 function shareRow(title, author){
@@ -1372,7 +1336,7 @@ function renderReadCarousel(){
       ? (b._cover?`<img src="${b._cover}" style="width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem" onerror="this.style.display='none'">`:`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`)
       : coverImgTag(b,i,"","width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;margin:0 auto .6rem","M")||`<div style="width:80px;height:120px;background:var(--lila-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto .6rem">📖</div>`;
     const rcCardId=isRec?'card-'+b.id:('card-'+(b.id||i));
-    const rcOnClick=`toggleCardExpand('${rcCardId}')`;
+    const rcOnClick=`scrollToAndExpand('${rcCardId}')`;
     return`<div class="rc-card" style="cursor:pointer" onclick="${rcOnClick}">
       <div style="cursor:pointer">${img}</div>
       <div style="font-size:.75rem;font-weight:500;line-height:1.3;margin-bottom:.2rem">${b.t}</div>
