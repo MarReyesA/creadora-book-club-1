@@ -183,7 +183,10 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 /* SHDR */
 
 /* ADMIN PANEL */
-#admin-panel{position:fixed;top:2.5vh;right:2.5vh;bottom:2.5vh;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.75rem 2rem;box-shadow:0 8px 32px rgba(42,35,24,.15);width:48vw;min-width:480px;max-width:680px;overflow-y:auto;font-size:1.05rem}
+#admin-panel{position:fixed;top:2.5vh;right:2.5vh;bottom:2.5vh;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.75rem 2.75rem 1.75rem 2rem;box-shadow:0 8px 32px rgba(42,35,24,.15);width:48vw;min-width:480px;max-width:680px;overflow-y:auto;font-size:1.05rem;scrollbar-width:thin;scrollbar-color:var(--lila-dk) var(--beige)}
+#admin-panel::-webkit-scrollbar{width:8px}
+#admin-panel::-webkit-scrollbar-track{background:var(--beige);border-radius:8px}
+#admin-panel::-webkit-scrollbar-thumb{background:var(--lila-dk);border-radius:8px}
 @media(max-width:900px){#admin-panel{width:92vw;min-width:0;left:4vw;right:4vw}}
 #admin-panel h3{font-family:var(--ft);font-size:1.3rem;color:var(--lila-dk);margin-bottom:.75rem}
 .admin-book-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bdr);font-size:.75rem}
@@ -710,9 +713,12 @@ function fetchGoogleBooks(r, onDone){
   fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`)
     .then(res=>res.json())
     .then(data=>{
+      // Re-check: if a manual review was saved while this request was in flight, skip caching desc entirely
+      const liveR=_recs.find(x=>x._key===r._key);
+      const hasManualDesc=liveR&&typeof liveR.desc==='string'&&liveR.desc.length>0;
       const item=data.items&&data.items[0];
       const info=item?item.volumeInfo||{}:{};
-      const desc=info.description||info.subtitle||'';
+      const desc=hasManualDesc?'':(info.description||info.subtitle||'');
       const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
       const foundEs=info.language==='es';
       if(desc||cover){
@@ -720,7 +726,7 @@ function fetchGoogleBooks(r, onDone){
         renderBooks();
         fetchEnglishFallback(r, done, foundEs); // also check English availability
       } else {
-        fetchEnglishFallback(r, done, false);
+        fetchEnglishFallback(r, done, foundEs);
       }
     })
     .catch(()=>fetchEnglishFallback(r, done, false));
@@ -734,24 +740,27 @@ function fetchEnglishFallback(r, onDone, foundEsAlready){
   fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&langRestrict=en`)
     .then(res=>res.json())
     .then(data=>{
+      // Re-check: if a manual review was saved while this request was in flight, never overwrite it
+      const liveR=_recs.find(x=>x._key===r._key);
+      const hasManualDesc=liveR&&typeof liveR.desc==='string'&&liveR.desc.length>0;
       const item=data.items&&data.items[0];
       const info=item?item.volumeInfo||{}:{};
-      const desc=info.description||info.subtitle||'';
+      const desc=hasManualDesc?'':(info.description||info.subtitle||'');
       const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
       const foundEn=info.language==='en'||!!item;
       const prevCache=_gbCache[r._key]||{};
       const hasEs=foundEsAlready||prevCache._foundEs;
       const hasEn=foundEn;
       // Auto-detect language availability — only set if not already manually set in Firebase
-      if(!r.lang){
+      if(!r.lang && !(liveR&&liveR.lang)){
         const detectedLang=hasEs&&hasEn?'both':hasEn?'eng':hasEs?'esp':'';
         if(detectedLang){
           set(ref(db,`recs/${r._key}/lang`),detectedLang).catch(()=>{});
           r.lang=detectedLang; // update local copy too
         }
       }
-      _gbCache[r._key]={cover:prevCache.cover||cover, desc:prevCache.desc||desc, sub:prevCache.sub||info.subtitle||''};
-      if(desc||cover) renderBooks();
+      _gbCache[r._key]={cover:prevCache.cover||cover, desc:hasManualDesc?'':(prevCache.desc||desc), sub:prevCache.sub||info.subtitle||''};
+      if(cover||(!hasManualDesc&&desc)) renderBooks();
       done();
     })
     .catch(()=>{
@@ -804,13 +813,25 @@ function renderBooks(votesData){
   let finalPage1=[], restPages=f;
   if(curCat==='all' && !terms){
     const isFinalist=b=>b._isRec?!!b._finalist:!!_overrides['finalist_'+b.id];
-    const manualFinalists=f.filter(isFinalist);
+    // Timestamp used purely for ordering the Top 10: when marked as finalist (or added, for auto-filled recs)
+    const finalistTs=b=>{
+      if(b._isRec){
+        const fv=b._finalist;
+        return (typeof fv==='number'?fv:0)||(_recs.find(x=>x._key===b._key)?.ts||0);
+      }
+      const ov=_overrides['finalist_'+b.id];
+      return typeof ov==='number'?ov:0;
+    };
+    const manualFinalists=f.filter(isFinalist).sort((a,b)=>finalistTs(b)-finalistTs(a));
     const nonFinalists=f.filter(b=>!isFinalist(b));
     // Auto-fill remaining slots (up to 10) with newest additions (recs are already newest-first in allBooks/f order)
     const needed=Math.max(0,10-manualFinalists.length);
     const autoFill=nonFinalists.filter(b=>b._isRec).slice(0,needed);
     const autoFillIds=new Set(autoFill.map(b=>b._isRec?b._key:b.id));
-    finalPage1=[...manualFinalists,...autoFill].slice(0,10);
+    // Combine all finalists (manual + auto-fill) and sort together, newest first
+    finalPage1=[...manualFinalists,...autoFill]
+      .sort((a,b)=>finalistTs(b)-finalistTs(a))
+      .slice(0,10);
     restPages=f.filter(b=>{
       const key=b._isRec?b._key:b.id;
       return !isFinalist(b) && !autoFillIds.has(key);
@@ -889,7 +910,7 @@ function renderBooks(votesData){
     const fullDesc=b._isRec?(b.d||b.desc||_gbCache[b._key]?.desc||''):(_overrides['desc_'+b.id]||b.d||'');
     const descId='desc-'+cardId;
     const desc=fullDesc
-      ?'<div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Reseña</div>'
+      ?'<div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.2rem;margin-top:.85rem">Reseña</div>'
         +'<div id="clamp-'+descId+'" class="card-expand" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+fullDesc+'</div>'
         +'<div id="full-'+descId+'" class="card-expand" style="display:none">'+fullDesc+'</div>'
         +'<button id="toggle-'+descId+'" class="card-expand-btn" onclick="toggleDescFull(\''+descId+'\')">Seguir leyendo</button>'
@@ -926,9 +947,8 @@ function renderBooks(votesData){
       +'<div class="cimgw">'+(img)+(ph)+(badge)+'</div>'
       +'<div class="cbody">'+catTag(bCat)
       +'<div class="ctitle">'+(b.t)+'</div>'
-      +'<div class="cauthor">'+(b.a)+'</div>'
+      +'<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.1rem"><span class="cauthor" style="margin-bottom:0">'+(b.a)+'</span>'+(divLabel?'<span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span>':'')+'</div>'
       +((ratingDisplay||langAvail)?'<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.78rem;margin-bottom:.25rem">'+(ratingDisplay?'<span style="color:#b8860b">'+ratingDisplay+'</span>':'')+langAvail+'</div>':'')
-      +(divLabel?'<div style="margin-bottom:.2rem"><span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span></div>':'')
       +desc
       +bioHtml
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.5rem">'
@@ -1408,18 +1428,11 @@ function renderAdminPanel(force){
       <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:8px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
     </div>
 
-    <div style="border-top:2px solid var(--sage);padding-top:.75rem;margin-bottom:.5rem">
-      <div style="font-size:.95rem;font-weight:600;color:var(--sage-dk);margin-bottom:.5rem">📋 Libros agregados por la comunidad</div>
-      <div id="admin-community-list" style="max-height:280px;overflow-y:auto">
-        <div style="font-size:.75rem;color:var(--muted)">Cargando...</div>
-      </div>
-    </div>
-
-      <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-top:.75rem;margin-bottom:.5rem">
-      <div style="font-size:.95rem;font-weight:600;color:var(--lila-dk);margin-bottom:.5rem">📚 Editar libro de la biblioteca</div>
+    <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
+      <div style="font-size:.95rem;font-weight:600;color:var(--lila-dk);margin-bottom:.5rem">📚 Todos los libros</div>
       <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.6rem .9rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.88rem;background:#fff8f6;margin-bottom:.6rem;outline:none;color:var(--text)">
     </div>
-    <div id="admin-book-list" style="max-height:300px;overflow-y:auto"></div>
+    <div id="admin-book-list" style="max-height:500px;overflow-y:auto"></div>
 
     <div style="margin-top:.875rem;border-top:1px solid var(--bdr);padding-top:.875rem">
       <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV libros (${_recs.length})</button>
@@ -1444,11 +1457,13 @@ function filterAdminBooks(q){
   const filteredRecs=_recs.filter(r=>!q||(r.t||'').toLowerCase().includes(q)||(r.a||'').toLowerCase().includes(q));
   if(!filtered.length && !filteredRecs.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted);padding:.5rem 0">No se encontró ese libro.</div>';return;}
   const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
-  list.innerHTML=filtered.map(({b,i})=>`
-    <div id="admin-row-${b.id}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
+  list.innerHTML=filtered.map(({b,i})=>{
+    const isFinalist=!!_overrides['finalist_'+b.id];
+    return `
+    <div id="admin-row-${b.id}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0;background:${isFinalist?'#fff8f0':'transparent'}">
       <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
-        <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#7a3a2a;cursor:pointer;flex-shrink:0;background:${_overrides['finalist_'+b.id]?'#ffb7a4':'transparent'};padding:2px 6px;border-radius:6px;border:1px solid #ffb7a4">
-          <input type="checkbox" id="finalist-${b.id}" ${_overrides['finalist_'+b.id]?'checked':''} onchange="toggleFinalist('${b.id}',this.checked)" style="margin:0">✦
+        <label style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:700;color:${isFinalist?'#fff':'#7a3a2a'};cursor:pointer;flex-shrink:0;background:${isFinalist?'#e8893f':'#fff3e6'};padding:4px 9px;border-radius:6px;border:1.5px solid ${isFinalist?'#e8893f':'#ffb7a4'}">
+          <input type="checkbox" id="finalist-${b.id}" ${isFinalist?'checked':''} onchange="toggleFinalist('${b.id}',this.checked)" style="margin:0">${isFinalist?'✓ Top 10':'✦ Top 10'}
         </label>
         <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${b.a}</span></div>
         <button onclick="deleteMainBook(${i},'${b.id}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑 Eliminar</button>
@@ -1475,16 +1490,20 @@ function filterAdminBooks(q){
         </select>
         <button onclick="saveLang(${i},'${b.id}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <textarea id="bio-${b.id}" placeholder="Biografía de ${b.a}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:50px">${_overrides[`bio_${b.id}`]||''}</textarea>
-        <button onclick="saveBio(${i},'${b.id}')" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
-      </div>
       <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
         <select id="cat-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
           <option value="">— Categoría: ${CAT_ES[b.c]||b.c} —</option>
           ${catOptions}
         </select>
         <button onclick="saveCat(${i},'${b.id}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <textarea id="desc-${b.id}" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${_overrides[`desc_${b.id}`]||b.d||''}</textarea>
+        <button onclick="saveDesc(${i},'${b.id}')" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <textarea id="bio-${b.id}" placeholder="Biografía de ${b.a}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${_overrides[`bio_${b.id}`]||''}</textarea>
+        <button onclick="saveBio(${i},'${b.id}')" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;align-items:center">
         <select id="div-${b.id}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
@@ -1496,14 +1515,17 @@ function filterAdminBooks(q){
         </select>
         <button onclick="saveDiversity(${i},'${b.id}')" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
-    </div>`).join('');
-  // Append rec books results
+    </div>`;
+  }).join('');
+  // Append rec books results — same exact field layout
   if(filteredRecs.length){
-    const recHtml=filteredRecs.map(r=>`
-      <div id="admin-rec-search-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0;background:#fff8f6">
+    const recHtml=filteredRecs.map(r=>{
+      const isFinalist=!!r.finalist;
+      return `
+      <div id="admin-rec-search-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0;background:${isFinalist?'#fff8f0':'#fff8f6'}">
         <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
-          <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#7a3a2a;cursor:pointer;flex-shrink:0;background:${r.finalist?'#ffb7a4':'transparent'};padding:2px 6px;border-radius:6px;border:1px solid #ffb7a4">
-            <input type="checkbox" ${r.finalist?'checked':''} onchange="toggleRecFinalist('${r._key}',this.checked)" style="margin:0">✦
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:700;color:${isFinalist?'#fff':'#7a3a2a'};cursor:pointer;flex-shrink:0;background:${isFinalist?'#e8893f':'#fff3e6'};padding:4px 9px;border-radius:6px;border:1.5px solid ${isFinalist?'#e8893f':'#ffb7a4'}">
+            <input type="checkbox" ${isFinalist?'checked':''} onchange="toggleRecFinalist('${r._key}',this.checked)" style="margin:0">${isFinalist?'✓ Top 10':'✦ Top 10'}
           </label>
           <div style="font-size:.65rem;background:#ffb7a4;color:#7a3a2a;padding:1px 6px;border-radius:100px;flex-shrink:0">Comunidad</div>
           <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${r.a||'—'}</span></div>
@@ -1514,23 +1536,15 @@ function filterAdminBooks(q){
           <button onclick=\"saveRecField('${r._key}','read','rec-read-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
         </div>
         <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-          <textarea data-reckey="${r._key}" data-recfield="bio" placeholder="Biografía de ${r.a||'la autora'}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:50px">${r.bio||''}</textarea>
-          <button onclick="saveRecField('${r._key}','bio','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
-        </div>
-        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-          <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:50px">${r.desc||''}</textarea>
-          <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
-        </div>
-        <div style="display:flex;gap:.4rem">
           <input data-reckey="${r._key}" data-recfield="cover" type="text" placeholder="URL portada" value="${r.cover||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
           <button onclick=\"saveRecField('${r._key}','cover','rec-cover-${r._key}',this)\" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
         </div>
-        <div style="display:flex;gap:.4rem;margin-top:.3rem">
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
           <input id="rrn-s-${r._key}" type="text" placeholder="Ej: 4.7" value="${(r.rating||'').split('|')[0]||''}" style="width:70px;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
           <input id="rrc-s-${r._key}" type="text" placeholder="Ej: 5,388" value="${(r.rating||'').split('|')[1]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
           <button onclick="saveRecRating('${r._key}','s')" style="background:#fff3cd;color:#b8860b;border:1px solid #e8d29a;padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
         </div>
-        <div style="display:flex;gap:.4rem;margin-top:.3rem;align-items:center">
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
           <select data-reckey="${r._key}" data-recfield="lang" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);color:var(--text)">
             <option value="">— Idioma (detectado: ${r.lang||'sin datos'}) —</option>
             <option value="esp" ${r.lang==='esp'?'selected':''}>Solo ESP</option>
@@ -1539,7 +1553,33 @@ function filterAdminBooks(q){
           </select>
           <button onclick="saveRecField('${r._key}','lang','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
         </div>
-      </div>`).join('');
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
+          <select data-reckey="${r._key}" data-recfield="c" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+            <option value="">— Categoría: ${CAT_ES[r.c]||r.c||'Sin categoría'} —</option>
+            ${catOptions}
+          </select>
+          <button onclick=\"saveRecField('${r._key}','c','rec-cat-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+          <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.desc||''}</textarea>
+          <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
+        </div>
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+          <textarea data-reckey="${r._key}" data-recfield="bio" placeholder="Biografía de ${r.a||'la autora'}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.bio||''}</textarea>
+          <button onclick="saveRecField('${r._key}','bio','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
+        </div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <select data-reckey="${r._key}" data-recfield="div" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
+            <option value="">— Autoría —</option>
+            <option value="Latinx" ${r.div==='Latinx'?'selected':''}>Latinx ✦</option>
+            <option value="BIPOC" ${r.div==='BIPOC'?'selected':''}>BIPOC</option>
+            <option value="Latinx,BIPOC" ${r.div==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
+            <option value="Creadora" ${r.div==='Creadora'?'selected':''}>Creadora ✦</option>
+          </select>
+          <button onclick=\"saveRecField('${r._key}','div','rec-div-${r._key}',this)\" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
+        </div>
+      </div>`;
+    }).join('');
     list.innerHTML+=(filtered.length?'<div style="height:.5rem"></div>':'')+recHtml;
   }
   list.scrollTop=scrollTop;
@@ -1547,65 +1587,10 @@ function filterAdminBooks(q){
 window.filterAdminBooks=filterAdminBooks;
 
 function renderAdminCommunityBooks(){
-  const list=document.getElementById('admin-community-list');
-  if(!list) return;
-  if(!_recs.length){list.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Aún no hay libros agregados.</div>';return;}
-  const catOptions=Object.keys(CAT_ES).map(k=>`<option value="${k}">${CAT_ES[k]}</option>`).join('');
-  list.innerHTML=_recs.map(r=>`
-    <div id="admin-rec-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
-      <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
-        <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${r.a||'—'}</span></div>
-        <button onclick="deleteRec('${r._key}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑</button>
-      </div>
-      <div style="font-size:.65rem;color:var(--light);margin-bottom:.35rem">Agregado por ${r.n||'—'} · ${r.fecha||''}</div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <input id="rec-read-${r._key}" type="text" placeholder="Mes leído (ej: Oct 2024)" value="${r.read||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
-        <button onclick=\"saveRecField('${r._key}','read','rec-read-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <input data-reckey="${r._key}" data-recfield="cover" type="text" placeholder="URL portada" value="${r.cover||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
-        <button onclick=\"saveRecField('${r._key}','cover','rec-cover-${r._key}',this)\" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <input id="rrn-${r._key}" type="text" placeholder="Ej: 4.7" value="${(r.rating||'').split('|')[0]||''}" style="width:70px;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
-        <input id="rrc-${r._key}" type="text" placeholder="Ej: 5,388" value="${(r.rating||'').split('|')[1]||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige)">
-        <button onclick="saveRecRating('${r._key}')" style="background:#fff3cd;color:#b8860b;border:1px solid #e8d29a;padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
-        <select data-reckey="${r._key}" data-recfield="lang" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
-          <option value="">— Idioma (detectado: ${r.lang||'sin datos'}) —</option>
-          <option value="esp" ${r.lang==='esp'?'selected':''}>Solo ESP</option>
-          <option value="eng" ${r.lang==='eng'?'selected':''}>Solo ENG</option>
-          <option value="both" ${r.lang==='both'?'selected':''}>ENG y ESP</option>
-        </select>
-        <button onclick="saveRecField('${r._key}','lang','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem;align-items:center">
-        <select data-reckey="${r._key}" data-recfield="c" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
-          <option value="">— Categoría: ${CAT_ES[r.c]||r.c||'Sin categoría'} —</option>
-          ${catOptions}
-        </select>
-        <button onclick=\"saveRecField('${r._key}','c','rec-cat-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <textarea data-reckey="${r._key}" data-recfield="bio" placeholder="Biografía de ${r.a||'la autora'}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.bio||''}</textarea>
-        <button onclick="saveRecField('${r._key}','bio','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
-        <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.desc||''}</textarea>
-        <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
-      </div>
-      <div style="display:flex;gap:.4rem;align-items:center">
-        <select data-reckey="${r._key}" data-recfield="div" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
-          <option value="">— Autoría —</option>
-          <option value="Latinx" ${r.div==='Latinx'?'selected':''}>Latinx ✦</option>
-          <option value="BIPOC" ${r.div==='BIPOC'?'selected':''}>BIPOC</option>
-          <option value="Latinx,BIPOC" ${r.div==='Latinx,BIPOC'?'selected':''}>Latinx · BIPOC</option>
-          <option value="Creadora" ${r.div==='Creadora'?'selected':''}>Creadora ✦</option>
-        </select>
-        <button onclick=\"saveRecField('${r._key}','div','rec-div-${r._key}',this)\" style="background:var(--sal-lt);color:var(--sal-dk);border:1px solid rgba(176,88,72,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
-      </div>
-    </div>`).join('');
+  // Community list is now merged into the unified search (filterAdminBooks).
+  // Re-run the current search to refresh the combined list with fresh data.
+  const searchInput=document.getElementById('admin-search');
+  filterAdminBooks(searchInput?searchInput.value:'');
 }
 window.renderAdminCommunityBooks=renderAdminCommunityBooks;
 
@@ -1627,11 +1612,18 @@ function saveRecField(key,field,inputId,btn){
   // Get value from the input that is the previous sibling of the button
   const input=btn?btn.previousElementSibling:document.querySelector(`[data-reckey="${key}"][data-recfield="${field}"]`);
   const val=(input?.value||'').trim();
-  console.log('saveRecField', key, field, '→', val);
   if(val) set(ref(db,`recs/${key}/${field}`),val);
   else remove(ref(db,`recs/${key}/${field}`));
   const r=_recs.find(x=>x._key===key);
   if(r) r[field]=val||'';
+  // If manually setting desc, cancel any pending/queued auto-fetch for this book
+  // so a delayed Google Books response can't overwrite it later
+  if(field==='desc' && val){
+    const qIdx=_fetchQueue.findIndex(x=>x._key===key);
+    if(qIdx>-1) _fetchQueue.splice(qIdx,1);
+    _fetchQueued[key]=true; // mark as done so it's never auto-queued again
+    if(_gbCache[key]) _gbCache[key].desc=''; // clear any stale cached desc so it never wins
+  }
   renderBooks();
   showAdminFeedback('✓ Guardado');
 }
@@ -1719,17 +1711,17 @@ function saveRead(i,id){
   showAdminFeedback('✓ Guardado');
 }
 function toggleFinalist(id,checked){
-  if(checked) set(ref(db,'overrides/finalist_'+id),true);
+  if(checked) set(ref(db,'overrides/finalist_'+id),Date.now());
   else remove(ref(db,'overrides/finalist_'+id));
   showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
 }
 window.toggleFinalist=toggleFinalist;
 
 function toggleRecFinalist(key,checked){
-  if(checked) set(ref(db,`recs/${key}/finalist`),true);
+  if(checked) set(ref(db,`recs/${key}/finalist`),Date.now());
   else remove(ref(db,`recs/${key}/finalist`));
   const r=_recs.find(x=>x._key===key);
-  if(r) r.finalist=checked;
+  if(r) r.finalist=checked?Date.now():false;
   renderBooks();
   showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
 }
@@ -1750,6 +1742,14 @@ function saveBio(i,id){
   showAdminFeedback('✓ Biografía guardada');
 }
 window.saveBio=saveBio;
+function saveDesc(i,id){
+  id=id||B[i].id;
+  const val=document.getElementById('desc-'+id)?.value.trim();
+  if(val) set(ref(db,'overrides/desc_'+id),val);
+  else remove(ref(db,'overrides/desc_'+id));
+  showAdminFeedback('✓ Reseña guardada');
+}
+window.saveDesc=saveDesc;
 function saveRating(i,id){
   id=id||B[i].id;
   const num=document.getElementById('rating-num-'+id)?.value.trim();
