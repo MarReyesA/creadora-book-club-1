@@ -662,9 +662,9 @@ function renderRanking(){
     const isV=b?!!SV[i]:!!SVR[key];
     const cardId=b?'card-'+b.id:'card-'+key;
     const voteOnClick=b?`doVote(${i},this)`:`voteRec('${key}',this)`;
-    const expandOnClick=window.innerWidth<600?'':`scrollToAndExpand('${cardId}',event)`;
+    const expandOnClick=`scrollToAndExpand('${cardId}',event)`;
     return'<div class="rk-card" title="'+title+'">'
-      +'<div class="rk-wrap" style="position:relative'+(expandOnClick?';cursor:pointer':'')+'"'+(expandOnClick?' onclick="'+expandOnClick+'"':'')+'>'+imgTag+ph
+      +'<div class="rk-wrap" style="position:relative;cursor:pointer" onclick="event.stopPropagation();scrollToAndExpand(\''+cardId+'\')">'+imgTag+ph
       +'<div class="rk-count-badge">'+count+'</div>'
       +'</div>'
       +'<button class="vbtn'+(isV?' voted':'')+'" onclick="'+voteOnClick+'" style="width:100%;margin-top:.3rem;font-size:.68rem;padding:.25rem .4rem;border-radius:100px">'+(isV?'♥':'♡')+'</button>'
@@ -691,9 +691,25 @@ function bookMatches(b,terms){
 // ── BOOKS GRID ──
 // Cache for Google Books data fetched for rec books
 const _gbCache={};
-function fetchGoogleBooks(r){
-  if(_gbCache[r._key]) return;
-  _gbCache[r._key]='loading';
+// Rate-limited queue — fetch one book's data at a time with delay to avoid 429 errors
+const _fetchQueue=[];
+const _fetchQueued={}; // track keys already queued/done to avoid re-queuing every render
+let _fetchQueueRunning=false;
+function queueFetch(r){
+  if(_fetchQueued[r._key]) return;
+  _fetchQueued[r._key]=true;
+  _fetchQueue.push(r);
+  if(!_fetchQueueRunning) runFetchQueue();
+}
+function runFetchQueue(){
+  if(!_fetchQueue.length){_fetchQueueRunning=false;return;}
+  _fetchQueueRunning=true;
+  const r=_fetchQueue.shift();
+  fetchGoogleBooks(r, ()=>setTimeout(runFetchQueue, 800));
+}
+
+function fetchGoogleBooks(r, onDone){
+  const done=onDone||(()=>{});
   const q=encodeURIComponent(r.t+(r.a?' '+r.a:''));
   fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1`)
     .then(res=>res.json())
@@ -705,37 +721,17 @@ function fetchGoogleBooks(r){
       if(desc||cover){
         _gbCache[r._key]={cover, desc, sub:info.subtitle||''};
         renderBooks();
+        done();
       } else {
-        // Open Library is blocked by CORS from browsers — skip straight to English search
-        fetchEnglishFallback(r);
+        fetchEnglishFallback(r, done);
       }
     })
-    .catch(()=>fetchEnglishFallback(r));
+    .catch(()=>fetchEnglishFallback(r, done));
 }
 
-function fetchOpenLibrary(r){
-  const q=encodeURIComponent(r.t+(r.a?' '+r.a:''));
-  fetch(`https://openlibrary.org/search.json?q=${q}&limit=1&fields=title,author_name,cover_i,first_sentence,description`)
-    .then(res=>res.json())
-    .then(data=>{
-      const doc=data.docs&&data.docs[0];
-      const desc=!doc?'':typeof doc.description==='string'?doc.description
-        :(doc.description&&doc.description.value)||
-        (doc.first_sentence&&(typeof doc.first_sentence==='string'?doc.first_sentence:doc.first_sentence.value))||'';
-      const cover=doc&&doc.cover_i?`https://covers.openlibrary.org/b/id/${doc.cover_i}-L.jpg`:'';
-      if(desc||cover){
-        _gbCache[r._key]={cover, desc, sub:''};
-        renderBooks();
-      } else {
-        // Last fallback: search in English (normalize title, try Google Books again)
-        fetchEnglishFallback(r);
-      }
-    })
-    .catch(()=>fetchEnglishFallback(r));
-}
-
-function fetchEnglishFallback(r){
-  // Normalize: remove accents, try author name only if needed
+function fetchEnglishFallback(r, onDone){
+  const done=onDone||(()=>{});
+  // Normalize: remove accents, search in English
   const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const q=encodeURIComponent(normalize(r.t)+(r.a?' '+normalize(r.a):''));
   fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&langRestrict=en`)
@@ -745,10 +741,11 @@ function fetchEnglishFallback(r){
       const info=item?item.volumeInfo||{}:{};
       const desc=info.description||info.subtitle||'';
       const cover=(info.imageLinks&&(info.imageLinks.thumbnail||info.imageLinks.smallThumbnail)||'').replace('http:','https:');
-      _gbCache[r._key]={cover:_gbCache[r._key]?.cover||cover, desc, sub:info.subtitle||''};
+      _gbCache[r._key]={cover, desc, sub:info.subtitle||''}; // always mark cache, even if empty, to stop re-querying
       if(desc||cover) renderBooks();
+      done();
     })
-    .catch(()=>{_gbCache[r._key]={};});
+    .catch(()=>{_gbCache[r._key]={cover:'',desc:'',sub:''};done();});
 }
 
 function renderBooks(votesData){
@@ -767,8 +764,11 @@ function renderBooks(votesData){
     d:r.desc||_gbCache[r._key]?.desc||'', id:r._key, _isRec:true, _key:r._key,
     _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:'', isbn:null
   }));
-  // Fetch Google Books data for any rec without cache
-  _recs.forEach(r=>{ if(!_gbCache[r._key]) fetchGoogleBooks(r); });
+  // Queue fetch for recs missing description — rate limited, one at a time
+  _recs.forEach(r=>{
+    const hasManualDesc=typeof r.desc==='string'&&r.desc.length>0;
+    if(!hasManualDesc) queueFetch(r);
+  });
 
   // Recs newest first, then main books A-Z
   const allBooks=[...recBooks,...mainBooks];
@@ -948,6 +948,7 @@ window.onSearch=onSearch; window.hideDropdown=hideDropdown; window.selectBook=se
 
 // ── BOOK MODAL ──
 function scrollToAndExpand(cardId, evt){
+  if(evt && evt.stopPropagation) evt.stopPropagation();
   // If card exists on current page, scroll to it and expand
   const card=document.getElementById(cardId);
   if(card){
@@ -960,11 +961,11 @@ function scrollToAndExpand(cardId, evt){
   const b=B.find(x=>x.id===bookId)||B[parseInt(bookId)]||null;
   const rec=!b?_recs.find(r=>r._key===bookId):null;
   if(!b&&!rec) return;
-  showRkPopup(b||rec, b?B.indexOf(b):-1, !b, evt);
+  showRkPopup(b||rec, b?B.indexOf(b):-1, !b);
 }
 window.scrollToAndExpand=scrollToAndExpand;
 
-function showRkPopup(b, i, isRec, evt){
+function showRkPopup(b, i, isRec){
   let pop=document.getElementById('rk-popup');
   if(!pop){ pop=document.createElement('div'); pop.id='rk-popup'; document.body.appendChild(pop); }
   const cv=isRec?(b._cover||b.cover||''):(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg`:'');
