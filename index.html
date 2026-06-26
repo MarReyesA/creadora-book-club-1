@@ -339,6 +339,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <button class="filt" onclick="setCat('Biografia',this)">👤 Biografía</button>
       <button class="filt" onclick="setCat('Tecnologia',this)">💻 Tecnología</button>
     </div>
+    <div id="grid-section-label"></div>
     <div class="grid" id="grid"></div>
     <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
 
@@ -764,7 +765,7 @@ function renderBooks(votesData){
   const recBooks=_recs.map(r=>({_read:r.read||'',
     t:r.t, a:r.a||'', c:r.c||'', sub:(r.hasOwnProperty('stl')&&typeof r.stl==='string'?r.stl:''),
     d:r.desc||_gbCache[r._key]?.desc||'', bio:r.bio||'', id:r._key, _isRec:true, _key:r._key,
-    _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:'', isbn:null
+    _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:'', isbn:null, _finalist:!!r.finalist
   }));
   // Queue fetch for recs missing description — rate limited, one at a time
   _recs.forEach(r=>{
@@ -788,9 +789,51 @@ function renderBooks(votesData){
     document.getElementById('pagination').innerHTML='';
     return;
   }
-  const totalPages=Math.ceil(f.length/PAGE_SIZE);
+
+  // Split into finalists (page 1, manually chosen + auto-filled with newest) and the rest (other pages, A-Z)
+  let finalPage1=[], restPages=f;
+  if(curCat==='all' && !terms){
+    const isFinalist=b=>b._isRec?!!b._finalist:!!_overrides['finalist_'+b.id];
+    const manualFinalists=f.filter(isFinalist);
+    const nonFinalists=f.filter(b=>!isFinalist(b));
+    // Auto-fill remaining slots (up to 10) with newest additions (recs are already newest-first in allBooks/f order)
+    const needed=Math.max(0,10-manualFinalists.length);
+    const autoFill=nonFinalists.filter(b=>b._isRec).slice(0,needed);
+    const autoFillIds=new Set(autoFill.map(b=>b._isRec?b._key:b.id));
+    finalPage1=[...manualFinalists,...autoFill].slice(0,10);
+    restPages=f.filter(b=>{
+      const key=b._isRec?b._key:b.id;
+      return !isFinalist(b) && !autoFillIds.has(key);
+    });
+  }
+
+  const usingFinalists=finalPage1.length>0;
+  const totalPages=usingFinalists
+    ? 1+Math.ceil(restPages.length/PAGE_SIZE)
+    : Math.ceil(f.length/PAGE_SIZE);
   if(curPage>=totalPages) curPage=totalPages-1;
-  const pageBooks=f.slice(curPage*PAGE_SIZE, (curPage+1)*PAGE_SIZE);
+
+  let pageBooks, sectionLabel='';
+  if(usingFinalists && curPage===0){
+    pageBooks=finalPage1;
+    sectionLabel='finalists';
+  } else {
+    const restPage=usingFinalists?curPage-1:curPage;
+    pageBooks=usingFinalists
+      ? restPages.slice(restPage*PAGE_SIZE,(restPage+1)*PAGE_SIZE)
+      : f.slice(curPage*PAGE_SIZE,(curPage+1)*PAGE_SIZE);
+    sectionLabel='others';
+  }
+
+  // Section heading above the grid
+  const sectionHead=document.getElementById('grid-section-label');
+  if(sectionHead){
+    sectionHead.innerHTML=usingFinalists
+      ? (sectionLabel==='finalists'
+          ?'<div style="text-align:center;font-size:.85rem;color:var(--lila-dk);font-weight:600;margin-bottom:.75rem">✦ Los 10 finalistas de este mes</div>'
+          :'<div style="text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:.75rem">Otros libros sugeridos</div>')
+      :'';
+  }
 
   g.innerHTML=pageBooks.map(b=>{
     const i=b._isRec ? -1 : B.findIndex(x=>x.id===b.id);
@@ -1405,6 +1448,9 @@ function filterAdminBooks(q){
   list.innerHTML=filtered.map(({b,i})=>`
     <div id="admin-row-${b.id}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0">
       <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem">
+        <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#7a3a2a;cursor:pointer;flex-shrink:0;background:${_overrides['finalist_'+b.id]?'#ffb7a4':'transparent'};padding:2px 6px;border-radius:6px;border:1px solid #ffb7a4">
+          <input type="checkbox" id="finalist-${b.id}" ${_overrides['finalist_'+b.id]?'checked':''} onchange="toggleFinalist('${b.id}',this.checked)" style="margin:0">✦
+        </label>
         <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.t}">${b.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${b.a}</span></div>
         <button onclick="deleteMainBook(${i},'${b.id}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk);white-space:nowrap">🗑 Eliminar</button>
       </div>
@@ -1443,6 +1489,9 @@ function filterAdminBooks(q){
     const recHtml=filteredRecs.map(r=>`
       <div id="admin-rec-search-${r._key}" style="border-bottom:1px solid var(--bdr);padding:.6rem 0;background:#fff8f6">
         <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">
+          <label style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#7a3a2a;cursor:pointer;flex-shrink:0;background:${r.finalist?'#ffb7a4':'transparent'};padding:2px 6px;border-radius:6px;border:1px solid #ffb7a4">
+            <input type="checkbox" ${r.finalist?'checked':''} onchange="toggleRecFinalist('${r._key}',this.checked)" style="margin:0">✦
+          </label>
           <div style="font-size:.65rem;background:#ffb7a4;color:#7a3a2a;padding:1px 6px;border-radius:100px;flex-shrink:0">Comunidad</div>
           <div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.t} <span style="font-weight:400;font-size:.75rem;color:var(--muted)">· ${r.a||'—'}</span></div>
           <button onclick="deleteRec('${r._key}')" style="background:none;border:1px solid var(--sal-dk);border-radius:6px;cursor:pointer;font-size:.65rem;padding:2px 6px;color:var(--sal-dk)">🗑</button>
@@ -1606,6 +1655,23 @@ function saveRead(i,id){
   }
   showAdminFeedback('✓ Guardado');
 }
+function toggleFinalist(id,checked){
+  if(checked) set(ref(db,'overrides/finalist_'+id),true);
+  else remove(ref(db,'overrides/finalist_'+id));
+  showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
+}
+window.toggleFinalist=toggleFinalist;
+
+function toggleRecFinalist(key,checked){
+  if(checked) set(ref(db,`recs/${key}/finalist`),true);
+  else remove(ref(db,`recs/${key}/finalist`));
+  const r=_recs.find(x=>x._key===key);
+  if(r) r.finalist=checked;
+  renderBooks();
+  showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
+}
+window.toggleRecFinalist=toggleRecFinalist;
+
 function saveCover(i,id){
   id=id||B[i].id;
   const val=document.getElementById('cover-'+id)?.value.trim();
