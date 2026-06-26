@@ -889,7 +889,8 @@ function renderBooks(votesData){
     const fullDesc=b._isRec?(b.d||b.desc||_gbCache[b._key]?.desc||''):(_overrides['desc_'+b.id]||b.d||'');
     const descId='desc-'+cardId;
     const desc=fullDesc
-      ?'<div id="clamp-'+descId+'" class="card-expand" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+fullDesc+'</div>'
+      ?'<div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.2rem">Reseña</div>'
+        +'<div id="clamp-'+descId+'" class="card-expand" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+fullDesc+'</div>'
         +'<div id="full-'+descId+'" class="card-expand" style="display:none">'+fullDesc+'</div>'
         +'<button id="toggle-'+descId+'" class="card-expand-btn" onclick="toggleDescFull(\''+descId+'\')">Seguir leyendo</button>'
       :'';
@@ -910,28 +911,26 @@ function renderBooks(votesData){
       const count=parts[1]||'';
       return num+' ⭐️'+(count?' ('+count+')':'');
     })():'';
-    // Language availability — checkmark style
+    // Language availability — checkmark style, gray (not alarming red) when unavailable
     const langAvail=langLabel?(()=>{
       const hasEng=langLabel==='eng'||langLabel==='both';
       const hasEsp=langLabel==='esp'||langLabel==='both';
       const chk='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg>';
       const xx='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-      return '<div style="font-size:.72rem;color:var(--muted);margin-top:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
-        +'<span>Disponible en:</span>'
-        +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEng?'var(--sage-dk)':'var(--sal-dk)')+'">'+(hasEng?chk:xx)+' ENG</span>'
-        +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEsp?'var(--sage-dk)':'var(--sal-dk)')+'">'+(hasEsp?chk:xx)+' ESP</span>'
-        +'</div>';
+      return '<span style="display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
+        +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEng?'var(--sage-dk)':'var(--light)')+'">'+(hasEng?chk:xx)+' ENG</span>'
+        +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEsp?'var(--sage-dk)':'var(--light)')+'">'+(hasEsp?chk:xx)+' ESP</span>'
+        +'</span>';
     })():'';
     return '<div class="card" id="'+cardId+'">'
       +'<div class="cimgw">'+(img)+(ph)+(badge)+'</div>'
       +'<div class="cbody">'+catTag(bCat)
       +'<div class="ctitle">'+(b.t)+'</div>'
       +'<div class="cauthor">'+(b.a)+'</div>'
-      +(ratingDisplay?'<div style="display:block;width:100%;font-size:.78rem;color:#b8860b;margin-bottom:.25rem">'+ratingDisplay+'</div>':'')
+      +((ratingDisplay||langAvail)?'<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.78rem;margin-bottom:.25rem">'+(ratingDisplay?'<span style="color:#b8860b">'+ratingDisplay+'</span>':'')+langAvail+'</div>':'')
       +(divLabel?'<div style="margin-bottom:.2rem"><span style="font-size:.6rem;font-weight:600;background:'+(div==='Creadora'?'var(--sal-dk)':'#ffb7a4')+';color:'+(div==='Creadora'?'#fff':'#7a3a2a')+';padding:2px 5px;border-radius:100px;white-space:nowrap">'+divLabel+'</span></div>':'')
       +desc
       +bioHtml
-      +langAvail
       +'<div style="margin-top:auto;padding-top:.75rem;display:flex;flex-direction:column;gap:.5rem">'
       +'<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">'
       +`<button class="cget-pill" onclick="${onBuy}">Cómpralo aquí →</button>`
