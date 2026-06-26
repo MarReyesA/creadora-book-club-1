@@ -95,13 +95,13 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .ctitle:hover{color:var(--lila-dk)}
 .cauthor{font-size:.82rem;color:var(--muted);margin-bottom:.25rem}
 .cget{font-size:.8rem;font-weight:500;color:var(--sage-dk);background:none;border:none;padding:0;cursor:pointer;font-family:var(--fb);text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
-.cget-pill{font-size:.78rem;font-weight:600;color:#7a3a2a;background:#ffb7a4;border:none;padding:.5rem 1.1rem;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:all .15s;white-space:nowrap}
-.cget-pill:hover{background:#ff9f86}
+.cget-pill{font-size:.78rem;font-weight:600;color:#b85a40;background:none;border:1.5px solid #ffb7a4;padding:.5rem 1.1rem;border-radius:100px;cursor:pointer;font-family:var(--fb);transition:all .15s;white-space:nowrap}
+.cget-pill:hover{background:#fff0eb;border-color:#ff9f86}
 .card-expand{display:none;padding:.75rem 0 .25rem;border-top:1px solid var(--bdr);margin-top:.5rem;font-size:.8rem;color:var(--muted);line-height:1.6}
 .card-expand.open{display:block}
 .card-expand-btn{background:none;border:none;font-family:var(--fb);font-size:.8rem;color:var(--sage-dk);cursor:pointer;padding:0;text-decoration:underline;text-decoration-color:rgba(78,112,96,.3);text-align:left}
 .card.expanded{grid-column:1/-1;display:flex;flex-direction:column}
-/* cover stays same size when card expands — no override needed */
+.card.expanded .cimgw{max-width:185px;margin:0 auto}
 .card.expanded .cbody{flex:1;min-width:0;display:flex;flex-direction:column}
 .card.expanded .card-expand.open{display:block!important;column-count:1}
 
@@ -189,7 +189,8 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 /* SHDR */
 
 /* ADMIN PANEL */
-#admin-panel{position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.5rem 1.75rem;box-shadow:0 8px 32px rgba(42,35,24,.15);min-width:360px;max-width:440px;max-height:85vh;overflow-y:auto;font-size:1.05rem}
+#admin-panel{position:fixed;top:2.5vh;right:2.5vh;bottom:2.5vh;z-index:9999;background:var(--white);border:2px solid var(--lila-dk);border-radius:var(--rl);padding:1.75rem 2rem;box-shadow:0 8px 32px rgba(42,35,24,.15);width:48vw;min-width:480px;max-width:680px;overflow-y:auto;font-size:1.05rem}
+@media(max-width:900px){#admin-panel{width:92vw;min-width:0;left:4vw;right:4vw}}
 #admin-panel h3{font-family:var(--ft);font-size:1.3rem;color:var(--lila-dk);margin-bottom:.75rem}
 .admin-book-row{display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bdr);font-size:.75rem}
 .admin-book-row input[type=text]{flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.72rem;background:var(--beige)}
@@ -1409,18 +1410,18 @@ function renderAdminPanel(force){
       <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:8px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
     </div>
 
-      <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
+    <div style="border-top:2px solid var(--sage);padding-top:.75rem;margin-bottom:.5rem">
+      <div style="font-size:.95rem;font-weight:600;color:var(--sage-dk);margin-bottom:.5rem">📋 Libros agregados por la comunidad</div>
+      <div id="admin-community-list" style="max-height:280px;overflow-y:auto">
+        <div style="font-size:.75rem;color:var(--muted)">Cargando...</div>
+      </div>
+    </div>
+
+      <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-top:.75rem;margin-bottom:.5rem">
       <div style="font-size:.95rem;font-weight:600;color:var(--lila-dk);margin-bottom:.5rem">📚 Editar libro de la biblioteca</div>
       <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.6rem .9rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.88rem;background:#fff8f6;margin-bottom:.6rem;outline:none;color:var(--text)">
     </div>
     <div id="admin-book-list" style="max-height:300px;overflow-y:auto"></div>
-
-    <div style="border-top:2px solid var(--sage);padding-top:.75rem;margin-top:.75rem;margin-bottom:.5rem">
-      <div style="font-size:.95rem;font-weight:600;color:var(--sage-dk);margin-bottom:.5rem">📋 Libros agregados por la comunidad</div>
-      <div id="admin-community-list" style="max-height:200px;overflow-y:auto">
-        <div style="font-size:.75rem;color:var(--muted)">Cargando...</div>
-      </div>
-    </div>
 
     <div style="margin-top:.875rem;border-top:1px solid var(--bdr);padding-top:.875rem">
       <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV libros (${_recs.length})</button>
@@ -1504,6 +1505,10 @@ function filterAdminBooks(q){
           <textarea data-reckey="${r._key}" data-recfield="bio" placeholder="Biografía de ${r.a||'la autora'}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:50px">${r.bio||''}</textarea>
           <button onclick="saveRecField('${r._key}','bio','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
         </div>
+        <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+          <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:50px">${r.desc||''}</textarea>
+          <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer;align-self:flex-start">✓</button>
+        </div>
         <div style="display:flex;gap:.4rem">
           <input data-reckey="${r._key}" data-recfield="cover" type="text" placeholder="URL portada" value="${r.cover||''}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige)">
           <button onclick=\"saveRecField('${r._key}','cover','rec-cover-${r._key}',this)\" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;cursor:pointer">✓</button>
@@ -1543,8 +1548,12 @@ function renderAdminCommunityBooks(){
         <button onclick=\"saveRecField('${r._key}','c','rec-cat-${r._key}',this)\" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
+        <textarea data-reckey="${r._key}" data-recfield="bio" placeholder="Biografía de ${r.a||'la autora'}" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.bio||''}</textarea>
+        <button onclick="saveRecField('${r._key}','bio','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
+      </div>
+      <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
         <textarea data-reckey="${r._key}" data-recfield="desc" placeholder="Reseña / descripción del libro" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.68rem;background:var(--beige);resize:vertical;min-height:56px">${r.desc||''}</textarea>
-        <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--lila-lt);color:var(--lila-dk);border:1px solid rgba(122,96,160,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
+        <button onclick="saveRecField('${r._key}','desc','',this)" style="background:var(--sage-lt);color:var(--sage-dk);border:1px solid rgba(78,112,96,.3);padding:.3rem .6rem;border-radius:6px;font-family:var(--fb);font-size:.68rem;font-weight:500;cursor:pointer;white-space:nowrap;align-self:flex-start">✓</button>
       </div>
       <div style="display:flex;gap:.4rem;align-items:center">
         <select data-reckey="${r._key}" data-recfield="div" style="flex:1;padding:.3rem .5rem;border:1px solid var(--bdr);border-radius:6px;font-family:var(--fb);font-size:.7rem;background:var(--beige);color:var(--text)">
