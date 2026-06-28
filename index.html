@@ -1940,8 +1940,14 @@ function notifyHeight(){
   );
   window.parent.postMessage({iframeHeight:h},'*');
 }
-setInterval(notifyHeight,600);
+setInterval(notifyHeight,400);
 window.addEventListener('load',notifyHeight);
+// Recalculate whenever any image finishes loading (covers load async and can change layout height)
+document.addEventListener('load',function(e){
+  if(e.target && e.target.tagName==='IMG') setTimeout(notifyHeight,50);
+}, true);
+// Recalculate on window resize too (orientation change, etc.)
+window.addEventListener('resize',notifyHeight);
 </script>
 </body>
 </html>
