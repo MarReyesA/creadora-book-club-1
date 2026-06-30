@@ -37,8 +37,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 
 /* LIBRO DEL MES */
 .ldm{max-width:720px;margin:1.75rem auto;padding:0 1.25rem}
-.ldm-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-wrap:wrap}
-.ldm-img{flex:0 0 160px;min-height:220px;background:linear-gradient(135deg,var(--lila-lt),var(--sage-lt));display:flex;align-items:center;justify-content:center}
+.ldm-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-direction:column}
+.ldm-img{width:100%;min-height:260px;background:linear-gradient(135deg,var(--lila-lt),var(--sage-lt));display:flex;align-items:center;justify-content:center}
 .ldm-img img{width:160px;height:220px;object-fit:cover;display:block}
 .ldm-body{flex:1;min-width:220px;padding:1.5rem}
 .ldm-label{font-size:.68rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sage-dk);margin-bottom:.4rem}
@@ -1485,6 +1485,11 @@ function renderAdminPanel(force){
       <button onclick="saveCurrentBook()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:8px;font-family:var(--fb);font-size:.9rem;font-weight:500;cursor:pointer">Guardar libro del mes</button>
     </div>
 
+    <div style="border-top:2px solid #e8893f;padding-top:.75rem;margin-bottom:.75rem">
+      <div style="font-size:.95rem;font-weight:600;color:#b85a40;margin-bottom:.5rem">✦ Top 10 actuales</div>
+      <div id="admin-finalists-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+    </div>
+
     <div style="border-top:2px solid var(--lila);padding-top:.75rem;margin-bottom:.5rem">
       <div style="font-size:.95rem;font-weight:600;color:var(--lila-dk);margin-bottom:.5rem">📚 Todos los libros</div>
       <input id="admin-search" type="text" placeholder="🔍 Buscar en todos los libros..." oninput="filterAdminBooks(this.value)" style="width:100%;padding:.6rem .9rem;border:2px solid #ffb7a4;border-radius:8px;font-family:var(--fb);font-size:.88rem;background:#fff8f6;margin-bottom:.6rem;outline:none;color:var(--text)">
@@ -1504,6 +1509,7 @@ function renderAdminPanel(force){
   `;
   // populate book list and community books
   filterAdminBooks('');
+  renderAdminFinalistsList();
   // Small delay to let Firebase data settle
   setTimeout(renderAdminCommunityBooks, 300);
 }
@@ -1774,6 +1780,9 @@ function saveRead(i,id){
 function toggleFinalist(id,checked){
   if(checked) set(ref(db,'overrides/finalist_'+id),Date.now());
   else remove(ref(db,'overrides/finalist_'+id));
+  if(checked) _overrides['finalist_'+id]=Date.now(); else delete _overrides['finalist_'+id];
+  renderAdminFinalistsList();
+  filterAdminBooks(document.getElementById('admin-search')?.value||'');
   showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
 }
 window.toggleFinalist=toggleFinalist;
@@ -1784,9 +1793,29 @@ function toggleRecFinalist(key,checked){
   const r=_recs.find(x=>x._key===key);
   if(r) r.finalist=checked?Date.now():false;
   renderBooks();
+  renderAdminFinalistsList();
+  filterAdminBooks(document.getElementById('admin-search')?.value||'');
   showAdminFeedback(checked?'✦ Marcado como finalista':'Quitado de finalistas');
 }
 window.toggleRecFinalist=toggleRecFinalist;
+
+function renderAdminFinalistsList(){
+  const list=document.getElementById('admin-finalists-list');
+  if(!list) return;
+  const libFinalists=B.filter(b=>!!_overrides['finalist_'+b.id]).map(b=>({t:b.t,a:b.a,id:b.id,isRec:false}));
+  const recFinalists=_recs.filter(r=>!!r.finalist).map(r=>({t:r.t,a:r.a,id:r._key,isRec:true}));
+  const all=[...libFinalists,...recFinalists];
+  if(!all.length){
+    list.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Aún no has marcado ningún libro. El Top 10 se completa automáticamente con los últimos agregados.</div>';
+    return;
+  }
+  list.innerHTML=all.map(x=>`
+    <div style="display:flex;align-items:center;gap:.5rem;background:#fff3e6;border:1px solid #ffb7a4;border-radius:8px;padding:.4rem .6rem">
+      <div style="flex:1;font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.t} <span style="font-weight:400;color:var(--muted)">· ${x.a||''}</span></div>
+      <button onclick="${x.isRec?`toggleRecFinalist('${x.id}',false)`:`toggleFinalist('${x.id}',false)`}" style="background:none;border:1px solid #b85a40;color:#b85a40;border-radius:6px;padding:2px 8px;font-family:var(--fb);font-size:.68rem;cursor:pointer;white-space:nowrap">✕ Quitar</button>
+    </div>`).join('');
+}
+window.renderAdminFinalistsList=renderAdminFinalistsList;
 
 function saveCover(i,id){
   id=id||B[i].id;
