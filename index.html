@@ -841,7 +841,7 @@ function renderBooks(votesData){
   const recBooks=_recs.map(r=>({_read:r.read||'',
     t:r.t, a:r.a||'', c:r.c||'', sub:(r.hasOwnProperty('stl')&&typeof r.stl==='string'?r.stl:''),
     d:r.desc||_gbCache[r._key]?.desc||'', bio:r.bio||'', rating:r.rating||'', id:r._key, _isRec:true, _key:r._key,
-    _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:r.lang||'', isbn:null, _finalist:!!r.finalist
+    _cover:(typeof r.cover==='string'&&r.cover)?r.cover:(_gbCache[r._key]?.cover||''), _div:r.div||'', lat:0, lang:r.lang||'', isbn:null, _finalist:!!r.finalist, _forder:r.forder||0
   }));
   // Queue fetch for recs missing description — rate limited, one at a time
   _recs.forEach(r=>{
@@ -879,15 +879,24 @@ function renderBooks(votesData){
       const ov=_overrides['finalist_'+b.id];
       return typeof ov==='number'?ov:0;
     };
-    const manualFinalists=f.filter(isFinalist).sort((a,b)=>finalistTs(b)-finalistTs(a));
+    // Manual drag order takes top priority; unordered items (order 0) fall back to timestamp
+    const finalistOrder=b=>b._isRec?(b._forder||0):(_overrides['forder_'+b.id]||0);
+    const finalistSort=(a,b)=>{
+      const oa=finalistOrder(a), ob=finalistOrder(b);
+      if(oa&&ob) return oa-ob; // both manually ordered
+      if(oa&&!ob) return -1;   // manually ordered items come before unordered
+      if(!oa&&ob) return 1;
+      return finalistTs(b)-finalistTs(a); // neither ordered: newest first
+    };
+    const manualFinalists=f.filter(isFinalist).sort(finalistSort);
     const nonFinalists=f.filter(b=>!isFinalist(b));
     // Auto-fill remaining slots (up to 10) with newest additions (recs are already newest-first in allBooks/f order)
     const needed=Math.max(0,10-manualFinalists.length);
     const autoFill=nonFinalists.filter(b=>b._isRec).slice(0,needed);
     const autoFillIds=new Set(autoFill.map(b=>b._isRec?b._key:b.id));
-    // Combine all finalists (manual + auto-fill) and sort together, newest first
+    // Combine all finalists (manual + auto-fill) and sort together
     finalPage1=[...manualFinalists,...autoFill]
-      .sort((a,b)=>finalistTs(b)-finalistTs(a))
+      .sort(finalistSort)
       .slice(0,10);
     restPages=f.filter(b=>{
       const key=b._isRec?b._key:b.id;
@@ -1802,20 +1811,80 @@ window.toggleRecFinalist=toggleRecFinalist;
 function renderAdminFinalistsList(){
   const list=document.getElementById('admin-finalists-list');
   if(!list) return;
-  const libFinalists=B.filter(b=>!!_overrides['finalist_'+b.id]).map(b=>({t:b.t,a:b.a,id:b.id,isRec:false}));
-  const recFinalists=_recs.filter(r=>!!r.finalist).map(r=>({t:r.t,a:r.a,id:r._key,isRec:true}));
-  const all=[...libFinalists,...recFinalists];
+  const libFinalists=B.filter(b=>!!_overrides['finalist_'+b.id]).map(b=>({t:b.t,a:b.a,id:b.id,isRec:false,order:_overrides['forder_'+b.id]||0,ts:typeof _overrides['finalist_'+b.id]==='number'?_overrides['finalist_'+b.id]:0}));
+  const recFinalists=_recs.filter(r=>!!r.finalist).map(r=>({t:r.t,a:r.a,id:r._key,isRec:true,order:r.forder||0,ts:typeof r.finalist==='number'?r.finalist:0}));
+  const all=[...libFinalists,...recFinalists].sort((a,b)=>{
+    // Manual order takes priority if set, otherwise fall back to timestamp (newest first)
+    if(a.order||b.order) return (a.order||0)-(b.order||0);
+    return b.ts-a.ts;
+  });
   if(!all.length){
     list.innerHTML='<div style="font-size:.75rem;color:var(--muted)">Aún no has marcado ningún libro. El Top 10 se completa automáticamente con los últimos agregados.</div>';
     return;
   }
-  list.innerHTML=all.map(x=>`
-    <div style="display:flex;align-items:center;gap:.5rem;background:#fff3e6;border:1px solid #ffb7a4;border-radius:8px;padding:.4rem .6rem">
+  list.innerHTML='<div style="font-size:.68rem;color:var(--muted);margin-bottom:.3rem">Arrastra ⠿ para reordenar — así se verán en la página principal</div>'
+    +all.map((x,idx)=>`
+    <div class="finalist-drag-row" draggable="true" data-idx="${idx}" data-id="${x.id}" data-isrec="${x.isRec}" style="display:flex;align-items:center;gap:.5rem;background:#fff3e6;border:1px solid #ffb7a4;border-radius:8px;padding:.4rem .6rem;cursor:grab">
+      <span style="color:#b85a40;font-size:.9rem;flex-shrink:0;cursor:grab">⠿</span>
       <div style="flex:1;font-size:.78rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.t} <span style="font-weight:400;color:var(--muted)">· ${x.a||''}</span></div>
       <button onclick="${x.isRec?`toggleRecFinalist('${x.id}',false)`:`toggleFinalist('${x.id}',false)`}" style="background:none;border:1px solid #b85a40;color:#b85a40;border-radius:6px;padding:2px 8px;font-family:var(--fb);font-size:.68rem;cursor:pointer;white-space:nowrap">✕ Quitar</button>
     </div>`).join('');
+  setupFinalistDragDrop();
 }
 window.renderAdminFinalistsList=renderAdminFinalistsList;
+
+function setupFinalistDragDrop(){
+  const list=document.getElementById('admin-finalists-list');
+  if(!list) return;
+  let dragEl=null;
+  list.querySelectorAll('.finalist-drag-row').forEach(row=>{
+    row.addEventListener('dragstart',e=>{
+      dragEl=row;
+      row.style.opacity='.4';
+      e.dataTransfer.effectAllowed='move';
+    });
+    row.addEventListener('dragend',()=>{
+      row.style.opacity='1';
+      saveFinalistOrder();
+    });
+    row.addEventListener('dragover',e=>{
+      e.preventDefault();
+      const after=getDragAfterElement(list,e.clientY);
+      if(!dragEl) return;
+      if(after==null) list.appendChild(dragEl);
+      else list.insertBefore(dragEl,after);
+    });
+  });
+}
+
+function getDragAfterElement(container,y){
+  const rows=[...container.querySelectorAll('.finalist-drag-row:not([style*="opacity: 0.4"])')];
+  return rows.reduce((closest,row)=>{
+    const box=row.getBoundingClientRect();
+    const offset=y-box.top-box.height/2;
+    if(offset<0 && offset>closest.offset) return {offset,element:row};
+    return closest;
+  },{offset:-Infinity}).element;
+}
+
+function saveFinalistOrder(){
+  const rows=document.querySelectorAll('#admin-finalists-list .finalist-drag-row');
+  rows.forEach((row,idx)=>{
+    const id=row.dataset.id;
+    const isRec=row.dataset.isrec==='true';
+    const order=idx+1;
+    if(isRec){
+      set(ref(db,`recs/${id}/forder`),order);
+      const r=_recs.find(x=>x._key===id);
+      if(r) r.forder=order;
+    } else {
+      set(ref(db,'overrides/forder_'+id),order);
+      _overrides['forder_'+id]=order;
+    }
+  });
+  renderBooks();
+  showAdminFeedback('✓ Orden guardado');
+}
 
 function saveCover(i,id){
   id=id||B[i].id;
