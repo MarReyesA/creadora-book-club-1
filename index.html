@@ -229,13 +229,15 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
         <div class="ldm-author" id="ldm-author"></div>
         <div class="ldm-desc" id="ldm-desc">Vota antes del <span id="ldm-vote-deadline">13 de Abril</span></div>
         <div class="ldm-date" id="ldm-date"></div>
-        <div id="ldm-actions" style="display:none;margin-top:.75rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center">
-          <button id="ldm-get-btn" class="cget" style="font-size:.85rem" onclick="">Consíguelo aquí →</button>
+        <div id="ldm-extra"></div>
+        <div id="ldm-actions" style="display:none;margin-top:.75rem;flex-wrap:wrap;gap:.5rem;align-items:center">
+          <button id="ldm-get-btn" class="cget-pill" onclick="">Cómpralo aquí →</button>
           <button id="ldm-share-btn" class="share-btn" onclick="">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             Invita a tus amigas
           </button>
         </div>
+        <div id="ldm-buy-inline" style="display:none;margin-top:.5rem"></div>
       </div>
     </div>
   </div>
@@ -569,29 +571,71 @@ function renderBookOfMonth(){
   const ldmImg     = document.getElementById('ldm-img-wrap');
   const ldmBadges  = document.getElementById('ldm-badges');
   const ldmActions = document.getElementById('ldm-actions');
-  const ldmDeadline= document.getElementById('ldm-vote-deadline');
+  const ldmExtra   = document.getElementById('ldm-extra');
 
   // Vote deadline text — always update regardless of whether a book of the month is set
   const vdTxt=document.getElementById('vote-deadline-txt');
   if(vdTxt) vdTxt.textContent=_overrides.ldmDeadline?'Vota antes del '+_overrides.ldmDeadline:'';
 
+  // Helper: build lang availability checkmarks (same as card format)
+  function buildLangAvail(langLabel){
+    if(!langLabel) return '';
+    const hasEng=langLabel==='eng'||langLabel==='both';
+    const hasEsp=langLabel==='esp'||langLabel==='both';
+    const chk='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg>';
+    const xx='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    return '<span style="display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap">'
+      +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEng?'var(--sage-dk)':'var(--light)')+'">'+(hasEng?chk:xx)+' ENG</span>'
+      +'<span style="display:inline-flex;align-items:center;gap:.2rem;color:'+(hasEsp?'var(--sage-dk)':'var(--light)')+'">'+(hasEsp?chk:xx)+' ESP</span>'
+      +'</span>';
+  }
+  // Helper: build rating display with auto star
+  function buildRating(rating){
+    if(!rating) return '';
+    const parts=rating.split('|');
+    return parts[0]+' ⭐️'+(parts[1]?' ('+parts[1]+')':'');
+  }
+  // Helper: build collapsible text block (review or bio) with Seguir leyendo / Ocultar
+  function buildExpandable(label, text, idPrefix){
+    if(!text) return '';
+    return '<div style="margin-top:.85rem">'
+      +'<div style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:.2rem">'+label+'</div>'
+      +'<div id="clamp-'+idPrefix+'" style="font-size:.92rem;color:#3a332a;line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+text+'</div>'
+      +'<div id="full-'+idPrefix+'" style="font-size:.92rem;color:#3a332a;line-height:1.65;display:none">'+text+'</div>'
+      +'<button id="toggle-'+idPrefix+'" class="card-expand-btn" onclick="toggleDescFull(\''+idPrefix+'\')">Seguir leyendo</button>'
+      +'</div>';
+  }
+
   // cur can be a numeric index (library book) or 'rec_KEY' (community book)
   const isRecBook=typeof cur==='string'&&cur.startsWith('rec_');
   const recBookKey=isRecBook?cur.slice(4):'';
   const recBook=isRecBook?_recs.find(r=>r._key===recBookKey):null;
+
   if(isRecBook&&recBook){
     const b=recBook;
     const cv=b.cover||b._cover||null;
     ldmTitle.textContent=b.t;
     ldmAuthor.textContent=b.a||'';
-    ldmDesc.textContent=_overrides.ldmMessage||b.desc||b.d||'';
+    ldmDesc.textContent='';
     ldmDate.textContent=_overrides.currentBookDate||'';
     ldmImg.innerHTML=cv?`<img src="${cv}" alt="${b.t}" style="width:160px;height:220px;object-fit:cover;display:block" onerror="this.parentNode.innerHTML='<span style=font-size:2rem>📖</span>'">`:'<span style="font-size:2rem">📖</span>';
-    if(ldmBadges) ldmBadges.innerHTML='';
+    const langAvail=buildLangAvail(b.lang||'');
+    const ratingDisplay=buildRating(b.rating||'');
+    if(ldmBadges) ldmBadges.innerHTML=(ratingDisplay||langAvail)?'<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.85rem">'+(ratingDisplay?'<span style="color:#b8860b">'+ratingDisplay+'</span>':'')+langAvail+'</div>':'';
+    if(ldmExtra) ldmExtra.innerHTML=buildExpandable('Reseña', _overrides.ldmMessage||b.desc||b.d||'', 'ldm-desc-x')+buildExpandable('Sobre '+(b.a||'la autora'), b.bio||'', 'ldm-bio-x');
     if(ldmActions){
       ldmActions.style.display='flex';
       const getBtn=document.getElementById('ldm-get-btn');
-      if(getBtn) getBtn.onclick=()=>toggleBuyInline('ldm-buy-inline');
+      const shareBtn=document.getElementById('ldm-share-btn');
+      if(getBtn) getBtn.onclick=()=>{
+        const buyDiv=document.getElementById('ldm-buy-inline');
+        const q=b.t;
+        const mk=arr=>arr.map(x=>'<a class="buy-lnk" href="'+x.u+'" target="_blank"><span>'+x.f+'</span><span style="flex:1">'+x.l+'</span><span class="arr">↗</span></a>').join('');
+        buyDiv.innerHTML='<div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">📖 Libro físico</div>'
+          +mk([{f:'🍁',l:'Amazon CA',u:aCA(q)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q)},{f:'🇲🇽',l:'Buscalibre MX',u:aMX(q)}]);
+        buyDiv.style.display=buyDiv.style.display==='block'?'none':'block';
+      };
+      if(shareBtn) shareBtn.onclick=()=>shareBook(b.t,b.a);
     }
     const wrap2=document.getElementById('ldm-wrap');
     if(wrap2) wrap2.style.display='block';
@@ -600,25 +644,37 @@ function renderBookOfMonth(){
     const cv=_overrides[`cover_${b.id}`]||(b.isbn?`https://covers.openlibrary.org/b/isbn/${b.isbn}-L.jpg`:null);
     ldmTitle.textContent=b.t;
     ldmAuthor.textContent=b.a;
-    ldmDesc.textContent=_overrides.ldmMessage||b.d||'';
+    ldmDesc.textContent='';
     ldmDate.textContent=_overrides.currentBookDate||'';
     ldmImg.innerHTML=cv?`<img src="${cv}" alt="${b.t}" onerror="this.parentNode.innerHTML='<span style=font-size:2rem>📖</span>'">`:'<span style="font-size:2rem">📖</span>';
-    // Badges: lang + diversity
+    // Diversity badge (kept separate, same as cards)
     const div=_overrides[`div_${b.id}`]||(b.lat?'Latinx':'');
     const divLabel=div.includes('Latinx')&&div.includes('BIPOC')?'Latinx · BIPOC':div==='Latinx'?'Latinx ✦':div==='BIPOC'?'BIPOC':div==='Creadora'?'Creadora ✦':'';
+    // Language — use override first, fall back to book's own lang field
     const lang=_overrides[`lang_${b.id}`]||b.lang||'';
-    const langBadge=lang==='both'?'ENG / ESP':lang==='eng'?'ENG':lang==='esp'?'ESP':'';
+    const langAvail=buildLangAvail(lang);
+    const ratingDisplay=buildRating(_overrides[`rating_${b.id}`]||'');
     if(ldmBadges){
       ldmBadges.innerHTML=''
-        +(langBadge?`<span style="font-size:.7rem;font-weight:500;color:var(--muted);background:var(--beige2);padding:2px 8px;border-radius:100px">${langBadge}</span>`:'')
+        +((ratingDisplay||langAvail)?'<div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;font-size:.85rem;margin-bottom:.3rem">'+(ratingDisplay?'<span style="color:#b8860b">'+ratingDisplay+'</span>':'')+langAvail+'</div>':'')
         +(divLabel?`<span style="font-size:.7rem;font-weight:600;background:#ffb7a4;color:#7a3a2a;padding:2px 8px;border-radius:100px">${divLabel}</span>`:'');
     }
+    const bio=_overrides[`bio_${b.id}`]||'';
+    const desc=_overrides.ldmMessage||_overrides[`desc_${b.id}`]||b.d||'';
+    if(ldmExtra) ldmExtra.innerHTML=buildExpandable('Reseña', desc, 'ldm-desc-x')+buildExpandable('Sobre '+b.a, bio, 'ldm-bio-x');
     // Buttons
     if(ldmActions){
       ldmActions.style.display='flex';
       const getBtn=document.getElementById('ldm-get-btn');
       const shareBtn=document.getElementById('ldm-share-btn');
-      if(getBtn) getBtn.onclick=()=>openBuy(cur,event);
+      if(getBtn) getBtn.onclick=()=>{
+        const buyDiv=document.getElementById('ldm-buy-inline');
+        const q=b.q||b.t;
+        const mk=arr=>arr.map(x=>'<a class="buy-lnk" href="'+x.u+'" target="_blank"><span>'+x.f+'</span><span style="flex:1">'+x.l+'</span><span class="arr">↗</span></a>').join('');
+        buyDiv.innerHTML='<div style="font-size:.75rem;font-weight:600;margin-bottom:.3rem">📖 Libro físico</div>'
+          +mk([{f:'🍁',l:'Amazon CA',u:aCA(q)},{f:'🇺🇸',l:'Amazon USA',u:aUS(q)},{f:'🇲🇽',l:'Buscalibre MX',u:aMX(q)}]);
+        buyDiv.style.display=buyDiv.style.display==='block'?'none':'block';
+      };
       if(shareBtn) shareBtn.onclick=()=>shareBook(b.t,b.a);
     }
     const wrap=document.getElementById('ldm-wrap');
@@ -1439,6 +1495,10 @@ function renderAdminPanel(force){
       <button onclick="downloadCSV()" style="width:100%;background:var(--lila-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV libros (${_recs.length})</button>
       <button onclick="downloadCommentsCSV()" style="width:100%;background:var(--sage-dk);color:#fff;border:none;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer;margin-bottom:.35rem">⬇ Descargar CSV comentarios</button>
     </div>
+    <div style="margin-top:.875rem;border-top:2px solid #ffb7a4;padding-top:.875rem">
+      <div style="font-size:.78rem;color:#b85a40;margin-bottom:.5rem">⚠️ Esto borra TODOS los votos actuales y no se puede deshacer. Úsalo solo al cerrar la votación del mes.</div>
+      <button onclick="resetAllVotes()" style="width:100%;background:none;color:#b85a40;border:1.5px solid #ffb7a4;padding:.6rem;border-radius:100px;font-family:var(--fb);font-size:.8rem;font-weight:500;cursor:pointer">🔄 Resetear votos a cero</button>
+    </div>
     <button onclick="document.getElementById('admin-panel').style.display='none'" style="margin-top:.5rem;width:100%;background:none;border:1px solid var(--bdr);padding:.4rem;border-radius:8px;font-family:var(--fb);font-size:.72rem;cursor:pointer;color:var(--muted)">Cerrar panel</button>
   </div>
   `;
@@ -1804,6 +1864,18 @@ window.set=set; window.ref=ref; window.db=db;
 // Cache for all comments
 let _allComments={};
 onValue(ref(db,'comments'), s=>{_allComments=s.val()||{};});
+
+function resetAllVotes(){
+  const confirmText=prompt('Esto borrará TODOS los votos actuales (no se puede deshacer).\n\nEscribe RESETEAR para confirmar:');
+  if(confirmText!=='RESETEAR'){
+    if(confirmText!==null) alert('No se reseteó nada — el texto no coincidió.');
+    return;
+  }
+  remove(ref(db,'votes'));
+  remove(ref(db,'votesRec'));
+  showAdminFeedback('🔄 Votos reseteados a cero');
+}
+window.resetAllVotes=resetAllVotes;
 
 function downloadCommentsCSV(){
   const rows=[['Libro','Nombre','Comentario','Fecha']];
