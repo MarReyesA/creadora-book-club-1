@@ -218,17 +218,19 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- LIBRO DEL MES (filled by Firebase) -->
   <div class="ldm" id="ldm-wrap" style="display:none">
+    <div style="text-align:center;margin-bottom:1rem">
+      <div style="font-size:.78rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sage-dk);margin-bottom:.3rem" id="ldm-label-outer">Estamos leyendo</div>
+      <div style="font-size:.85rem;color:var(--lila-dk);font-weight:500" id="ldm-date-outer"></div>
+    </div>
     <div class="ldm-card">
       <div class="ldm-img" id="ldm-img-wrap">
         <span style="font-size:2rem">📖</span>
       </div>
       <div class="ldm-body">
-        <div class="ldm-label" id="ldm-label">Estamos leyendo</div>
         <div class="ldm-title" id="ldm-title">El libro del mes será anunciado aquí</div>
         <div id="ldm-badges" style="display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.5rem"></div>
         <div class="ldm-author" id="ldm-author"></div>
         <div class="ldm-desc" id="ldm-desc">Vota antes del <span id="ldm-vote-deadline">13 de Abril</span></div>
-        <div class="ldm-date" id="ldm-date"></div>
         <div id="ldm-extra"></div>
         <div id="ldm-actions" style="display:none;margin-top:.75rem;flex-wrap:wrap;gap:.5rem;align-items:center">
           <button id="ldm-get-btn" class="cget-pill" onclick="">Cómpralo aquí →</button>
@@ -567,7 +569,7 @@ function renderBookOfMonth(){
   const ldmTitle   = document.getElementById('ldm-title');
   const ldmAuthor  = document.getElementById('ldm-author');
   const ldmDesc    = document.getElementById('ldm-desc');
-  const ldmDate    = document.getElementById('ldm-date');
+  const ldmDate    = document.getElementById('ldm-date-outer');
   const ldmImg     = document.getElementById('ldm-img-wrap');
   const ldmBadges  = document.getElementById('ldm-badges');
   const ldmActions = document.getElementById('ldm-actions');
