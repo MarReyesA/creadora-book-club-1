@@ -20,7 +20,7 @@
   --r:12px;--rl:18px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--fb);background:transparent;color:var(--text);line-height:1.6}
+body{font-family:var(--fb);background:transparent;color:var(--text);line-height:1.6;padding-bottom:3rem}
 
 /* NAV */
 nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bdr);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:54px;gap:.5rem}
@@ -266,10 +266,6 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- SEARCH + FILTERS + GRID -->
   <div class="bwrap">
-    <div id="grid-section-label"></div>
-    <div class="grid" id="grid"></div>
-    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
-
     <div class="search-area">
       <div class="search-wrap" style="display:none">
         <input id="srch" type="text" autocomplete="off"
@@ -325,6 +321,10 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
         </div>
       </div>
     </div>
+
+    <div id="grid-section-label"></div>
+    <div class="grid" id="grid"></div>
+    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.75rem;padding:1.5rem 0;flex-wrap:wrap"></div>
 
     <div class="filts" id="filts">
       <button class="filt on" onclick="setCat('all',this)">Todos</button>
@@ -2109,11 +2109,16 @@ function notifyHeight(){
     document.documentElement.scrollHeight,
     document.body.offsetHeight,
     document.documentElement.offsetHeight
-  );
+  ) + 80; // extra buffer so Squarespace never clips the bottom
   window.parent.postMessage({iframeHeight:h},'*');
 }
 setInterval(notifyHeight,400);
-window.addEventListener('load',notifyHeight);
+window.addEventListener('load',()=>{
+  notifyHeight();
+  // Fire again after a delay to catch late-loading images/fonts
+  setTimeout(notifyHeight,1000);
+  setTimeout(notifyHeight,2500);
+});
 // Recalculate whenever any image finishes loading (covers load async and can change layout height)
 document.addEventListener('load',function(e){
   if(e.target && e.target.tagName==='IMG') setTimeout(notifyHeight,50);
