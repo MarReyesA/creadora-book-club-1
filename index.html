@@ -257,26 +257,10 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <div style="margin-top:.75rem">
         <button class="btn-add" onclick="showAddForm()">+ Sugiere un libro</button>
       </div>
-    </div>
-    <div style="display:none;position:relative;align-items:center;gap:.5rem">
-      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:-200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">‹</button>
-      <div class="carousel" id="ranking" style="flex:1;justify-content:center;flex-wrap:wrap">
-        <div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>
-      </div>
-      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">›</button>
-    </div>
-  </div>
 
-  <!-- SEARCH + FILTERS + GRID -->
-  <div class="bwrap">
-    <div class="search-wrap" style="display:none">
-      <input id="srch" type="text" autocomplete="off"
-        placeholder="Escribe el título del libro y si no aparece, agrégalo"
-        oninput="onSearch()" onfocus="onSearch()" onblur="setTimeout(hideDropdown,200)">
-      <div class="srch-drop" id="srch-drop"></div>
-    </div>
-    <!-- ADD BOOK MODAL (inline) -->
-    <div id="add-overlay" style="display:none;max-width:500px;margin:0 auto 1rem">
+    <!-- ADD BOOK MODAL -->
+    <div id="add-overlay" style="display:none;max-width:500px;margin:.75rem auto 0">
+
       <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
         <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
         <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Sugiere un libro</div>
@@ -321,6 +305,26 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
         </div>
       </div>
     </div>
+    </div>
+    </div>
+    <div style="display:none;position:relative;align-items:center;gap:.5rem">
+      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:-200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">‹</button>
+      <div class="carousel" id="ranking" style="flex:1;justify-content:center;flex-wrap:wrap">
+        <div class="rk-empty">Aún no hay votos — ¡sé la primera en votar abajo! ↓</div>
+      </div>
+      <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">›</button>
+    </div>
+  </div>
+
+  <!-- SEARCH + FILTERS + GRID -->
+  <div class="bwrap">
+    <div class="search-wrap" style="display:none">
+      <input id="srch" type="text" autocomplete="off"
+        placeholder="Escribe el título del libro y si no aparece, agrégalo"
+        oninput="onSearch()" onfocus="onSearch()" onblur="setTimeout(hideDropdown,200)">
+      <div class="srch-drop" id="srch-drop"></div>
+    </div>
+
 
     <div id="grid-section-label"></div>
     <div class="grid" id="grid"></div>
