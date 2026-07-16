@@ -254,6 +254,9 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <p>Cada mes agregamos nuevos títulos! Elige entre los siguientes 10 finalistas.</p>
       <p style="font-size:.85rem;color:var(--muted);margin-top:.15rem">Puedes votar en varios, y compartir con tus amigas para reunir más votos.</p>
       <p id="vote-deadline-txt" style="font-size:.82rem;color:var(--lila-dk);font-weight:500;margin-top:.3rem"></p>
+      <div style="margin-top:.75rem">
+        <button class="btn-add" onclick="showAddForm()">+ Sugiere un libro</button>
+      </div>
     </div>
     <div style="display:none;position:relative;align-items:center;gap:.5rem">
       <button class="rk-arrow" onclick="document.getElementById('ranking').scrollBy({left:-200,behavior:'smooth'})" style="flex-shrink:0;background:none;border:none;cursor:pointer;font-size:2rem;color:var(--muted);padding:.25rem;line-height:1;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">‹</button>
@@ -266,20 +269,17 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- SEARCH + FILTERS + GRID -->
   <div class="bwrap">
-    <div class="search-area">
-      <div class="search-wrap" style="display:none">
-        <input id="srch" type="text" autocomplete="off"
-          placeholder="Escribe el título del libro y si no aparece, agrégalo"
-          oninput="onSearch()" onfocus="onSearch()" onblur="setTimeout(hideDropdown,200)">
-        <div class="srch-drop" id="srch-drop"></div>
-      </div>
-      <button class="btn-add" onclick="showAddForm()">+ Agregar un libro</button>
+    <div class="search-wrap" style="display:none">
+      <input id="srch" type="text" autocomplete="off"
+        placeholder="Escribe el título del libro y si no aparece, agrégalo"
+        oninput="onSearch()" onfocus="onSearch()" onblur="setTimeout(hideDropdown,200)">
+      <div class="srch-drop" id="srch-drop"></div>
     </div>
-    <!-- ADD BOOK MODAL (moved inline) -->
-    <div id="add-overlay" style="display:none;max-width:500px;margin:1rem auto 0">
+    <!-- ADD BOOK MODAL (inline) -->
+    <div id="add-overlay" style="display:none;max-width:500px;margin:0 auto 1rem">
       <div style="background:var(--white);border-radius:var(--rl);max-width:500px;width:100%;padding:1.75rem;position:relative;border:1px solid var(--bdr);box-shadow:0 4px 24px rgba(42,35,24,.12)" onclick="event.stopPropagation()">
         <button onclick="closeAddForm()" style="position:absolute;top:.875rem;right:.875rem;background:var(--beige);border:1px solid var(--bdr);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:.9rem">✕</button>
-        <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Agrega un libro</div>
+        <div style="font-family:var(--ft);font-size:1.3rem;font-weight:400;margin-bottom:1.25rem">Sugiere un libro</div>
         <div id="add-form-inner">
           <div id="form-greeting"></div>
           <div class="fg"><label>Título del libro <span style="color:var(--sal-dk)">*</span></label><input id="rt" type="text" placeholder="En Español o Inglés"></div>
@@ -863,7 +863,7 @@ function renderBooks(votesData){
     return catMatch&&(!terms||bookMatches(b,terms));
   });
   if(!f.length){
-    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Agrégalo aquí</button></div>';
+    g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:2.5rem;color:var(--muted)">No encontramos ese libro. <button onclick="showAddForm()" style="background:none;border:none;color:var(--sage-dk);text-decoration:underline;cursor:pointer;font-family:var(--fb)">+ Sugiérelo aquí</button></div>';
     document.getElementById('pagination').innerHTML='';
     return;
   }
@@ -1288,6 +1288,21 @@ function delComment(key,k){if(confirm('¿Eliminar este comentario?'))remove(ref(
 window.postComment=postComment; window.delComment=delComment;
 
 // ── ADD BOOK FORM ──
+function showAddFormMsg(msg){
+  let el=document.getElementById('add-form-msg');
+  if(!el){
+    el=document.createElement('div');
+    el.id='add-form-msg';
+    el.style.cssText='font-size:.85rem;color:var(--sage-dk);background:var(--sage-lt);border:1px solid rgba(78,112,96,.25);border-radius:10px;padding:.65rem .9rem;margin-bottom:.75rem;text-align:center';
+    const inner=document.getElementById('add-form-inner');
+    if(inner) inner.insertBefore(el, inner.firstChild);
+  }
+  el.textContent=msg;
+  el.style.display='block';
+  setTimeout(()=>{if(el) el.style.display='none';}, 5000);
+}
+window.showAddFormMsg=showAddFormMsg;
+
 function showAddForm(){
   const ao=document.getElementById('add-overlay');
   ao.style.display='block';
@@ -1336,15 +1351,13 @@ function submitRec(){
   const tNorm=norm(t);
   const inMain=B.some(b=>norm(b.t).includes(tNorm)||tNorm.includes(norm(b.t)));
   if(inMain){
-    const match=B.find(b=>norm(b.t).includes(tNorm)||tNorm.includes(norm(b.t)));
-    alert(`"${match.t}" ya está en nuestra biblioteca 📚\n\n¡Puedes votarlo abajo para que lo leamos juntas!`);
+    showAddFormMsg('Este libro ya está en nuestra lista, ¡gracias por sugerirlo! 🌿');
     return;
   }
   // Check for duplicates in existing recs
   const inRecs=_recs.some(r=>norm(r.t).includes(tNorm)||tNorm.includes(norm(r.t)));
   if(inRecs){
-    const match=_recs.find(r=>norm(r.t).includes(tNorm)||tNorm.includes(norm(r.t)));
-    alert(`"${match.t}" ya fue sugerido por la comunidad 🌿\n\n¡Puedes votarlo para que suba en la lista!`);
+    showAddFormMsg('Este libro ya está en nuestra lista, ¡gracias por sugerirlo! 🌿');
     return;
   }
 
