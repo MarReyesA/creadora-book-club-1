@@ -40,7 +40,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(250,244,242,.97);backdrop-
 .ldm-card{background:var(--white);border-radius:var(--rl);border:1px solid var(--bdr);overflow:hidden;display:flex;flex-direction:column}
 .ldm-img{width:100%;min-height:260px;background:linear-gradient(135deg,var(--lila-lt),var(--sage-lt));display:flex;align-items:center;justify-content:center}
 .ldm-img img{width:160px;height:220px;object-fit:cover;display:block}
-.ldm-body{flex:1;min-width:220px;padding:1.5rem}
+.ldm-body{flex:1;min-width:220px;padding:1.5rem;text-align:left}
 .ldm-label{font-size:.68rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sage-dk);margin-bottom:.4rem}
 .ldm-title{font-family:var(--ft);font-size:1.25rem;line-height:1.3;margin-bottom:.3rem}
 .ldm-author{font-size:.82rem;color:var(--muted);margin-bottom:.75rem}
@@ -254,7 +254,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
       <p>Cada mes agregamos nuevos títulos! Elige entre los siguientes 10 finalistas.</p>
       <p style="font-size:.85rem;color:var(--muted);margin-top:.15rem">Puedes votar en varios, y compartir con tus amigas para reunir más votos.</p>
       <p id="vote-deadline-txt" style="font-size:.82rem;color:var(--lila-dk);font-weight:500;margin-top:.3rem"></p>
-      <div style="margin-top:.75rem">
+      <div style="margin-top:.75rem;margin-bottom:1.75rem">
         <button class="btn-add" onclick="showAddForm()">+ Sugiere un libro</button>
       </div>
 
@@ -540,10 +540,14 @@ onValue(ref(db,'votes'),   s=>{ _votes=s.val()||{}; renderRanking(); renderBooks
 onValue(ref(db,'votesRec'),s=>{ _votesRec=s.val()||{}; renderRanking(); renderRecBooks(); });
 onValue(ref(db,'recs'),    s=>{
   _recs = s.val() ? Object.entries(s.val()).map(([k,v])=>({...v,_key:k})).sort((a,b)=>(b.ts||0)-(a.ts||0)) : [];
-  renderRecBooks(); 
+  renderRecBooks();
   renderCounter();
-  if(ADMIN) renderAdminCommunityBooks();
-  console.log('Recs loaded:', _recs.length);
+  if(ADMIN){
+    const panel=document.getElementById('admin-panel');
+    const st=panel?panel.scrollTop:0;
+    renderAdminCommunityBooks();
+    if(panel) setTimeout(()=>panel.scrollTop=st,0);
+  }
 });
 // admin overrides: current book, read status, custom covers
 onValue(ref(db,'overrides'), s=>{
@@ -1692,22 +1696,23 @@ function saveRecRating(key,suffix){
 window.saveRecRating=saveRecRating;
 
 function saveRecField(key,field,inputId,btn){
-  // Get value from the input that is the previous sibling of the button
   const input=btn?btn.previousElementSibling:document.querySelector(`[data-reckey="${key}"][data-recfield="${field}"]`);
   const val=(input?.value||'').trim();
   if(val) set(ref(db,`recs/${key}/${field}`),val);
   else remove(ref(db,`recs/${key}/${field}`));
   const r=_recs.find(x=>x._key===key);
   if(r) r[field]=val||'';
-  // If manually setting desc, cancel any pending/queued auto-fetch for this book
-  // so a delayed Google Books response can't overwrite it later
   if(field==='desc' && val){
     const qIdx=_fetchQueue.findIndex(x=>x._key===key);
     if(qIdx>-1) _fetchQueue.splice(qIdx,1);
-    _fetchQueued[key]=true; // mark as done so it's never auto-queued again
-    if(_gbCache[key]) _gbCache[key].desc=''; // clear any stale cached desc so it never wins
+    _fetchQueued[key]=true;
+    if(_gbCache[key]) _gbCache[key].desc='';
   }
+  // Preserve admin panel scroll position — renderBooks triggers a list rebuild
+  const panel=document.getElementById('admin-panel');
+  const scrollTop=panel?panel.scrollTop:0;
   renderBooks();
+  if(panel) panel.scrollTop=scrollTop;
   showAdminFeedback('✓ Guardado');
 }
 window.saveRecField=saveRecField;
