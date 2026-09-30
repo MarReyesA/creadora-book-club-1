@@ -246,7 +246,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
 
   <!-- VOTE + RANKING -->
   <div style="text-align:center;padding:.5rem 1.25rem 1.5rem">
-    <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.7rem 2rem;border-radius:100px;text-decoration:none">Únete aquí ✦</a>
+    <a href="https://pay.hotmart.com/G104638314E?sck=HOTMART_PRODUCT_PAGE&off=yf5x8zn1&hotfeature=32&_gl=1*1hw6vfk*_gcl_au*NjkxNzI3ODQzLjE3ODI4NDYwNDA.*FPAU*NjkxNzI3ODQzLjE3ODI4NDYwNDA.*_ga*MTE1NzExMzQ0MS4xNzY1NTM4MzA3*_ga_GQH2V1F11Q*czE3ODkxNjc0NzYkbzIzMyRnMSR0MTc4OTE2NzUwNCRqMzIkbDEkaDMzNzI3MzAxMg..&bid=1789167507439" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.7rem 2rem;border-radius:100px;text-decoration:none">ÚNETE GRATIS 1 MES POR AQUÍ ✦</a>
   </div>
   <div class="vote-section">
     <div class="vote-hdr">
@@ -361,7 +361,7 @@ footer img{height:36px;filter:brightness(0) invert(1);opacity:.9}
   <div style="text-align:center;padding:3rem 1.25rem 2rem;border-top:1px solid var(--bdr)">
     <h2 onclick="secretAdminTap()" style="font-family:var(--ft);font-size:clamp(1.4rem,3vw,2rem);font-weight:400;color:var(--text);margin-bottom:.75rem;cursor:default">Únete a Creadora <em style="color:var(--lila-dk);font-style:italic">Book Club</em></h2>
     <p style="font-size:.9rem;color:var(--muted);max-width:480px;margin:0 auto 1.5rem;line-height:1.7">Cada libro es una oportunidad para abrir conversaciones profundas, sanar, cuestionar y crecer. No solo leerás, sino que transformarás tu manera de pensar para acercarte a vivir una vida libre y abundante.</p>
-    <a href="https://hotmart.com/es/marketplace/productos/creadora-book-club/G104638314E?off=yf5x8zn1" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none">Regístrate aquí ✦</a>
+    <a href="https://pay.hotmart.com/G104638314E?sck=HOTMART_PRODUCT_PAGE&off=yf5x8zn1&hotfeature=32&_gl=1*1hw6vfk*_gcl_au*NjkxNzI3ODQzLjE3ODI4NDYwNDA.*FPAU*NjkxNzI3ODQzLjE3ODI4NDYwNDA.*_ga*MTE1NzExMzQ0MS4xNzY1NTM4MzA3*_ga_GQH2V1F11Q*czE3ODkxNjc0NzYkbzIzMyRnMSR0MTc4OTE2NzUwNCRqMzIkbDEkaDMzNzI3MzAxMg..&bid=1789167507439" target="_blank" style="display:inline-block;background:var(--lila-dk);color:#fff;font-family:var(--fb);font-size:.9rem;font-weight:600;padding:.75rem 2rem;border-radius:100px;text-decoration:none">ÚNETE GRATIS 1 MES POR AQUÍ ✦</a>
   </div>
 </div>
 
@@ -2121,21 +2121,20 @@ function notifyHeight(){
     document.documentElement.scrollHeight,
     document.body.offsetHeight,
     document.documentElement.offsetHeight
-  ) + 80; // extra buffer so Squarespace never clips the bottom
+  ) + 200;
   window.parent.postMessage({iframeHeight:h},'*');
 }
-setInterval(notifyHeight,400);
+setInterval(notifyHeight,300);
 window.addEventListener('load',()=>{
   notifyHeight();
-  // Fire again after a delay to catch late-loading images/fonts
-  setTimeout(notifyHeight,1000);
-  setTimeout(notifyHeight,2500);
+  setTimeout(notifyHeight,500);
+  setTimeout(notifyHeight,1500);
+  setTimeout(notifyHeight,3000);
+  setTimeout(notifyHeight,6000);
 });
-// Recalculate whenever any image finishes loading (covers load async and can change layout height)
 document.addEventListener('load',function(e){
-  if(e.target && e.target.tagName==='IMG') setTimeout(notifyHeight,50);
-}, true);
-// Recalculate on window resize too (orientation change, etc.)
+  if(e.target && e.target.tagName==='IMG') setTimeout(notifyHeight,100);
+},true);
 window.addEventListener('resize',notifyHeight);
 </script>
 </body>
